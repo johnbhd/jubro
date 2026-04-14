@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlexTracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body id="appBody" class="bg-gray-100 text-gray-800 flex justify-center">
+<div class="w-full max-w-6xl">
+  <header class="flex items-center justify-between p-4 bg-white shadow-sm sticky top-0 z-10 rounded-b-2xl">
+    <div class="flex items-center gap-3">
+      <button class="text-gray-600">←</button>
+      <input type="text" value="Untitled" class="text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none" />
+    </div>
+  </header>
+  
+  <main class="p-4" id="tableContainer">
+    <div class="bg-white rounded-2xl shadow overflow-x-auto">
+      <table class="min-w-full text-sm text-center" id="table">
+        <thead class="bg-gray-50 sticky top-0">
+          <tr id="headerRow"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
+  <button id="btn-addRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
+  <button id="btn-addCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
+  <button id="btn-moveUp" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
+  <button id="btn-moveDown" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
+  <button id="btn-moveLeft" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
+  <button id="btn-moveRight" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
+  <button id="btn-delRow" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
+  <button id="btn-delCol" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
+</div>
+
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
