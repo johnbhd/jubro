@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tracker Home</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+
+<body id="homeBody" class="bg-gray-100 min-h-screen">
+
+  <div class="max-w-5xl mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between mb-10">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Your Trackers</h1>
+        <p class="text-gray-500 mt-1">Manage and open your data trackers</p>
+      </div>
+
+      <button
+        id="btnOpenModal"
+        type="button"
+        class="px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition"
+      >
+        + New Tracker
+      </button>
+    </div>
+
+    <div id="trackerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+
+      <h2 class="text-xl font-semibold mb-4">Create Tracker</h2>
+
+      <input
+        id="titleInput"
+        class="w-full border p-3 rounded-xl mb-4"
+        placeholder="Tracker name"
+      />
+
+      <div class="flex gap-2">
+        <button id="btnCancel" type="button" class="flex-1 py-2 bg-gray-200 rounded-xl">
+          Cancel
+        </button>
+
+        <button id="btnCreate" type="button" class="flex-1 py-2 bg-black text-white rounded-xl">
+          Create
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- IMPORTANT: correct path -->
+
+</body>
+<script type="module" src="../js/home.js"></script>
+</html>
