@@ -93,7 +93,14 @@ export class TrackerApp {
       this.save();
     });
 
-    this.appBody.addEventListener('click', closeMenu);
+    this.appBody.addEventListener('click', (e) => {
+      const menu = document.getElementById('contextMenu');
+      if (!menu) return;
+    
+      if (!menu.contains(e.target)) {
+        closeMenu();
+      }
+    });
     this.tableContainer.addEventListener('click', (e) => e.stopPropagation());
 
     const buttonActions = {

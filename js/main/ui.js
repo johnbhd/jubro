@@ -1,5 +1,4 @@
 let pressTimer;
-const contextMenu = document.getElementById('contextMenu');
 
 export const UIState = {
   activeRow: null,
@@ -7,45 +6,60 @@ export const UIState = {
   activeType: null
 };
 
+function getMenu() {
+  return document.getElementById('contextMenu');
+}
+
 export function showMenu(e, row, col, type) {
   e.preventDefault();
-  e.stopPropagation(); // Stop click from immediately triggering the "close" listener
-  
+  e.stopPropagation();
+
+  const menu = getMenu();
+  if (!menu) return;
+
   UIState.activeRow = row;
   UIState.activeCol = col;
   UIState.activeType = type;
 
-  contextMenu.style.top = `${e.pageY}px`;
-  contextMenu.style.left = `${e.pageX}px`;
-  contextMenu.classList.remove('hidden');
+  menu.style.top = `${e.pageY}px`;
+  menu.style.left = `${e.pageX}px`;
+  menu.classList.remove('hidden');
 }
 
 export function closeMenu() {
-  contextMenu.classList.add('hidden');
+  const menu = getMenu();
+  if (!menu) return;
+  menu.classList.add('hidden');
 }
 
 export function startPress(e, row, col, type) {
-  if (e.button !== 0) return; 
-  // We clear any existing timer to prevent multiple menus
+  if (e.button !== 0) return;
+
   clearTimeout(pressTimer);
+
   pressTimer = setTimeout(() => {
     showMenu(e, row, col, type);
-  }, 500);
+  }, 400);
 }
 
 export function cancelPress() {
   clearTimeout(pressTimer);
 }
 
-// --- NEW: CLOSE ON CLICK OUTSIDE ---
-window.addEventListener('click', (e) => {
-  // If the menu is open and the click is NOT on the menu itself, close it
-  if (!contextMenu.classList.contains('hidden')) {
-    if (!contextMenu.contains(e.target)) {
-      closeMenu();
-    }
+/* ✅ ONLY ONE GLOBAL LISTENER */
+document.addEventListener('click', (e) => {
+  const menu = getMenu();
+  if (!menu) return;
+
+  if (!menu.classList.contains('hidden') && !menu.contains(e.target)) {
+    closeMenu();
   }
 });
 
-// Prevent clicks inside the menu from closing it (e.g., clicking between buttons)
-contextMenu.addEventListener('click', (e) => e.stopPropagation());
+/* prevent closing when clicking inside menu */
+document.addEventListener('DOMContentLoaded', () => {
+  const menu = getMenu();
+  if (!menu) return;
+
+  menu.addEventListener('click', (e) => e.stopPropagation());
+});
