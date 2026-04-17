@@ -16,6 +16,13 @@ export class TrackerHome {
     this.btnOpen = document.getElementById('btnOpenModal');
     this.btnCreate = document.getElementById('btnCreate');
     this.btnCancel = document.getElementById('btnCancel');
+    this.deleteModal = document.getElementById('deleteModal');
+    this.deleteText = document.getElementById('deleteText');
+    this.btnDeleteCancel = document.getElementById('btnDeleteCancel');
+    this.btnDeleteConfirm = document.getElementById('btnDeleteConfirm');
+    this.titleError = document.getElementById('titleError');
+    
+    this.deleteId = null;
 
     if (!this.grid) {
       console.error("trackerGrid not found");
@@ -35,6 +42,14 @@ export class TrackerHome {
     this.btnCancel?.addEventListener('click', (e) => {
       e.preventDefault();
       this.hideModal();
+    });
+    
+    this.btnDeleteCancel?.addEventListener('click', () => {
+      this.hideDeleteModal();
+    });
+    
+    this.btnDeleteConfirm?.addEventListener('click', () => {
+      this.deleteTracker();
     });
 
     this.btnCreate?.addEventListener('click', (e) => {
@@ -61,41 +76,91 @@ export class TrackerHome {
 
   createTracker() {
     const title = this.titleInput?.value.trim();
-    if (!title) return;
-
+  
+    const error = this.validateTitle(title);
+  
+    if (error) {
+      this.showError(error);
+      return;
+    }
+  
     const id = this.getNextId();
-
+  
     this.state.data[id] = {
       id,
       title,
       columns: ["Task", "Category", "Priority", "Status"],
       rows: []
     };
-
+  
     this.state.active = id;
-
+  
     Storage.save(this.state);
-
+  
     this.titleInput.value = "";
+    this.clearError();
     this.hideModal();
     this.render();
   }
-  confirmDelete(id, title) {
-    const confirmed = confirm(`Delete tracker "${title}"?`);
+  showError(message) {
+    this.titleError.textContent = message;
+    this.titleError.classList.remove('hidden');
   
-    if (!confirmed) return;
+    this.titleInput.classList.add('border-red-500', 'ring-2', 'ring-red-500');
+  }
   
-    delete this.state.data[id];
+  clearError() {
+    this.titleError.textContent = "";
+    this.titleError.classList.add('hidden');
   
-    // if deleted tracker is active, reset it
-    if (this.state.active === id) {
+    this.titleInput.classList.remove('border-red-500', 'ring-2', 'ring-red-500');
+  }
+  validateTitle(title) {
+    const data = this.state?.data || {};
+  
+    // empty check
+    if (!title) {
+      return "Tracker name is required";
+    }
+  
+    // duplicate check (case insensitive)
+    const exists = Object.values(data).some(
+      t => t.title.toLowerCase() === title.toLowerCase()
+    );
+  
+    if (exists) {
+      return "Tracker already exists";
+    }
+  
+    return null;
+  }
+  
+  showDeleteModal(id, title) {
+    this.deleteId = id;
+    this.deleteText.textContent = `Delete tracker "${title}"?`;
+  
+    this.deleteModal.classList.remove('hidden');
+  }
+  
+  hideDeleteModal() {
+    this.deleteModal.classList.add('hidden');
+    this.deleteId = null;
+  }
+
+  deleteTracker() {
+    if (!this.deleteId) return;
+  
+    delete this.state.data[this.deleteId];
+  
+    if (this.state.active === this.deleteId) {
       this.state.active = null;
     }
   
     Storage.save(this.state);
+  
+    this.hideDeleteModal();
     this.render();
   }
-  
   render() {
     if (!this.grid) return;
 
@@ -153,7 +218,7 @@ export class TrackerHome {
         const id = deleteBtn.dataset.id;
         const title = deleteBtn.dataset.title;
       
-        this.confirmDelete(id, title);
+        this.showDeleteModal(id, title);
       });
       this.grid.appendChild(card);
     });
