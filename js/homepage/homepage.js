@@ -80,7 +80,22 @@ export class TrackerHome {
     this.hideModal();
     this.render();
   }
-
+  confirmDelete(id, title) {
+    const confirmed = confirm(`Delete tracker "${title}"?`);
+  
+    if (!confirmed) return;
+  
+    delete this.state.data[id];
+  
+    // if deleted tracker is active, reset it
+    if (this.state.active === id) {
+      this.state.active = null;
+    }
+  
+    Storage.save(this.state);
+    this.render();
+  }
+  
   render() {
     if (!this.grid) return;
 
@@ -112,13 +127,34 @@ export class TrackerHome {
       });
 
       card.innerHTML = `
-        <h2 class="text-lg font-semibold">${t.title}</h2>
+        <div class="flex justify-between items-start">
+          <h2 class="text-lg font-semibold">${t.title}</h2>
+      
+          <button 
+            class="btn-delete text-gray-400 hover:text-red-500 transition"
+            data-id="${t.id}"
+            data-title="${t.title}"
+          >
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      
         <p class="text-gray-500 mt-1">${t.rows.length} entries</p>
+      
         <button type="button" class="mt-4 text-sm text-blue-500">
           Open
         </button>
       `;
-
+      const deleteBtn = card.querySelector('.btn-delete');
+      
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // prevents opening the card
+      
+        const id = deleteBtn.dataset.id;
+        const title = deleteBtn.dataset.title;
+      
+        this.confirmDelete(id, title);
+      });
       this.grid.appendChild(card);
     });
   }
