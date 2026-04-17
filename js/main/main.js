@@ -7,8 +7,8 @@ export class TrackerApp {
     this.appBody = document.getElementById('appBody');
     this.tableContainer = document.getElementById('tableContainer');
     this.titleInput = document.querySelector('header input');
-
     this.state = this.initializeState();
+    this.save();
     this.initEvents();
     this.refresh();
   }
@@ -18,17 +18,21 @@ export class TrackerApp {
   initializeState() {
     let state = Storage.load();
   
-    if (!state) {
+   if (!state.data || Object.keys(state.data).length === 0) {
       const defaultId = this.generateId();
-  
+    
       return {
         active: defaultId,
         data: {
           [defaultId]: {
             id: defaultId,
-            title: "Untitled",
-            columns: ['Task', 'Category', 'Priority', 'Status'],
-            rows: []
+            title: "Job Applications",
+            columns: ['Company', 'Position', 'Status', 'Date Applied'],
+            rows: [
+              ['Google', 'Frontend Intern', 'Applied', '2026-04-01'],
+              ['Meta', 'Backend Intern', 'Interview', '2026-04-05'],
+              ['Amazon', 'Fullstack Intern', 'Pending', '2026-04-10']
+            ]
           }
         }
       };
@@ -48,10 +52,6 @@ export class TrackerApp {
           }
         }
       };
-    }
-  
-    if (state.columns && state.columns.active) {
-      return state.columns;
     }
   
     const urlTracker = this.getTrackerFromURL();
