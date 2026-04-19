@@ -86,6 +86,36 @@ export class TrackerApp {
     this.titleInput.value = tracker.title;
     this.save();
   }
+  copyCol() {
+    const tracker = this.getTracker();
+    const { activeCol } = UIState;
+  
+    if (activeCol === null) return;
+  
+    // copy column name
+    const colName = tracker.columns[activeCol];
+    tracker.columns.splice(activeCol + 1, 0, colName + " Copy");
+  
+    // copy each row cell
+    tracker.rows.forEach(row => {
+      row.splice(activeCol + 1, 0, row[activeCol]);
+    });
+  
+    this.refresh();
+    closeMenu();
+  }
+  copyRow() {
+    const tracker = this.getTracker();
+    const { activeRow } = UIState;
+  
+    if (activeRow === null) return;
+  
+    const rowCopy = [...tracker.rows[activeRow]]; // clone row
+    tracker.rows.splice(activeRow + 1, 0, rowCopy); // insert below
+  
+    this.refresh();
+    closeMenu();
+  }
 
   initEvents() {
     const btnMenu = document.getElementById('btnMenu');
@@ -141,6 +171,14 @@ export class TrackerApp {
       "btn-addCol": (e) => {
         e.preventDefault();
         this.addCol();
+      },
+      "btn-copyRow": (e) => {
+        e.preventDefault();
+        this.copyRow();
+      },
+      "btn-copyCol": (e) => {
+        e.preventDefault();
+        this.copyCol();
       },
       "btn-moveUp": (e) => {
         e.preventDefault();

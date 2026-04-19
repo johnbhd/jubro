@@ -14,12 +14,12 @@
       <input type="text"  class="text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none" />
     </div>
     <div class="relative">
-      <button id="btnMenu" class="p-2 rounded-sm hover:bg-gray-100 text-xl">
+      <button id="btnMenu" class="p-2 rounded-lg hover:bg-gray-100 text-xl">
         ⋯
       </button>
     
       <!-- DROPDOWN -->
-      <div id="navDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded-xl shadow text-sm overflow-hidden">
+      <div id="navDropdown" class="hidden absolute right-0 mt-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
         <button id="btnImport" class="w-full text-left px-4 py-2 hover:bg-gray-100">
           Import CSV
         </button>
@@ -45,6 +45,13 @@
 <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
   <button id="btn-addRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
   <button id="btn-addCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
+  <button id="btn-copyRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+    Copy Row
+  </button>
+  
+  <button id="btn-copyCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+    Copy Column
+  </button>
   <button id="btn-moveUp" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
   <button id="btn-moveDown" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
   <button id="btn-moveLeft" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
