@@ -13,6 +13,21 @@
       <a href="./pages/homepage.html" class="text-gray-600">←</a>
       <input type="text"  class="text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none" />
     </div>
+    <div class="relative">
+      <button id="btnMenu" class="p-2 rounded-sm hover:bg-gray-100 text-xl">
+        ⋯
+      </button>
+    
+      <!-- DROPDOWN -->
+      <div id="navDropdown" class="hidden absolute right-0 mt-2 w-40 bg-white border rounded-xl shadow text-sm overflow-hidden">
+        <button id="btnImport" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Import CSV
+        </button>
+        <button id="btnExport" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Export CSV
+        </button>
+      </div>
+    </div>
   </header>
   
   <main class="p-4" id="tableContainer">

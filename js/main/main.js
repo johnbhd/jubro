@@ -88,6 +88,36 @@ export class TrackerApp {
   }
 
   initEvents() {
+    const btnMenu = document.getElementById('btnMenu');
+    const dropdown = document.getElementById('navDropdown');
+    const btnImport = document.getElementById('btnImport');
+    const btnExport = document.getElementById('btnExport');
+    
+    // toggle dropdown
+    btnMenu?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('hidden');
+    });
+    
+    // close when clicking outside
+    document.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+    });
+    
+    // prevent closing when clicking inside
+    dropdown?.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    
+    // TEMP actions
+    btnImport?.addEventListener('click', () => {
+      alert("Import CSV clicked");
+    });
+    
+    btnExport?.addEventListener('click', () => {
+      alert("Export CSV clicked");
+    });
+
     this.titleInput.addEventListener('input', (e) => {
       this.getTracker().title = e.target.value;
       this.save();
