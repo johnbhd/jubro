@@ -123,6 +123,22 @@ export class TrackerApp {
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
     
+    document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
+      alert("Convert to Checkbox");
+    });
+    
+    document.getElementById('btn-type-date')?.addEventListener('click', () => {
+      alert("Convert to Date");
+    });
+    
+    document.getElementById('btn-type-select')?.addEventListener('click', () => {
+      alert("Convert to Select");
+    });
+    
+    document.getElementById('btn-type-text')?.addEventListener('click', () => {
+      alert("Convert to Text");
+    });
+    
     // toggle dropdown
     btnMenu?.addEventListener('click', (e) => {
       e.stopPropagation();

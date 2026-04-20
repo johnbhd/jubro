@@ -43,6 +43,30 @@
 </div>
 
 <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
+  <div class="relative group">
+    <button id="btn-customize" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+      Customize ▶
+    </button>
+  
+    <!-- SUBMENU -->
+    <div id="subMenu"
+      class="hidden absolute left-full top-0 ml-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
+      
+      <button id="btn-type-text" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        Text
+      </button>
+      <button id="btn-type-checkbox" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        Checkbox
+      </button>
+      <button id="btn-type-date" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        Date
+      </button>
+      <button id="btn-type-select" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        Select
+      </button>
+  
+    </div>
+  </div>
   <button id="btn-addRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
   <button id="btn-addCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
   <button id="btn-copyRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">

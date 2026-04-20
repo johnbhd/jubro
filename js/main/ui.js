@@ -31,12 +31,15 @@ export function showMenu(e, rowIndex, colIndex, type) {
   const btnMoveRight = document.getElementById('btn-moveRight');
   const btnDelRow = document.getElementById('btn-delRow');
   const btnDelCol = document.getElementById('btn-delCol');
-
+  const btnCustomize = document.getElementById('btn-customize');
+  const subMenu = document.getElementById('subMenu');
+  
   [
     btnAddRow, btnAddCol,
     btnMoveUp, btnMoveDown,
     btnMoveLeft, btnMoveRight,
-    btnDelRow, btnDelCol
+    btnDelRow, btnDelCol,
+    btnCustomize, subMenu
   ].forEach(btn => btn.classList.add('hidden'));
 
   if (type === 'row') {
@@ -45,7 +48,15 @@ export function showMenu(e, rowIndex, colIndex, type) {
     btnMoveDown.classList.remove('hidden');
     btnDelRow.classList.remove('hidden');
   }
-
+  if (type === 'row') {
+    btnAddRow.classList.remove('hidden');
+    btnMoveUp.classList.remove('hidden');
+    btnMoveDown.classList.remove('hidden');
+    btnDelRow.classList.remove('hidden');
+  
+    btnCustomize.classList.remove('hidden');
+  }
+  
   if (type === 'col') {
     btnAddCol.classList.remove('hidden');
     btnMoveLeft.classList.remove('hidden');
@@ -88,6 +99,25 @@ document.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
   const menu = getMenu();
   if (!menu) return;
+  
+  const btnCustomize = document.getElementById('btn-customize');
+  const subMenu = document.getElementById('subMenu');
+
+  btnCustomize?.addEventListener('mouseenter', () => {
+    subMenu.classList.remove('hidden');
+  });
+
+  btnCustomize?.addEventListener('mouseleave', () => {
+    setTimeout(() => subMenu.classList.add('hidden'), 200);
+  });
+
+  subMenu?.addEventListener('mouseenter', () => {
+    subMenu.classList.remove('hidden');
+  });
+
+  subMenu?.addEventListener('mouseleave', () => {
+    subMenu.classList.add('hidden');
+  });
 
   menu.addEventListener('click', (e) => e.stopPropagation());
 });
