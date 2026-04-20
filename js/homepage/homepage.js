@@ -89,8 +89,12 @@ export class TrackerHome {
     this.state.data[id] = {
       id,
       title,
-      columns: ["Task", "Category", "Priority", "Status"],
-      rows: []
+      columns: ['Company', 'Position', 'Status', 'Date Applied'],
+      rows: [
+        ['Google', 'Frontend Intern', 'Applied', '2026-04-01'],
+        ['Meta', 'Backend Intern', 'Interview', '2026-04-05'],
+        ['Amazon', 'Fullstack Intern', 'Pending', '2026-04-10']
+      ]
     };
   
     this.state.active = id;
@@ -102,6 +106,7 @@ export class TrackerHome {
     this.hideModal();
     this.render();
   }
+  
   showError(message) {
     this.titleError.textContent = message;
     this.titleError.classList.remove('hidden');

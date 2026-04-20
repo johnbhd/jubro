@@ -116,6 +116,37 @@ export class TrackerApp {
     this.refresh();
     closeMenu();
   }
+  
+  setColumnType(type) {
+    const tracker = this.getTracker();
+    const { activeCol } = UIState;
+  
+    if (activeCol === null) return;
+  
+    // update all cells in that column
+    tracker.rows.forEach((row) => {
+      const oldCell = row[activeCol];
+  
+      let value = '';
+      if (typeof oldCell === 'object') {
+        value = oldCell.value;
+      } else {
+        value = oldCell;
+      }
+  
+      if (type === 'checkbox') {
+        value = false;
+      }
+  
+      row[activeCol] = {
+        value,
+        type
+      };
+    });
+  
+    this.refresh();
+    closeMenu();
+  }
 
   initEvents() {
     const btnMenu = document.getElementById('btnMenu');
@@ -124,11 +155,9 @@ export class TrackerApp {
     const btnExport = document.getElementById('btnExport');
     
     document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
-      alert("Convert to Checkbox");
     });
     
     document.getElementById('btn-type-date')?.addEventListener('click', () => {
-      alert("Convert to Date");
     });
     
     document.getElementById('btn-type-select')?.addEventListener('click', () => {
@@ -136,7 +165,18 @@ export class TrackerApp {
     });
     
     document.getElementById('btn-type-text')?.addEventListener('click', () => {
-      alert("Convert to Text");
+    });
+    
+    document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
+      this.setColumnType('checkbox');
+    });
+    
+    document.getElementById('btn-type-date')?.addEventListener('click', () => {
+      this.setColumnType('date');
+    });
+    
+    document.getElementById('btn-type-text')?.addEventListener('click', () => {
+      this.setColumnType('text');
     });
     
     // toggle dropdown
