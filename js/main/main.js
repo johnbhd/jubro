@@ -29,30 +29,52 @@ export class TrackerApp {
             title: "Job Applications",
             columns: ['Company', 'Position', 'Status', 'Date Applied'],
             rows: [
-              ['Google', 'Frontend Intern', 'Applied', '2026-04-01'],
-              ['Meta', 'Backend Intern', 'Interview', '2026-04-05'],
-              ['Amazon', 'Fullstack Intern', 'Pending', '2026-04-10']
+            [
+              { value: 'Google', type: 'text' },
+              { value: 'Frontend Intern', type: 'text' },
+              { value: 'Applied', type: 'text' },
+              { value: '2026-04-01', type: 'date' }
+            ],
+            [
+              { value: 'Meta', type: 'text' },
+              { value: 'Backend Intern', type: 'text' },
+              { value: 'Interview', type: 'text' },
+              { value: '2026-04-05', type: 'date' }
+            ],
+            [
+              { value: 'Amazon', type: 'text' },
+              { value: 'Fullstack Intern', type: 'text' },
+              { value: 'Pending', type: 'text' },
+              { value: '2026-04-10', type: 'date' }
             ]
+          ]
           }
         }
       };
     }
   
     if (state.columns && state.data) {
-      const defaultId = this.generateId();
-  
-      return {
-        active: defaultId,
-        data: {
-          [defaultId]: {
-            id: defaultId,
-            title: "Untitled",
-            columns: state.columns,
-            rows: state.data
+        const defaultId = this.generateId();
+      
+        const normalizedRows = state.data.map(row =>
+          row.map(cell => ({
+            value: cell,
+            type: 'text'
+          }))
+        );
+      
+        return {
+          active: defaultId,
+          data: {
+            [defaultId]: {
+              id: defaultId,
+              title: "Untitled",
+              columns: state.columns,
+              rows: normalizedRows
+            }
           }
-        }
-      };
-    }
+        };
+      }
   
     const urlTracker = this.getTrackerFromURL();
   
@@ -98,7 +120,8 @@ export class TrackerApp {
   
     // copy each row cell
     tracker.rows.forEach(row => {
-      row.splice(activeCol + 1, 0, row[activeCol]);
+      const cell = row[activeCol];
+      row.splice(activeCol + 1, 0, { ...cell });
     });
   
     this.refresh();
@@ -110,7 +133,7 @@ export class TrackerApp {
   
     if (activeRow === null) return;
   
-    const rowCopy = [...tracker.rows[activeRow]]; // clone row
+    const rowCopy = tracker.rows[activeRow].map(cell => ({ ...cell }));
     tracker.rows.splice(activeRow + 1, 0, rowCopy); // insert below
   
     this.refresh();
@@ -123,49 +146,37 @@ export class TrackerApp {
   
     if (activeCol === null) return;
   
-    // update all cells in that column
     tracker.rows.forEach((row) => {
       const oldCell = row[activeCol];
   
-      let value = '';
-      if (typeof oldCell === 'object') {
-        value = oldCell.value;
-      } else {
-        value = oldCell;
-      }
+      let value = typeof oldCell === 'object' ? oldCell.value : oldCell;
   
       if (type === 'checkbox') {
         value = false;
       }
   
-      row[activeCol] = {
-        value,
-        type
-      };
+      if (type === 'select') {
+        row[activeCol] = {
+          value: value || '',
+          type: 'select',
+          options: oldCell?.options || ['Option 1']
+        };
+      } else {
+        row[activeCol] = {
+          value,
+          type
+        };
+      }
     });
   
     this.refresh();
     closeMenu();
   }
-
   initEvents() {
     const btnMenu = document.getElementById('btnMenu');
     const dropdown = document.getElementById('navDropdown');
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
-    
-    document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
-    });
-    
-    document.getElementById('btn-type-date')?.addEventListener('click', () => {
-    });
-    
-    document.getElementById('btn-type-select')?.addEventListener('click', () => {
-      alert("Convert to Select");
-    });
-    
-    document.getElementById('btn-type-text')?.addEventListener('click', () => {
-    });
     
     document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
       this.setColumnType('checkbox');
@@ -179,18 +190,24 @@ export class TrackerApp {
       this.setColumnType('text');
     });
     
+    document.getElementById('btn-type-select')?.addEventListener('click', () => {
+      this.setColumnType('select');
+    });
+    
     // toggle dropdown
     btnMenu?.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdown.classList.toggle('hidden');
     });
     
-    // close when clicking outside
-    document.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
+    // close properly
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== btnMenu) {
+        dropdown.classList.add('hidden');
+      }
     });
     
-    // prevent closing when clicking inside
+    // prevent closing inside
     dropdown?.addEventListener('click', (e) => {
       e.stopPropagation();
     });
@@ -270,15 +287,30 @@ export class TrackerApp {
 
   addRow() {
     const tracker = this.getTracker();
-    tracker.rows.push(new Array(tracker.columns.length).fill(''));
+    
+    const newRow = tracker.columns.map(() => ({
+      value: '',
+      type: 'text'
+    }));
+    
+    tracker.rows.push(newRow);
+    
     this.refresh();
     closeMenu();
-  }
+    }
 
   addCol() {
     const tracker = this.getTracker();
+  
     tracker.columns.push('New');
-    tracker.rows.forEach(r => r.push(''));
+  
+    tracker.rows.forEach(r => {
+      r.push({
+        value: '',
+        type: 'text'
+      });
+    });
+  
     this.refresh();
     closeMenu();
   }

@@ -91,10 +91,25 @@ export class TrackerHome {
       title,
       columns: ['Company', 'Position', 'Status', 'Date Applied'],
       rows: [
-        ['Google', 'Frontend Intern', 'Applied', '2026-04-01'],
-        ['Meta', 'Backend Intern', 'Interview', '2026-04-05'],
-        ['Amazon', 'Fullstack Intern', 'Pending', '2026-04-10']
-      ]
+          [
+            { value: 'Google', type: 'text' },
+            { value: 'Frontend Intern', type: 'text' },
+            { value: 'Applied', type: 'text' },
+            { value: '2026-04-01', type: 'date' }
+          ],
+          [
+            { value: 'Meta', type: 'text' },
+            { value: 'Backend Intern', type: 'text' },
+            { value: 'Interview', type: 'text' },
+            { value: '2026-04-05', type: 'date' }
+          ],
+          [
+            { value: 'Amazon', type: 'text' },
+            { value: 'Fullstack Intern', type: 'text' },
+            { value: 'Pending', type: 'text' },
+            { value: '2026-04-10', type: 'date' }
+          ]
+        ]
     };
   
     this.state.active = id;
