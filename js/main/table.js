@@ -64,9 +64,17 @@ export const Table = {
           input.checked = cellData.value === true;
         } 
         else if (cellData.type === 'date') {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'w-full flex justify-center';
+        
           input.type = 'date';
           input.value = cellData.value || '';
-        } 
+          input.className =
+            'bg-transparent outline-none text-sm w-[110px] text-center';
+        
+          wrapper.appendChild(input);
+          td.appendChild(wrapper);
+        }
         else if (cellData.type === 'select') {
           isSelect = true;
 
