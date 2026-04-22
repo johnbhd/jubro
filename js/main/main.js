@@ -27,27 +27,37 @@ export class TrackerApp {
           [defaultId]: {
             id: defaultId,
             title: "Job Applications",
-            columns: ['Company', 'Position', 'Status', 'Date Applied'],
+            columns: ['Company', 'Position', 'Status', 'Date', 'Link'],
             rows: [
-            [
-              { value: 'Google', type: 'text' },
-              { value: 'Frontend Intern', type: 'text' },
-              { value: 'Applied', type: 'text' },
-              { value: '2026-04-01', type: 'date' }
-            ],
-            [
-              { value: 'Meta', type: 'text' },
-              { value: 'Backend Intern', type: 'text' },
-              { value: 'Interview', type: 'text' },
-              { value: '2026-04-05', type: 'date' }
-            ],
-            [
-              { value: 'Amazon', type: 'text' },
-              { value: 'Fullstack Intern', type: 'text' },
-              { value: 'Pending', type: 'text' },
-              { value: '2026-04-10', type: 'date' }
+              [
+                { value: 'Google', type: 'text' },
+                { value: 'Frontend Intern', type: 'text' },
+                { value: 'Applied', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: '2026-04-10', type: 'date' },
+                { value: 'https://careers.google.com', type: 'text' }
+              ],
+              [
+                { value: 'Microsoft', type: 'text' },
+                { value: 'Software Engineer', type: 'text' },
+                { value: 'Interview', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: '2026-04-12', type: 'date' },
+                { value: 'https://careers.microsoft.com', type: 'text' }
+              ],
+              [
+                { value: 'Meta', type: 'text' },
+                { value: 'Web Developer', type: 'text' },
+                { value: 'Rejected', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: '2026-04-08', type: 'date' },
+                { value: 'https://www.metacareers.com', type: 'text' }
+              ],
+              [
+                { value: 'Startup Inc.', type: 'text' },
+                { value: 'Full Stack Dev', type: 'text' },
+                { value: 'Applied', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: '2026-04-15', type: 'date' },
+                { value: 'https://startup.jobs', type: 'text' }
+              ]
             ]
-          ]
           }
         }
       };
