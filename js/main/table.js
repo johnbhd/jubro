@@ -167,6 +167,41 @@ export const Table = {
           input.type = 'text';
           input.value = cellData.value || '';
           input.classList.add('pointer-events-none');
+          
+          const isLink = typeof cellData.value === 'string' && /^https?:\/\//.test(cellData.value);
+          
+          if (isLink) {
+            input.classList.add('text-blue-500');
+          } else {
+            input.classList.remove('text-blue-500');
+          }
+            if (isLink) {
+              input.style.cursor = 'pointer';
+          
+              input.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(cellData.value, '_blank');
+              });
+            }
+          
+            input.addEventListener('change', (e) => {
+              data[rowIndex][colIndex] = {
+                value: e.target.value,
+                type: 'text'
+              };
+              document.dispatchEvent(new Event('table:update'));
+            });
+          
+            td.addEventListener('dblclick', () => {
+              input.classList.remove('pointer-events-none');
+              input.focus();
+            });
+          
+            input.addEventListener('blur', () => {
+              input.classList.add('pointer-events-none');
+            });
+          
+            td.appendChild(input);
         }
 
         if (!isSelect) {
