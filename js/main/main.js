@@ -186,6 +186,10 @@ export class TrackerApp {
       this.setColumnType('date');
     });
     
+    document.addEventListener('table:update', () => {
+      this.refresh();
+    });
+    
     document.getElementById('btn-type-text')?.addEventListener('click', () => {
       this.setColumnType('text');
     });

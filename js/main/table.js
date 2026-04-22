@@ -1,11 +1,22 @@
 import { startPress, cancelPress, showMenu } from './ui.js';
 
+let activeDropdown = null;
+
 export const Table = {
   render: (columns, data) => {
     const headerRow = document.getElementById('headerRow');
     const tbody = document.getElementById('tableBody');
     headerRow.innerHTML = '';
     tbody.innerHTML = '';
+
+    const closeDropdown = () => {
+      if (activeDropdown) {
+        activeDropdown.classList.add('hidden');
+        activeDropdown = null;
+      }
+    };
+
+    document.addEventListener('click', () => closeDropdown(), { once: true });
 
     columns.forEach((col, colIndex) => {
       const th = document.createElement('th');
@@ -16,11 +27,9 @@ export const Table = {
       input.className = 'bg-transparent outline-none text-center font-medium w-full pointer-events-none';
 
       input.addEventListener('change', (e) => {
-        if (typeof col === 'object') {
-          col.name = e.target.value;
-        } else {
-          columns[colIndex] = e.target.value;
-        }
+        if (typeof col === 'object') col.name = e.target.value;
+        else columns[colIndex] = e.target.value;
+        document.dispatchEvent(new Event('table:update'));
       });
 
       th.appendChild(input);
@@ -44,47 +53,45 @@ export const Table = {
         const td = document.createElement('td');
         td.className = 'px-4 py-3 select-none';
 
-        const cellData = typeof cell === 'object'
-          ? cell
-          : { value: cell, type: 'text' };
+        const cellData = typeof cell === 'object' ? cell : { value: cell, type: 'text' };
 
         let isSelect = false;
-        let input = document.createElement('input');
+        const input = document.createElement('input');
         input.className = 'w-full bg-transparent outline-none text-center';
 
         if (cellData.type === 'checkbox') {
           input.type = 'checkbox';
           input.checked = cellData.value === true;
-        } else if (cellData.type === 'date') {
+        } 
+        else if (cellData.type === 'date') {
           input.type = 'date';
           input.value = cellData.value || '';
-        } else if (cellData.type === 'select') {
+        } 
+        else if (cellData.type === 'select') {
           isSelect = true;
 
-          if (!cellData.options) {
-            cellData.options = [];
-          }
+          if (!cellData.options) cellData.options = [];
 
           const wrapper = document.createElement('div');
           wrapper.className = 'relative';
 
           const display = document.createElement('div');
           display.textContent = cellData.value || 'Select';
-          display.className = 'cursor-pointer';
+          display.className = 'cursor-pointer text-center';
 
           const dropdown = document.createElement('div');
-          dropdown.className = 'absolute left-0 top-full mt-1 w-full bg-white border rounded shadow hidden z-50';
+          dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
 
           const addContainer = document.createElement('div');
-          addContainer.className = 'flex items-center gap-1 p-1 border-b';
+          addContainer.className = 'flex flex-col gap-2 p-2 border-b';
 
           const addInput = document.createElement('input');
           addInput.placeholder = 'Add option';
-          addInput.className = 'flex-1 px-2 py-1 text-sm outline-none';
+          addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
 
           const addBtn = document.createElement('button');
           addBtn.textContent = '+';
-          addBtn.className = 'px-2 text-blue-500';
+          addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
 
           addContainer.appendChild(addInput);
           addContainer.appendChild(addBtn);
@@ -100,9 +107,14 @@ export const Table = {
 
               optEl.addEventListener('click', (e) => {
                 e.stopPropagation();
+
                 cellData.value = opt;
+                data[rowIndex][colIndex] = { ...cellData };
+
                 display.textContent = opt;
-                dropdown.classList.add('hidden');
+
+                document.dispatchEvent(new Event('table:update'));
+                closeDropdown();
               });
 
               dropdown.appendChild(optEl);
@@ -121,23 +133,37 @@ export const Table = {
               cellData.options.push(val);
             }
 
+            data[rowIndex][colIndex] = { ...cellData };
+
             addInput.value = '';
+
             renderOptions();
+            document.dispatchEvent(new Event('table:update'));
           });
 
           display.addEventListener('click', (e) => {
             e.stopPropagation();
+
+            const rect = display.getBoundingClientRect();
+
+            dropdown.style.top = rect.bottom + 'px';
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.width = rect.width + 'px';
+
+            if (activeDropdown && activeDropdown !== dropdown) {
+              activeDropdown.classList.add('hidden');
+            }
+
             dropdown.classList.toggle('hidden');
+            activeDropdown = dropdown;
           });
 
-          document.addEventListener('click', () => {
-            dropdown.classList.add('hidden');
-          });
+          document.body.appendChild(dropdown);
 
           wrapper.appendChild(display);
-          wrapper.appendChild(dropdown);
           td.appendChild(wrapper);
-        } else {
+        } 
+        else {
           input.type = 'text';
           input.value = cellData.value || '';
           input.classList.add('pointer-events-none');
@@ -145,25 +171,22 @@ export const Table = {
 
         if (!isSelect) {
           input.addEventListener('change', (e) => {
-            if (cellData.type === 'checkbox') {
-              data[rowIndex][colIndex] = {
-                value: e.target.checked,
-                type: 'checkbox'
-              };
-            } else {
-              data[rowIndex][colIndex] = {
-                value: e.target.value,
-                type: cellData.type
-              };
-            }
+            data[rowIndex][colIndex] = cellData.type === 'checkbox'
+              ? { value: e.target.checked, type: 'checkbox' }
+              : { value: e.target.value, type: cellData.type };
+
+            document.dispatchEvent(new Event('table:update'));
           });
 
           td.appendChild(input);
         }
 
-        td.addEventListener('mousedown', (e) => startPress(e, rowIndex, colIndex, 'row'));
-        td.addEventListener('mouseup', cancelPress);
-        td.addEventListener('mouseleave', cancelPress);
+        if (!isSelect) {
+          td.addEventListener('mousedown', (e) => startPress(e, rowIndex, colIndex, 'row'));
+          td.addEventListener('mouseup', cancelPress);
+          td.addEventListener('mouseleave', cancelPress);
+        }
+
         td.addEventListener('contextmenu', (e) => showMenu(e, rowIndex, colIndex, 'row'));
 
         if (!isSelect && cellData.type !== 'checkbox') {
