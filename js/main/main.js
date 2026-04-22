@@ -291,25 +291,31 @@ export class TrackerApp {
 
   addRow() {
     const tracker = this.getTracker();
-    
+    const { activeRow } = UIState;
+  
     const newRow = tracker.columns.map(() => ({
       value: '',
       type: 'text'
     }));
-    
-    tracker.rows.push(newRow);
-    
+  
+    const insertIndex = activeRow !== null ? activeRow + 1 : tracker.rows.length;
+  
+    tracker.rows.splice(insertIndex, 0, newRow);
+  
     this.refresh();
     closeMenu();
-    }
+  }
 
   addCol() {
     const tracker = this.getTracker();
+    const { activeCol } = UIState;
   
-    tracker.columns.push('New');
+    const insertIndex = activeCol !== null ? activeCol + 1 : tracker.columns.length;
   
-    tracker.rows.forEach(r => {
-      r.push({
+    tracker.columns.splice(insertIndex, 0, 'New');
+  
+    tracker.rows.forEach(row => {
+      row.splice(insertIndex, 0, {
         value: '',
         type: 'text'
       });
