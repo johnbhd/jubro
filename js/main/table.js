@@ -78,9 +78,10 @@ export const Table = {
         else if (cellData.type === 'select') {
   isSelect = true;
 
-  const column = typeof columns[colIndex] === 'object'
-    ? columns[colIndex]
-    : (columns[colIndex] = { name: columns[colIndex], options: [] });
+  const column =
+    typeof columns[colIndex] === 'object'
+      ? columns[colIndex]
+      : { name: columns[colIndex], type: 'text' };
 
   if (!column.options) column.options = [];
 
@@ -143,8 +144,10 @@ export const Table = {
     const val = addInput.value.trim();
     if (!val) return;
 
+    if (!column.options) column.options = [];
+    
     if (!column.options.includes(val)) {
-      column.options.push(val);
+      column.options = [...column.options, val];
     }
 
     addInput.value = '';
@@ -187,14 +190,15 @@ export const Table = {
           } else {
             input.classList.remove('text-blue-500');
           }
-            if (isLink) {
-              input.style.cursor = 'pointer';
-          
-              input.addEventListener('click', (e) => {
-                e.stopPropagation();
-                window.open(cellData.value, '_blank');
-              });
-            }
+          if (isLink && !input.dataset.linkBound) {
+            input.dataset.linkBound = "true";
+            input.style.cursor = 'pointer';
+        
+            input.addEventListener('click', (e) => {
+              e.stopPropagation();
+              window.open(cellData.value, '_blank');
+            });
+          }
           
             input.addEventListener('change', (e) => {
               data[rowIndex][colIndex] = {

@@ -134,14 +134,27 @@ export class TrackerApp {
   
     if (activeCol === null) return;
   
-    const insertIndex = activeCol + 1;
+    const col = tracker.columns[activeCol];
   
-    const colName = tracker.columns[activeCol];
-    tracker.columns.splice(insertIndex, 0, colName + " Copy");
+    const newCol = {
+      name: col.name ? col.name + " Copy" : col + " Copy",
+      type: col.type || 'text',
+      options: col.options ? [...col.options] : undefined
+    };
+  
+    tracker.columns.splice(activeCol + 1, 0, newCol);
   
     tracker.rows.forEach(row => {
       const cell = row[activeCol];
-      row.splice(insertIndex, 0, { ...cell });
+  
+      row.splice(activeCol + 1, 0, typeof cell === 'object'
+        ? {
+            value: cell.value,
+            type: cell.type,
+            options: cell.options ? [...cell.options] : undefined
+          }
+        : cell
+      );
     });
   
     this.refresh();
@@ -153,9 +166,19 @@ export class TrackerApp {
   
     if (activeRow === null) return;
   
-    const rowCopy = tracker.rows[activeRow].map(cell => ({ ...cell }));
+    const row = tracker.rows[activeRow];
   
-    tracker.rows.splice(activeRow + 1, 0, rowCopy);
+    const newRow = row.map(cell =>
+      typeof cell === 'object'
+        ? {
+            value: cell.value,
+            type: cell.type,
+            options: cell.options ? [...cell.options] : undefined
+          }
+        : cell
+    );
+  
+    tracker.rows.splice(activeRow + 1, 0, newRow);
   
     this.refresh();
     closeMenu();
