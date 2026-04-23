@@ -76,101 +76,105 @@ export const Table = {
           td.appendChild(wrapper);
         }
         else if (cellData.type === 'select') {
-          isSelect = true;
+  isSelect = true;
 
-          if (!cellData.options) cellData.options = [];
+  const column = typeof columns[colIndex] === 'object'
+    ? columns[colIndex]
+    : (columns[colIndex] = { name: columns[colIndex], options: [] });
 
-          const wrapper = document.createElement('div');
-          wrapper.className = 'relative';
+  if (!column.options) column.options = [];
 
-          const display = document.createElement('div');
-          display.textContent = cellData.value || 'Select';
-          display.className = 'cursor-pointer text-center';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'relative';
 
-          const dropdown = document.createElement('div');
-          dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
+  const display = document.createElement('div');
+  display.textContent = cellData.value || 'Select';
+  display.className = 'cursor-pointer text-center';
 
-          const addContainer = document.createElement('div');
-          addContainer.className = 'flex flex-col gap-2 p-2 border-b';
+  const dropdown = document.createElement('div');
+  dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
 
-          const addInput = document.createElement('input');
-          addInput.placeholder = 'Add option';
-          addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
+  const addContainer = document.createElement('div');
+  addContainer.className = 'flex flex-col gap-2 p-2 border-b';
 
-          const addBtn = document.createElement('button');
-          addBtn.textContent = '+';
-          addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
+  const addInput = document.createElement('input');
+  addInput.placeholder = 'Add option';
+  addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
 
-          addContainer.appendChild(addInput);
-          addContainer.appendChild(addBtn);
-          dropdown.appendChild(addContainer);
+  const addBtn = document.createElement('button');
+  addBtn.textContent = '+';
+  addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
 
-          const renderOptions = () => {
-            dropdown.querySelectorAll('.opt').forEach(el => el.remove());
+  addContainer.appendChild(addInput);
+  addContainer.appendChild(addBtn);
+  dropdown.appendChild(addContainer);
 
-            cellData.options.forEach(opt => {
-              const optEl = document.createElement('div');
-              optEl.textContent = opt;
-              optEl.className = 'opt px-2 py-1 hover:bg-gray-100 cursor-pointer';
+  const renderOptions = () => {
+    dropdown.querySelectorAll('.opt').forEach(el => el.remove());
 
-              optEl.addEventListener('click', (e) => {
-                e.stopPropagation();
+    column.options.forEach(opt => {
+      const optEl = document.createElement('div');
+      optEl.textContent = opt;
+      optEl.className = 'opt px-2 py-1 hover:bg-gray-100 cursor-pointer';
 
-                cellData.value = opt;
-                data[rowIndex][colIndex] = { ...cellData };
+      optEl.addEventListener('click', (e) => {
+        e.stopPropagation();
 
-                display.textContent = opt;
+        data[rowIndex][colIndex] = {
+          value: opt,
+          type: 'select'
+        };
 
-                document.dispatchEvent(new Event('table:update'));
-                closeDropdown();
-              });
+        display.textContent = opt;
 
-              dropdown.appendChild(optEl);
-            });
-          };
+        document.dispatchEvent(new Event('table:update'));
+        closeDropdown();
+      });
 
-          renderOptions();
+      dropdown.appendChild(optEl);
+    });
+  };
 
-          addBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+  renderOptions();
 
-            const val = addInput.value.trim();
-            if (!val) return;
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
 
-            if (!cellData.options.includes(val)) {
-              cellData.options.push(val);
-            }
+    const val = addInput.value.trim();
+    if (!val) return;
 
-            data[rowIndex][colIndex] = { ...cellData };
+    if (!column.options.includes(val)) {
+      column.options.push(val);
+    }
 
-            addInput.value = '';
+    addInput.value = '';
 
-            renderOptions();
-            document.dispatchEvent(new Event('table:update'));
-          });
+    renderOptions();
+    document.dispatchEvent(new Event('table:update'));
+  });
 
-          display.addEventListener('click', (e) => {
-            e.stopPropagation();
+  display.addEventListener('click', (e) => {
+    e.stopPropagation();
 
-            const rect = display.getBoundingClientRect();
+    const rect = display.getBoundingClientRect();
 
-            dropdown.style.top = rect.bottom + 'px';
-            dropdown.style.left = rect.left + 'px';
-            dropdown.style.width = rect.width + 'px';
+    dropdown.style.top = rect.bottom + 'px';
+    dropdown.style.left = rect.left + 'px';
+    dropdown.style.width = rect.width + 'px';
 
-            if (activeDropdown && activeDropdown !== dropdown) {
-              activeDropdown.classList.add('hidden');
-            }
+    if (activeDropdown && activeDropdown !== dropdown) {
+      activeDropdown.classList.add('hidden');
+    }
 
-            dropdown.classList.toggle('hidden');
-            activeDropdown = dropdown;
-          });
+    dropdown.classList.toggle('hidden');
+    activeDropdown = dropdown;
+  });
 
-          document.body.appendChild(dropdown);
+  document.body.appendChild(dropdown);
 
-          wrapper.appendChild(display);
-          td.appendChild(wrapper);
-        } 
+  wrapper.appendChild(display);
+  td.appendChild(wrapper);
+} 
         else {
           input.type = 'text';
           input.value = cellData.value || '';

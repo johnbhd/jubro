@@ -27,33 +27,43 @@ export class TrackerApp {
           [defaultId]: {
             id: defaultId,
             title: "Job Applications",
-            columns: ['Company', 'Position', 'Status', 'Date', 'Link'],
+            columns: [
+              { name: 'Company', type: 'text' },
+              { name: 'Position', type: 'text' },
+              { 
+                name: 'Status', 
+                type: 'select', 
+                options: ['Applied', 'Interview', 'Rejected'] 
+              },
+              { name: 'Date', type: 'date' },
+              { name: 'Link', type: 'text' }
+            ],
             rows: [
               [
                 { value: 'Google', type: 'text' },
                 { value: 'Frontend Intern', type: 'text' },
-                { value: 'Applied', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: 'Applied', type: 'select' },
                 { value: '2026-04-10', type: 'date' },
                 { value: 'https://careers.google.com', type: 'text' }
               ],
               [
                 { value: 'Microsoft', type: 'text' },
                 { value: 'Software Engineer', type: 'text' },
-                { value: 'Interview', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: 'Interview', type: 'select' },
                 { value: '2026-04-12', type: 'date' },
                 { value: 'https://careers.microsoft.com', type: 'text' }
               ],
               [
                 { value: 'Meta', type: 'text' },
                 { value: 'Web Developer', type: 'text' },
-                { value: 'Rejected', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: 'Rejected', type: 'select' },
                 { value: '2026-04-08', type: 'date' },
                 { value: 'https://www.metacareers.com', type: 'text' }
               ],
               [
                 { value: 'Startup Inc.', type: 'text' },
                 { value: 'Full Stack Dev', type: 'text' },
-                { value: 'Applied', type: 'select', options: ['Applied', 'Interview', 'Rejected'] },
+                { value: 'Applied', type: 'select' },
                 { value: '2026-04-15', type: 'date' },
                 { value: 'https://startup.jobs', type: 'text' }
               ]
@@ -124,14 +134,14 @@ export class TrackerApp {
   
     if (activeCol === null) return;
   
-    // copy column name
-    const colName = tracker.columns[activeCol];
-    tracker.columns.splice(activeCol + 1, 0, colName + " Copy");
+    const insertIndex = activeCol + 1;
   
-    // copy each row cell
+    const colName = tracker.columns[activeCol];
+    tracker.columns.splice(insertIndex, 0, colName + " Copy");
+  
     tracker.rows.forEach(row => {
       const cell = row[activeCol];
-      row.splice(activeCol + 1, 0, { ...cell });
+      row.splice(insertIndex, 0, { ...cell });
     });
   
     this.refresh();
@@ -144,7 +154,8 @@ export class TrackerApp {
     if (activeRow === null) return;
   
     const rowCopy = tracker.rows[activeRow].map(cell => ({ ...cell }));
-    tracker.rows.splice(activeRow + 1, 0, rowCopy); // insert below
+  
+    tracker.rows.splice(activeRow + 1, 0, rowCopy);
   
     this.refresh();
     closeMenu();

@@ -33,13 +33,16 @@ export function showMenu(e, rowIndex, colIndex, type) {
   const btnDelCol = document.getElementById('btn-delCol');
   const btnCustomize = document.getElementById('btn-customize');
   const subMenu = document.getElementById('subMenu');
+  const btnCopyRow = document.getElementById('btn-copyRow');
+  const btnCopyCol = document.getElementById('btn-copyCol');
   
   [
     btnAddRow, btnAddCol,
     btnMoveUp, btnMoveDown,
     btnMoveLeft, btnMoveRight,
     btnDelRow, btnDelCol,
-    btnCustomize, subMenu
+    btnCustomize, subMenu,
+    btnCopyRow, btnCopyCol
   ].forEach(btn => btn.classList.add('hidden'));
 
   if (type === 'row') {
@@ -53,7 +56,7 @@ export function showMenu(e, rowIndex, colIndex, type) {
     btnMoveUp.classList.remove('hidden');
     btnMoveDown.classList.remove('hidden');
     btnDelRow.classList.remove('hidden');
-  
+    btnCopyRow.classList.remove('hidden');
     btnCustomize.classList.remove('hidden');
   }
   
@@ -62,6 +65,7 @@ export function showMenu(e, rowIndex, colIndex, type) {
     btnMoveLeft.classList.remove('hidden');
     btnMoveRight.classList.remove('hidden');
     btnDelCol.classList.remove('hidden');
+    btnCopyCol.classList.remove('hidden');
   }
 }
 
