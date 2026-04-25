@@ -2,6 +2,16 @@ import { startPress, cancelPress, showMenu } from './ui.js';
 
 let activeDropdown = null;
 
+function getContrastColor(hex) {
+  if (!hex) return '#000000';
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substr(0, 2), 16);
+  const g = parseInt(c.substr(2, 2), 16);
+  const b = parseInt(c.substr(4, 2), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? '#000000' : '#ffffff';
+}
+
 export const Table = {
   render: (columns, data) => {
     const headerRow = document.getElementById('headerRow');
@@ -75,25 +85,42 @@ export const Table = {
           wrapper.appendChild(input);
           td.appendChild(wrapper);
         }
-        else if (cellData.type === 'select') {
+       else if (cellData.type === 'select') {
           isSelect = true;
         
-          const column =
-            typeof columns[colIndex] === 'object'
-              ? columns[colIndex]
-              : { name: columns[colIndex], type: 'text' };
+          if (typeof columns[colIndex] !== 'object') {
+            columns[colIndex] = {
+              name: columns[colIndex],
+              type: 'select',
+              options: []
+            };
+          }
         
+          const column = columns[colIndex];
           if (!column.options) column.options = [];
         
           const wrapper = document.createElement('div');
           wrapper.className = 'relative';
         
           const display = document.createElement('div');
-          display.textContent = cellData.value || 'Select';
-          display.className = 'cursor-pointer text-center';
+          display.className = 'cursor-pointer text-center px-2 rounded border';
         
+          const current = column.options.find(o => o.label === cellData.value);
+        
+        display.textContent = current?.label || 'Select';
+        display.className = 'cursor-pointer text-center px-2 rounded';
+        
+        if (current) {
+          display.style.backgroundColor = current.color;
+          display.style.color = getContrastColor(current.color);
+          display.style.border = 'none';
+        } else {
+          display.style.backgroundColor = 'transparent';
+          display.style.color = '#000';
+          display.style.border = '1px solid #e5e7eb';
+        }
           const dropdown = document.createElement('div');
-          dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
+          dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden min-w-[160px]';
         
           const addContainer = document.createElement('div');
           addContainer.className = 'flex flex-col gap-2 p-2 border-b';
@@ -112,51 +139,70 @@ export const Table = {
         
           const renderOptions = () => {
             dropdown.querySelectorAll('.opt').forEach(el => el.remove());
-          
+        
             column.options.forEach((opt, optIndex) => {
-            const optRow = document.createElement('div');
-            optRow.className = 'opt flex items-center justify-between px-2 py-1 hover:bg-gray-100';
-            
-            const label = document.createElement('span');
-            label.textContent = opt;
-            label.className = 'cursor-pointer flex-1 truncate';
-            
-            const deleteBtn = document.createElement('i');
-            deleteBtn.className = 'fa-solid fa-trash ml-2 cursor-pointer text-red-500 text-sm';
-              // ✅ select option
-            label.addEventListener('click', (e) => {
-              e.stopPropagation();
+              const optRow = document.createElement('div');
+              optRow.className = 'opt flex items-center gap-2 px-2 py-1 hover:bg-gray-100';
         
-              data[rowIndex][colIndex] = {
-                value: opt,
-                type: 'select'
-              };
+              const label = document.createElement('span');
+              label.textContent = opt.label;
+              label.className = 'flex-1 truncate min-w-0 cursor-pointer';
         
-              display.textContent = opt;
+              const colorInput = document.createElement('input');
+              colorInput.type = 'color';
+              colorInput.value = opt.color || '#cccccc';
+              colorInput.className = 'w-5 h-5 p-0 border-none cursor-pointer';
         
-              document.dispatchEvent(new Event('table:update'));
-              closeDropdown();
-            });
-
-              // ✅ delete option
+              const deleteBtn = document.createElement('i');
+              deleteBtn.className = 'fa-solid fa-trash text-red-500 text-sm cursor-pointer';
+        
+              label.addEventListener('click', (e) => {
+                e.stopPropagation();
+        
+                data[rowIndex][colIndex] = {
+                  value: opt.label,
+                  type: 'select'
+                };
+        
+                display.textContent = opt.label;
+                display.style.backgroundColor = opt.color;
+                display.style.color = getContrastColor(opt.color);
+        
+                document.dispatchEvent(new Event('table:update'));
+                closeDropdown();
+              });
+        
+              colorInput.addEventListener('input', (e) => {
+                opt.color = e.target.value;
+                colorBox.style.borderColor = opt.color;
+        
+                if (cellData.value === opt.label) {
+                  display.style.borderColor = opt.color;
+                }
+        
+                document.dispatchEvent(new Event('table:update'));
+              });
+        
               deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-          
+        
                 column.options.splice(optIndex, 1);
-          
-                // reset cells using this option
+        
                 data.forEach(row => {
-                  if (row[colIndex]?.value === opt) {
+                  if (row[colIndex]?.value === opt.label) {
                     row[colIndex].value = '';
                   }
                 });
-          
+        
                 renderOptions();
                 document.dispatchEvent(new Event('table:update'));
               });
-          
+        
+              
               optRow.appendChild(label);
+              optRow.appendChild(colorInput);
               optRow.appendChild(deleteBtn);
+        
               dropdown.appendChild(optRow);
             });
           };
@@ -169,10 +215,11 @@ export const Table = {
             const val = addInput.value.trim();
             if (!val) return;
         
-            if (!column.options) column.options = [];
-            
-            if (!column.options.includes(val)) {
-              column.options = [...column.options, val];
+            if (!column.options.find(o => o.label === val)) {
+              column.options.push({
+                label: val,
+                color: '#cccccc'
+              });
             }
         
             addInput.value = '';
@@ -188,7 +235,6 @@ export const Table = {
         
             dropdown.style.top = rect.bottom + 'px';
             dropdown.style.left = rect.left + 'px';
-            dropdown.style.width = '160px'; // or 200px, 250px
         
             if (activeDropdown && activeDropdown !== dropdown) {
               activeDropdown.classList.add('hidden');
@@ -202,7 +248,7 @@ export const Table = {
         
           wrapper.appendChild(display);
           td.appendChild(wrapper);
-        } 
+        }
         else {
           input.type = 'text';
           input.value = cellData.value || '';
