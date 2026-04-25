@@ -30,10 +30,14 @@ export class TrackerApp {
             columns: [
               { name: 'Company', type: 'text' },
               { name: 'Position', type: 'text' },
-              { 
-                name: 'Status', 
-                type: 'select', 
-                options: ['Applied', 'Interview', 'Rejected'] 
+              {
+                name: 'Status',
+                type: 'select',
+                options: [
+                  { label: 'Applied', color: '#3b82f6' },
+                  { label: 'Interview', color: '#69df94' },
+                  { label: 'Rejected', color: '#ef4444' }
+                ]
               },
               { name: 'Date', type: 'date' },
               { name: 'Link', type: 'text' }
@@ -59,13 +63,6 @@ export class TrackerApp {
                 { value: 'Rejected', type: 'select' },
                 { value: '2026-04-08', type: 'date' },
                 { value: 'https://www.metacareers.com', type: 'text' }
-              ],
-              [
-                { value: 'Startup Inc.', type: 'text' },
-                { value: 'Full Stack Dev', type: 'text' },
-                { value: 'Applied', type: 'select' },
-                { value: '2026-04-15', type: 'date' },
-                { value: 'https://startup.jobs', type: 'text' }
               ]
             ]
           }
