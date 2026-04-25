@@ -1,9 +1,11 @@
-# FlexTracker — MVP Guide
+# Jubro 
 
 ## 🎯 Purpose
+Jubro is a lightweight job application tracker designed to simplify the job-hunting process.
 
-A simple job application tracker.
-Not multi-tracker. Not complex. Just log and view entries.
+It helps you log and manage your job applications in one place without the need for spreadsheets like Excel or external tools like Notion.
+
+Built for speed and simplicity, FlexTracker lets you focus on applying—not organizing.
 
 ---
 
@@ -28,48 +30,6 @@ Each row = one job application.
 * Status
 * Link
 * Date Applied
-
----
-
-## 🖥 UI Structure
-
-### Header
-
-* Back button
-* Title: "Job Applications"
-* "+ Add Row" (primary)
-* "+ Add Column" (optional, basic only)
-
----
-
-### Table
-
-* Scrollable (mobile-friendly)
-* Sticky header
-* Clean rows with hover effect
-
----
-
-### Empty State
-
-"No data yet. Add a new row to get started."
-
----
-
-### Modals
-
-**Add Row**
-
-* Inputs based on columns
-* Save / Cancel
-
-**Add Column (optional)**
-
-* Column name
-* Type (text only for now)
-
----
-
 ## 🚫 NOT INCLUDED (FOR NOW)
 
 * Multiple trackers

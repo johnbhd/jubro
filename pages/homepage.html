@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Job Tracker</title>
+  <title>Jubro || Your simple Job Tracker</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="icon" type="image/png" href="../img/jubro.png" />
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -20,17 +21,36 @@
 
     <div class="flex items-center justify-between mb-10">
       <div>
-        <h1 class="text-3xl font-bold text-gray-800">Job Tracker</h1>
-        <p class="text-gray-500 mt-1">Manage and open your data trackers</p>
+        <div class="flex flex-col md:flex-row md:gap-3">
+          <img src="../img/jubro.png" alt="Jubro logo" class="w-10 h-10 rounded-lg" />
+          <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2 md">
+            Jubro
+          </h1>
+        </div>
+        <p class="text-gray-500 mt-1">
+          A simple way to track your job applications 
+        </p>
       </div>
-
-      <button
-        id="btnOpenModal"
-        type="button"
-        class="px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition"
-      >
-        + New Tracker
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- New Tracker -->
+        <button
+          id="btnOpenModal"
+          type="button"
+          class="px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition"
+        >
+          + New Tracker
+        </button>
+        <!-- Sign In Button -->
+        <button
+          id="btnSignIn"
+          type="button"
+          class="px-5 py-3 border border-gray-300 rounded-2xl hover:bg-gray-100 transition"
+        >
+          <i class="fa-solid fa-user mr-2"></i>
+          Sign In
+        </button>
+    
+      </div>
     </div>
  
     <div id="trackerGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
