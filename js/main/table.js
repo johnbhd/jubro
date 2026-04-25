@@ -76,108 +76,133 @@ export const Table = {
           td.appendChild(wrapper);
         }
         else if (cellData.type === 'select') {
-  isSelect = true;
+          isSelect = true;
+        
+          const column =
+            typeof columns[colIndex] === 'object'
+              ? columns[colIndex]
+              : { name: columns[colIndex], type: 'text' };
+        
+          if (!column.options) column.options = [];
+        
+          const wrapper = document.createElement('div');
+          wrapper.className = 'relative';
+        
+          const display = document.createElement('div');
+          display.textContent = cellData.value || 'Select';
+          display.className = 'cursor-pointer text-center';
+        
+          const dropdown = document.createElement('div');
+          dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
+        
+          const addContainer = document.createElement('div');
+          addContainer.className = 'flex flex-col gap-2 p-2 border-b';
+        
+          const addInput = document.createElement('input');
+          addInput.placeholder = 'Add option';
+          addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
+        
+          const addBtn = document.createElement('button');
+          addBtn.textContent = '+';
+          addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
+        
+          addContainer.appendChild(addInput);
+          addContainer.appendChild(addBtn);
+          dropdown.appendChild(addContainer);
+        
+          const renderOptions = () => {
+            dropdown.querySelectorAll('.opt').forEach(el => el.remove());
+          
+            column.options.forEach((opt, optIndex) => {
+            const optRow = document.createElement('div');
+            optRow.className = 'opt flex items-center justify-between px-2 py-1 hover:bg-gray-100';
+            
+            const label = document.createElement('span');
+            label.textContent = opt;
+            label.className = 'cursor-pointer flex-1 truncate';
+            
+            const deleteBtn = document.createElement('i');
+            deleteBtn.className = 'fa-solid fa-trash ml-2 cursor-pointer text-red-500 text-sm';
+              // ✅ select option
+            label.addEventListener('click', (e) => {
+              e.stopPropagation();
+        
+              data[rowIndex][colIndex] = {
+                value: opt,
+                type: 'select'
+              };
+        
+              display.textContent = opt;
+        
+              document.dispatchEvent(new Event('table:update'));
+              closeDropdown();
+            });
 
-  const column =
-    typeof columns[colIndex] === 'object'
-      ? columns[colIndex]
-      : { name: columns[colIndex], type: 'text' };
-
-  if (!column.options) column.options = [];
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'relative';
-
-  const display = document.createElement('div');
-  display.textContent = cellData.value || 'Select';
-  display.className = 'cursor-pointer text-center';
-
-  const dropdown = document.createElement('div');
-  dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden';
-
-  const addContainer = document.createElement('div');
-  addContainer.className = 'flex flex-col gap-2 p-2 border-b';
-
-  const addInput = document.createElement('input');
-  addInput.placeholder = 'Add option';
-  addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
-
-  const addBtn = document.createElement('button');
-  addBtn.textContent = '+';
-  addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
-
-  addContainer.appendChild(addInput);
-  addContainer.appendChild(addBtn);
-  dropdown.appendChild(addContainer);
-
-  const renderOptions = () => {
-    dropdown.querySelectorAll('.opt').forEach(el => el.remove());
-
-    column.options.forEach(opt => {
-      const optEl = document.createElement('div');
-      optEl.textContent = opt;
-      optEl.className = 'opt px-2 py-1 hover:bg-gray-100 cursor-pointer';
-
-      optEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-
-        data[rowIndex][colIndex] = {
-          value: opt,
-          type: 'select'
-        };
-
-        display.textContent = opt;
-
-        document.dispatchEvent(new Event('table:update'));
-        closeDropdown();
-      });
-
-      dropdown.appendChild(optEl);
-    });
-  };
-
-  renderOptions();
-
-  addBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-
-    const val = addInput.value.trim();
-    if (!val) return;
-
-    if (!column.options) column.options = [];
-    
-    if (!column.options.includes(val)) {
-      column.options = [...column.options, val];
-    }
-
-    addInput.value = '';
-
-    renderOptions();
-    document.dispatchEvent(new Event('table:update'));
-  });
-
-  display.addEventListener('click', (e) => {
-    e.stopPropagation();
-
-    const rect = display.getBoundingClientRect();
-
-    dropdown.style.top = rect.bottom + 'px';
-    dropdown.style.left = rect.left + 'px';
-    dropdown.style.width = rect.width + 'px';
-
-    if (activeDropdown && activeDropdown !== dropdown) {
-      activeDropdown.classList.add('hidden');
-    }
-
-    dropdown.classList.toggle('hidden');
-    activeDropdown = dropdown;
-  });
-
-  document.body.appendChild(dropdown);
-
-  wrapper.appendChild(display);
-  td.appendChild(wrapper);
-} 
+              // ✅ delete option
+              deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+          
+                column.options.splice(optIndex, 1);
+          
+                // reset cells using this option
+                data.forEach(row => {
+                  if (row[colIndex]?.value === opt) {
+                    row[colIndex].value = '';
+                  }
+                });
+          
+                renderOptions();
+                document.dispatchEvent(new Event('table:update'));
+              });
+          
+              optRow.appendChild(label);
+              optRow.appendChild(deleteBtn);
+              dropdown.appendChild(optRow);
+            });
+          };
+        
+          renderOptions();
+        
+          addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+        
+            const val = addInput.value.trim();
+            if (!val) return;
+        
+            if (!column.options) column.options = [];
+            
+            if (!column.options.includes(val)) {
+              column.options = [...column.options, val];
+            }
+        
+            addInput.value = '';
+        
+            renderOptions();
+            document.dispatchEvent(new Event('table:update'));
+          });
+        
+          display.addEventListener('click', (e) => {
+            e.stopPropagation();
+        
+            const rect = display.getBoundingClientRect();
+        
+            dropdown.style.top = rect.bottom + 'px';
+            dropdown.style.left = rect.left + 'px';
+            dropdown.style.width = '160px'; // or 200px, 250px
+        
+            if (activeDropdown && activeDropdown !== dropdown) {
+              activeDropdown.classList.add('hidden');
+            }
+        
+            dropdown.classList.toggle('hidden');
+            activeDropdown = dropdown;
+          });
+        
+          document.body.appendChild(dropdown);
+        
+          wrapper.appendChild(display);
+          td.appendChild(wrapper);
+        } 
         else {
           input.type = 'text';
           input.value = cellData.value || '';
