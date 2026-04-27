@@ -220,7 +220,7 @@ export class TrackerHome {
 
       const card = document.createElement('div');
       card.className =
-        "bg-white p-5 rounded-2xl shadow hover:shadow-md cursor-pointer";
+        "bg-white p-5 rounded-2xl shadow hover:shadow-md cursor-pointer overflow-hidden";
 
       card.addEventListener('click', () => {
         this.state.active = t.id;
@@ -230,7 +230,7 @@ export class TrackerHome {
 
       card.innerHTML = `
         <div class="flex justify-between items-start">
-          <h2 class="text-lg font-semibold">${t.title}</h2>
+          <h2 class="text-lg font-semibold truncate">${t.title}</h2>
       
           <button 
             class="btn-delete text-gray-400 hover:text-red-500 transition"
