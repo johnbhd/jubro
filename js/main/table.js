@@ -30,7 +30,7 @@ export const Table = {
 
     columns.forEach((col, colIndex) => {
       const th = document.createElement('th');
-      th.className = 'px-4 py-3 cursor-pointer select-none bg-gray-50 border-b';
+      th.className = 'px-4 py-3 cursor-pointer select-none bg-gray-50 border-b whitespace-nowrap';
 
       const input = document.createElement('input');
       input.value = typeof col === 'object' ? col.name : col;
@@ -61,13 +61,14 @@ export const Table = {
 
       row.forEach((cell, colIndex) => {
         const td = document.createElement('td');
-        td.className = 'px-4 py-3 select-none';
+        td.className = 'px-4 py-3 select-none whitespace-nowrap';
 
         const cellData = typeof cell === 'object' ? cell : { value: cell, type: 'text' };
 
         let isSelect = false;
         const input = document.createElement('input');
         input.className = 'w-full bg-transparent outline-none text-center';
+        input.classList.add('min-w-[120px]');
 
         if (cellData.type === 'checkbox') {
           input.type = 'checkbox';
@@ -104,6 +105,7 @@ export const Table = {
         
           const display = document.createElement('div');
           display.className = 'cursor-pointer text-center px-2 rounded border';
+          display.classList.add('min-w-[120px]');
         
           const current = column.options.find(o => o.label === cellData.value);
         
