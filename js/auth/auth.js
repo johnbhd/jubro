@@ -1,3 +1,5 @@
+import { authService } from "./firebaseAuth.js";
+
 export class Auth {
   constructor() {
     this.modal = null;
@@ -117,24 +119,39 @@ export class Auth {
     }
   }
 
-  submit() {
+  async submit() {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value.trim();
     const confirm = document.getElementById('authConfirmPassword').value.trim();
-
+  
     if (!email || !password) return alert('Fill all fields');
-
-    if (this.mode === 'register') {
-      if (password !== confirm) return alert('Passwords do not match');
-      console.log('REGISTER:', email, password);
-    } else {
-      console.log('LOGIN:', email, password);
+  
+    try {
+      if (this.mode === 'register') {
+        if (password !== confirm) return alert('Passwords do not match');
+  
+        const user = await authService.register(email, password);
+        console.log("REGISTERED:", user);
+      } else {
+        const user = await authService.login(email, password);
+        console.log("LOGGED IN:", user);
+      }
+  
+      this.close();
+    } catch (err) {
+      console.error(err.message);
+      alert(err.message);
     }
-
-    this.close();
   }
-
-  googleLogin() {
-    console.log('GOOGLE LOGIN');
+  
+  async googleLogin() {
+    try {
+      const user = await authService.loginWithGoogle();
+      console.log("GOOGLE USER:", user);
+      this.close();
+    } catch (err) {
+      console.error(err.message);
+      alert(err.message);
+    }
   }
 }
