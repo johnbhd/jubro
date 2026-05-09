@@ -1,6 +1,7 @@
 import { Table } from './table.js';
 import { closeMenu, UIState } from './ui.js';
 import { Storage } from '../storage/storage.js';
+import { CSVService } from '../services/csvService.js';
 
 export class TrackerApp {
   constructor() {
@@ -8,6 +9,7 @@ export class TrackerApp {
     this.tableContainer = document.getElementById('tableContainer');
     this.titleInput = document.querySelector('header input');
     this.state = this.initializeState();
+    this.csvService = new CSVService();
     this.save();
     this.initEvents();
     this.refresh();
@@ -258,14 +260,29 @@ export class TrackerApp {
     });
     
     // TEMP actions
-    btnImport?.addEventListener('click', () => {
-      alert("Import CSV clicked");
-    });
-    
     btnExport?.addEventListener('click', () => {
-      alert("Export CSV clicked");
+      const tracker = this.state.data[this.state.active];
+
+      if (!tracker) return;
+
+      const filename = `${tracker.title}.csv`;
+
+      this.csvService.export(tracker, filename);
     });
 
+    btnImport?.addEventListener('click', () => {
+      this.csvService.import((data) => {
+        this.state.data[this.state.active] = {
+          ...this.state.data[this.state.active],
+          columns: data.columns,
+          rows: data.rows
+        };
+
+        this.save();
+        this.render();
+      });
+    });
+    
     this.titleInput.addEventListener('input', (e) => {
       this.getTracker().title = e.target.value;
       this.save();
@@ -350,18 +367,24 @@ export class TrackerApp {
   addCol() {
     const tracker = this.getTracker();
     const { activeCol } = UIState;
-  
-    const insertIndex = activeCol !== null ? activeCol + 1 : tracker.columns.length;
-  
-    tracker.columns.splice(insertIndex, 0, 'New');
-  
+
+    const insertIndex =
+      activeCol !== null
+        ? activeCol + 1
+        : tracker.columns.length;
+
+    tracker.columns.splice(insertIndex, 0, {
+      name: 'New',
+      type: 'text'
+    });
+
     tracker.rows.forEach(row => {
       row.splice(insertIndex, 0, {
         value: '',
         type: 'text'
       });
     });
-  
+
     this.refresh();
     closeMenu();
   }

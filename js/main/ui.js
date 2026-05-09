@@ -89,7 +89,7 @@ export function cancelPress() {
   clearTimeout(pressTimer);
 }
 
-/* ✅ ONLY ONE GLOBAL LISTENER */
+
 document.addEventListener('click', (e) => {
   const menu = getMenu();
   if (!menu) return;
@@ -102,25 +102,25 @@ document.addEventListener('click', (e) => {
 /* prevent closing when clicking inside menu */
 document.addEventListener('DOMContentLoaded', () => {
   const menu = getMenu();
+
   if (!menu) return;
-  
+
   const btnCustomize = document.getElementById('btn-customize');
   const subMenu = document.getElementById('subMenu');
 
-  btnCustomize?.addEventListener('mouseenter', () => {
-    subMenu.classList.remove('hidden');
+  btnCustomize?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    subMenu.classList.toggle('hidden');
   });
 
-  btnCustomize?.addEventListener('mouseleave', () => {
-    setTimeout(() => subMenu.classList.add('hidden'), 200);
+  subMenu?.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
 
-  subMenu?.addEventListener('mouseenter', () => {
-    subMenu.classList.remove('hidden');
-  });
-
-  subMenu?.addEventListener('mouseleave', () => {
-    subMenu.classList.add('hidden');
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target)) {
+      subMenu.classList.add('hidden');
+    }
   });
 
   menu.addEventListener('click', (e) => e.stopPropagation());

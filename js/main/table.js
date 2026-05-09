@@ -133,7 +133,7 @@ export const Table = {
         
           const addBtn = document.createElement('button');
           addBtn.textContent = '+';
-          addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded';
+          addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded cursor-pointer';
         
           addContainer.appendChild(addInput);
           addContainer.appendChild(addBtn);
