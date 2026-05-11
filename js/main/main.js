@@ -1,7 +1,7 @@
 import { Table } from './table.js';
 import { closeMenu, UIState } from './ui.js';
 import { Storage } from '../storage/storage.js';
-import { CSVService } from '../services/csvService.js';
+import { JSONService } from '../services/jsonService.js';
 
 export class TrackerApp {
   constructor() {
@@ -9,7 +9,7 @@ export class TrackerApp {
     this.tableContainer = document.getElementById('tableContainer');
     this.titleInput = document.querySelector('header input');
     this.state = this.initializeState();
-    this.csvService = new CSVService();
+    this.jsonService = new JSONService();
     this.save();
     this.initEvents();
     this.refresh();
@@ -265,21 +265,22 @@ export class TrackerApp {
 
       if (!tracker) return;
 
-      const filename = `${tracker.title}.csv`;
+      this.jsonService.export(tracker, `${tracker.title}.json`);
 
-      this.csvService.export(tracker, filename);
     });
 
     btnImport?.addEventListener('click', () => {
-      this.csvService.import((data) => {
+      this.jsonService.import((data) => {
+
         this.state.data[this.state.active] = {
           ...this.state.data[this.state.active],
-          columns: data.columns,
-          rows: data.rows
+          columns: structuredClone(data.columns),
+          rows: structuredClone(data.rows)
         };
 
         this.save();
-        this.render();
+
+        window.location.reload();
       });
     });
     
