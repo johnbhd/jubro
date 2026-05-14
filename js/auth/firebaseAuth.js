@@ -15,12 +15,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { app } from "../firebase/firebaseApp.js";
+import { firebaseTrackerSync } from "../storage/firebaseTrackerSync.js";
 
 class FirebaseAuthService {
   constructor() {
     this.auth = getAuth(app);
     this.db = getFirestore(app);
     this.googleProvider = new GoogleAuthProvider();
+    this.syncedUserId = null;
   }
 
   async loginWithGoogle() {
@@ -32,6 +34,8 @@ class FirebaseAuthService {
       name: user.displayName || "",
       createdAt: new Date().toISOString()
     }, { merge: true });
+
+    await this.syncTrackerData(user);
 
     return user;
   }
@@ -50,6 +54,8 @@ class FirebaseAuthService {
       createdAt: new Date().toISOString()
     });
 
+    await this.syncTrackerData(user);
+
     return user;
   }
 
@@ -59,19 +65,44 @@ class FirebaseAuthService {
       email,
       password
     );
+
+    await this.syncTrackerData(result.user);
+
     return result.user;
   }
 
-  logout() {
-    return signOut(this.auth);
+  async logout() {
+    await signOut(this.auth);
+    this.syncedUserId = null;
   }
 
   onAuthChange(callback) {
-    onAuthStateChanged(this.auth, callback);
+    return onAuthStateChanged(this.auth, async (user) => {
+      if (user) {
+        await this.syncTrackerData(user);
+      } else {
+        this.syncedUserId = null;
+      }
+
+      callback(user);
+    });
   }
 
   getCurrentUser() {
     return this.auth.currentUser;
+  }
+
+  async syncTrackerData(user) {
+    if (!user || this.syncedUserId === user.uid) return;
+
+    this.syncedUserId = user.uid;
+
+    try {
+      await firebaseTrackerSync.syncLocalData(user);
+    } catch (err) {
+      this.syncedUserId = null;
+      console.error("Tracker sync error:", err);
+    }
   }
 }
 

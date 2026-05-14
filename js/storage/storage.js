@@ -12,11 +12,10 @@ export const Storage = {
 
       const parsed = JSON.parse(raw);
 
-      // safety fallback
       if (!parsed.data) {
         return { active: null, data: {} };
       }
-      console.log(parsed)
+
       return parsed;
     } catch (err) {
       console.error("Storage load error:", err);
