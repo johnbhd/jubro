@@ -1,36 +1,47 @@
-Overwrite my current Firebase/localStorage sync logic with the safer sync flow below.
+Implement Enter key submit behavior for all forms and button-like form actions in my app.
+
+Goal:
+When the user is typing inside an input field and presses Enter, it should trigger the correct form action/button.
+
+Examples:
+- Login form: pressing Enter should click/submit the Login button.
+- Register form: pressing Enter should submit/register.
+- Add new tracker form/modal: pressing Enter should create the tracker.
+- Add job/row form: pressing Enter should add/save the job entry.
+- Search or filter inputs should only trigger their intended search/filter behavior, not accidentally submit another form.
+- Textareas should NOT submit on Enter because users may need new lines.
+
+Tasks:
+1. Search the project for all forms, login/register inputs, modal inputs, tracker name inputs, job entry inputs, and button click handlers.
+2. Replace button-only click logic with proper `<form>` submit logic wherever possible.
+3. Add `submit` event listeners to forms instead of relying only on button `click`.
+4. Make submit buttons use `type="submit"`.
+5. Make non-submit buttons use `type="button"` so they do not accidentally submit the form.
+6. For forms without a real `<form>` wrapper, either:
+   - wrap the inputs and button in a `<form>`, or
+   - add a keydown listener that checks `event.key === "Enter"` and calls the same function as the button.
+7. Prevent page reload using `event.preventDefault()` inside submit handlers.
+8. Avoid duplicate actions:
+   - Do not make Enter and click run the action twice.
+   - Both Enter submit and button click should call the same single handler function.
+9. Do not make Enter submit when:
+   - focus is inside a textarea
+   - user is using Shift+Enter
+   - the current input belongs to a search/filter field unless that is intended
+10. Keep the code beginner-friendly and modular.
+11. Do not refactor unrelated parts of the app.
+12. Do not add new features outside Enter key support.
 
 Important:
-Do not keep the old behavior where login immediately uploads localStorage to Firebase.
-Remove or replace any code path that allows empty localStorage to overwrite existing Firestore data.
+Before editing, list every form/input area you found and explain how you will make Enter trigger the correct action.
 
-Problem:
-Right now, when a user logs in, the app uploads localStorage to Firestore. If localStorage is empty like `{ active: null, data: {} }`, it overwrites the user's existing Firebase tracker data and makes it empty/null.
-
-New required behavior:
-On login, Firebase should be checked first before uploading anything.
-
-Implement this flow:
-
-1. Load local state from `Storage.load()`.
-
-2. Fetch existing Firestore tracker data first:
-   - Check `trackerData/{user.uid}`
-   - If missing, check `users/{user.uid}.trackerData`
-
-3. Add or use this helper:
-
-```js
-function hasValidTrackerData(state) {
-  if (!state || typeof state !== "object") return false;
-  if (!state.data || typeof state.data !== "object") return false;
-
-  return Object.values(state.data).some((tracker) => {
-    return (
-      tracker &&
-      typeof tracker === "object" &&
-      Array.isArray(tracker.rows) &&
-      tracker.rows.length > 0
-    );
-  });
-}
+After editing:
+1. Show the changed files.
+2. Explain what changed.
+3. Tell me how to test:
+   - Login Enter key
+   - Register Enter key
+   - New tracker Enter key
+   - Add job row Enter key
+   - Cancel/close buttons should not submit
+   - Textarea Enter should not submit

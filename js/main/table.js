@@ -12,6 +12,15 @@ function getContrastColor(hex) {
   return yiq >= 128 ? '#000000' : '#ffffff';
 }
 
+function blurOnEnter(input) {
+  input.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.shiftKey || e.target.tagName === 'TEXTAREA') return;
+
+    e.preventDefault();
+    input.blur();
+  });
+}
+
 export const Table = {
   render: (columns, data) => {
     const headerRow = document.getElementById('headerRow');
@@ -35,6 +44,7 @@ export const Table = {
       const input = document.createElement('input');
       input.value = typeof col === 'object' ? col.name : col;
       input.className = 'bg-transparent outline-none text-center font-medium w-full pointer-events-none';
+      blurOnEnter(input);
 
       input.addEventListener('change', (e) => {
         if (typeof col === 'object') col.name = e.target.value;
@@ -124,7 +134,7 @@ export const Table = {
           const dropdown = document.createElement('div');
           dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden min-w-[160px]';
         
-          const addContainer = document.createElement('div');
+          const addContainer = document.createElement('form');
           addContainer.className = 'flex flex-col gap-2 p-2 border-b';
         
           const addInput = document.createElement('input');
@@ -132,6 +142,7 @@ export const Table = {
           addInput.className = 'w-full px-2 py-1 text-sm outline-none border rounded';
         
           const addBtn = document.createElement('button');
+          addBtn.type = 'submit';
           addBtn.textContent = '+';
           addBtn.className = 'w-full py-1 bg-blue-500 text-white text-sm rounded cursor-pointer';
         
@@ -211,9 +222,7 @@ export const Table = {
         
           renderOptions();
         
-          addBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-        
+          const addOption = () => {
             const val = addInput.value.trim();
             if (!val) return;
         
@@ -228,6 +237,16 @@ export const Table = {
         
             renderOptions();
             document.dispatchEvent(new Event('table:update'));
+          };
+
+          addContainer.addEventListener('submit', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addOption();
+          });
+
+          addContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
           });
         
           display.addEventListener('click', (e) => {
@@ -294,6 +313,8 @@ export const Table = {
         }
 
         if (!isSelect) {
+          blurOnEnter(input);
+
           input.addEventListener('change', (e) => {
             data[rowIndex][colIndex] = cellData.type === 'checkbox'
               ? { value: e.target.checked, type: 'checkbox' }

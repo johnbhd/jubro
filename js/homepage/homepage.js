@@ -13,6 +13,7 @@ export class TrackerHome {
     this.grid = document.getElementById('trackerGrid');
     this.titleInput = document.getElementById('titleInput');
     this.modal = document.getElementById('modal');
+    this.trackerForm = document.getElementById('trackerForm');
     this.btnOpen = document.getElementById('btnOpenModal');
     this.btnCreate = document.getElementById('btnCreate');
     this.btnCancel = document.getElementById('btnCancel');
@@ -52,7 +53,7 @@ export class TrackerHome {
       this.deleteTracker();
     });
 
-    this.btnCreate?.addEventListener('click', (e) => {
+    this.trackerForm?.addEventListener('submit', (e) => {
       e.preventDefault();
       this.createTracker();
     });
@@ -234,6 +235,7 @@ export class TrackerHome {
       
           <button 
             class="btn-delete text-gray-400 hover:text-red-500 transition"
+            type="button"
             data-id="${t.id}"
             data-title="${t.title}"
           >

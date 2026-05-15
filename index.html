@@ -16,16 +16,16 @@
         <input type="text"  class="text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none" />
       </div>
       <div class="relative">
-        <button id="btnMenu" class="p-2 rounded-lg hover:bg-gray-100 text-xl">
+        <button id="btnMenu" type="button" class="p-2 rounded-lg hover:bg-gray-100 text-xl">
           ⋯
         </button>
       
         <!-- DROPDOWN -->
         <div id="navDropdown" class="hidden absolute right-0 mt-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
-          <button id="btnImport" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          <button id="btnImport" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
             Import JSON
           </button>
-          <button id="btnExport" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          <button id="btnExport" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
             Export JSON
           </button>
         </div>
@@ -46,7 +46,7 @@
   
   <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
     <div class="relative group">
-      <button id="btn-customize" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+      <button id="btn-customize" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
         Customize ▶
       </button>
     
@@ -54,36 +54,36 @@
       <div id="subMenu"
         class="hidden absolute left-full top-0 ml-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
         
-        <button id="btn-type-text" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        <button id="btn-type-text" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
           Text
         </button>
-        <button id="btn-type-checkbox" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        <button id="btn-type-checkbox" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
           Checkbox
         </button>
-        <button id="btn-type-date" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        <button id="btn-type-date" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
           Date
         </button>
-        <button id="btn-type-select" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        <button id="btn-type-select" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
           Select
         </button>
     
       </div>
     </div>
-    <button id="btn-addRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
-    <button id="btn-addCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
-    <button id="btn-copyRow" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+    <button id="btn-addRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
+    <button id="btn-addCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
+    <button id="btn-copyRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
       Copy Row
     </button>
     
-    <button id="btn-copyCol" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+    <button id="btn-copyCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
       Copy Column
     </button>
-    <button id="btn-moveUp" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
-    <button id="btn-moveDown" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
-    <button id="btn-moveLeft" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
-    <button id="btn-moveRight" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
-    <button id="btn-delRow" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
-    <button id="btn-delCol" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
+    <button id="btn-moveUp" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
+    <button id="btn-moveDown" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
+    <button id="btn-moveLeft" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
+    <button id="btn-moveRight" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
+    <button id="btn-delRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
+    <button id="btn-delCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
   </div>
 
 <script type="module" src="./js/app.js"></script>

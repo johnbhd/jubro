@@ -61,23 +61,25 @@
   <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
     <div class="bg-white p-6 rounded-2xl w-full max-w-md">
 
-      <h2 class="text-xl font-semibold mb-4">Create Tracker</h2>
-      <p id="titleError" class="text-red-500 text-sm mb-2 hidden"></p>
-      
-      <input
-        id="titleInput"
-        class="w-full border p-3 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-black"
-        placeholder="Tracker name"
-      />
-      <div class="flex gap-2">
-        <button id="btnCancel" type="button" class="flex-1 py-2 bg-gray-200 rounded-xl">
-          Cancel
-        </button>
+      <form id="trackerForm">
+        <h2 class="text-xl font-semibold mb-4">Create Tracker</h2>
+        <p id="titleError" class="text-red-500 text-sm mb-2 hidden"></p>
+        
+        <input
+          id="titleInput"
+          class="w-full border p-3 rounded-xl mb-4 outline-none focus:ring-2 focus:ring-black"
+          placeholder="Tracker name"
+        />
+        <div class="flex gap-2">
+          <button id="btnCancel" type="button" class="flex-1 py-2 bg-gray-200 rounded-xl">
+            Cancel
+          </button>
 
-        <button id="btnCreate" type="button" class="flex-1 py-2 bg-black text-white rounded-xl">
-          Create
-        </button>
-      </div>
+          <button id="btnCreate" type="submit" class="flex-1 py-2 bg-black text-white rounded-xl">
+            Create
+          </button>
+        </div>
+      </form>
 
     </div>
   </div>
@@ -93,11 +95,11 @@
       </p>
   
       <div class="flex gap-2">
-        <button id="btnDeleteCancel" class="flex-1 py-2 bg-gray-200 rounded-xl">
+        <button id="btnDeleteCancel" type="button" class="flex-1 py-2 bg-gray-200 rounded-xl">
           Cancel
         </button>
   
-        <button id="btnDeleteConfirm" class="flex-1 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition">
+        <button id="btnDeleteConfirm" type="button" class="flex-1 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition">
           Delete
         </button>
       </div>

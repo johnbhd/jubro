@@ -289,6 +289,13 @@ export class TrackerApp {
       this.save();
     });
 
+    this.titleInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.shiftKey || e.target.tagName === 'TEXTAREA') return;
+
+      e.preventDefault();
+      this.titleInput.blur();
+    });
+
     this.appBody.addEventListener('click', (e) => {
       const menu = document.getElementById('contextMenu');
       if (!menu) return;

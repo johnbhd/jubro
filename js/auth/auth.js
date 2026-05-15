@@ -23,7 +23,7 @@ export class Auth {
 
     div.innerHTML = `
       <div id="userEmail" class="px-4 py-2 text-sm text-gray-500 border-b"></div>
-      <button id="btnLogout" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+      <button id="btnLogout" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
         Logout
       </button>
     `;
@@ -76,7 +76,6 @@ export class Auth {
       const id = e.target.id;
 
       if (id === 'btnCloseAuth') this.close();
-      if (id === 'btnAuthSubmit') this.submit();
       if (id === 'btnSwitchMode') this.toggleMode();
       if (id === 'btnGoogle') this.googleLogin();
       if (id === 'btnLogout') this.logout();
@@ -86,6 +85,13 @@ export class Auth {
       if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
         this.dropdown.classList.add('hidden');
       }
+    });
+
+    this.modal.addEventListener('submit', (e) => {
+      if (e.target.id !== 'authForm') return;
+
+      e.preventDefault();
+      this.submit();
     });
   }
 
@@ -179,7 +185,7 @@ export class Auth {
     div.innerHTML = `
       <div class="bg-white p-6 rounded-2xl w-full max-w-md relative">
 
-        <button id="btnCloseAuth"
+        <button id="btnCloseAuth" type="button"
           class="absolute top-3 right-3 text-gray-500 text-xl">
           ×
         </button>
@@ -188,7 +194,7 @@ export class Auth {
           Sign In
         </h2>
 
-        <button id="btnGoogle"
+        <button id="btnGoogle" type="button"
           class="w-full flex items-center justify-center gap-2 border py-2 rounded-xl mb-4 hover:bg-gray-50">
           <i class="fa-brands fa-google"></i>
           Continue with Google
@@ -200,23 +206,25 @@ export class Auth {
           <div class="flex-1 h-px bg-gray-200"></div>
         </div>
 
-        <input id="authEmail" type="email" placeholder="Email"
-          class="w-full border p-3 rounded-xl mb-3 outline-none" />
+        <form id="authForm">
+          <input id="authEmail" type="email" placeholder="Email"
+            class="w-full border p-3 rounded-xl mb-3 outline-none" />
 
-        <input id="authPassword" type="password" placeholder="Password"
-          class="w-full border p-3 rounded-xl mb-3 outline-none" />
+          <input id="authPassword" type="password" placeholder="Password"
+            class="w-full border p-3 rounded-xl mb-3 outline-none" />
 
-        <input id="authConfirmPassword" type="password" placeholder="Confirm Password"
-          class="w-full border p-3 rounded-xl mb-4 outline-none hidden" />
+          <input id="authConfirmPassword" type="password" placeholder="Confirm Password"
+            class="w-full border p-3 rounded-xl mb-4 outline-none hidden" />
 
-        <button id="btnAuthSubmit"
-          class="w-full py-2 bg-black text-white rounded-xl mb-3">
-          Sign In
-        </button>
+          <button id="btnAuthSubmit" type="submit"
+            class="w-full py-2 bg-black text-white rounded-xl mb-3">
+            Sign In
+          </button>
+        </form>
 
         <p class="text-sm text-center text-gray-500">
           <span id="authSwitchText">Don't have an account?</span>
-          <button id="btnSwitchMode" class="text-black font-medium ml-1">
+          <button id="btnSwitchMode" type="button" class="text-black font-medium ml-1">
             Register
           </button>
         </p>
