@@ -8,6 +8,10 @@ export class TrackerApp {
     this.appBody = document.getElementById('appBody');
     this.tableContainer = document.getElementById('tableContainer');
     this.titleInput = document.querySelector('header input');
+    this.dashboardModal = document.getElementById('dashboardModal');
+    this.dashboardApplied = document.getElementById('dashboardApplied');
+    this.dashboardInterview = document.getElementById('dashboardInterview');
+    this.dashboardRejected = document.getElementById('dashboardRejected');
     this.state = this.initializeState();
     this.jsonService = new JSONService();
     this.save();
@@ -121,6 +125,53 @@ export class TrackerApp {
     Storage.save(this.state);
   }
 
+  getStatusCounts() {
+    const tracker = this.getTracker();
+    const counts = {
+      applied: 0,
+      interview: 0,
+      rejected: 0
+    };
+
+    if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) {
+      return counts;
+    }
+
+    const statusIndex = tracker.columns.findIndex((col) => {
+      const name = typeof col === 'object' ? col.name : col;
+      return String(name || '').trim().toLowerCase() === 'status';
+    });
+
+    if (statusIndex === -1) return counts;
+
+    tracker.rows.forEach((row) => {
+      const cell = row?.[statusIndex];
+      const value = typeof cell === 'object' ? cell.value : cell;
+      const status = String(value || '').trim().toLowerCase();
+
+      if (status === 'applied') counts.applied += 1;
+      if (status === 'interview') counts.interview += 1;
+      if (status === 'rejected') counts.rejected += 1;
+    });
+
+    return counts;
+  }
+
+  openDashboard() {
+    if (!this.dashboardModal) return;
+
+    const counts = this.getStatusCounts();
+
+    this.dashboardApplied.textContent = counts.applied;
+    this.dashboardInterview.textContent = counts.interview;
+    this.dashboardRejected.textContent = counts.rejected;
+    this.dashboardModal.classList.remove('hidden');
+  }
+
+  closeDashboard() {
+    this.dashboardModal?.classList.add('hidden');
+  }
+
   refresh() {
     const tracker = this.getTracker();
     Table.render(tracker.columns, tracker.rows);
@@ -220,6 +271,8 @@ export class TrackerApp {
     const dropdown = document.getElementById('navDropdown');
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
+    const btnDashboard = document.getElementById('btnDashboard');
+    const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     
     document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
       this.setColumnType('checkbox');
@@ -282,6 +335,27 @@ export class TrackerApp {
 
         window.location.reload();
       });
+    });
+
+    btnDashboard?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      this.openDashboard();
+    });
+
+    btnCloseDashboard?.addEventListener('click', () => {
+      this.closeDashboard();
+    });
+
+    this.dashboardModal?.addEventListener('click', (e) => {
+      if (e.target === this.dashboardModal) {
+        this.closeDashboard();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.closeDashboard();
+      }
     });
     
     this.titleInput.addEventListener('input', (e) => {

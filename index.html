@@ -6,6 +6,7 @@
   <title>Jubro || Your simple Job Tracker</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./css/global.css" />
   <link rel="icon" type="image/png" href="./img/jubro.png" />
 </head>
 <body id="appBody" class="bg-gray-100 text-gray-800 flex justify-center">
@@ -16,6 +17,9 @@
         <input type="text"  class="text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none" />
       </div>
       <div class="relative">
+        <button id="btnDashboard" type="button" class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+          Dashboard
+        </button>
         <button id="btnMenu" type="button" class="p-2 rounded-lg hover:bg-gray-100 text-xl">
           ⋯
         </button>
@@ -42,6 +46,32 @@
         </table>
       </div>
     </main>
+  </div>
+
+  <div id="dashboardModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-2xl w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">Dashboard</h2>
+        <button id="btnCloseDashboard" type="button" class="text-gray-500 text-xl hover:text-black">
+          &times;
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="flex justify-between items-center border rounded-xl p-3">
+          <span class="text-gray-600">Applied</span>
+          <span id="dashboardApplied" class="font-semibold text-blue-500">0</span>
+        </div>
+        <div class="flex justify-between items-center border rounded-xl p-3">
+          <span class="text-gray-600">Interview</span>
+          <span id="dashboardInterview" class="font-semibold text-green-500">0</span>
+        </div>
+        <div class="flex justify-between items-center border rounded-xl p-3">
+          <span class="text-gray-600">Rejected</span>
+          <span id="dashboardRejected" class="font-semibold text-red-500">0</span>
+        </div>
+      </div>
+    </div>
   </div>
   
   <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">

@@ -73,12 +73,15 @@ export class Auth {
 
   bindEvents() {
     document.addEventListener('click', (e) => {
-      const id = e.target.id;
+      const button = e.target.closest('button');
+      const id = button?.id || e.target.id;
 
       if (id === 'btnCloseAuth') this.close();
       if (id === 'btnSwitchMode') this.toggleMode();
       if (id === 'btnGoogle') this.googleLogin();
       if (id === 'btnLogout') this.logout();
+      if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
+      if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
 
       if (e.target === this.modal) this.close();
 
@@ -115,7 +118,7 @@ export class Auth {
     const btn = document.getElementById('btnAuthSubmit');
     const text = document.getElementById('authSwitchText');
     const switchBtn = document.getElementById('btnSwitchMode');
-    const confirm = document.getElementById('authConfirmPassword');
+    const confirm = document.getElementById('authConfirmWrapper');
 
     if (this.mode === 'login') {
       title.textContent = 'Sign In';
@@ -130,6 +133,20 @@ export class Auth {
       switchBtn.textContent = 'Sign In';
       confirm.classList.remove('hidden');
     }
+  }
+
+  togglePassword(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+    const icon = button?.querySelector('i');
+
+    if (!input || !icon) return;
+
+    const isHidden = input.type === 'password';
+
+    input.type = isHidden ? 'text' : 'password';
+    icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    button.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
   }
 
   async submit() {
@@ -210,11 +227,23 @@ export class Auth {
           <input id="authEmail" type="email" placeholder="Email"
             class="w-full border p-3 rounded-xl mb-3 outline-none" />
 
-          <input id="authPassword" type="password" placeholder="Password"
-            class="w-full border p-3 rounded-xl mb-3 outline-none" />
+          <div class="relative mb-3">
+            <input id="authPassword" type="password" placeholder="Password"
+              class="w-full border p-3 pr-11 rounded-xl outline-none" />
+            <button id="btnTogglePassword" type="button" aria-label="Show password"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
 
-          <input id="authConfirmPassword" type="password" placeholder="Confirm Password"
-            class="w-full border p-3 rounded-xl mb-4 outline-none hidden" />
+          <div id="authConfirmWrapper" class="relative mb-4 hidden">
+            <input id="authConfirmPassword" type="password" placeholder="Confirm Password"
+              class="w-full border p-3 pr-11 rounded-xl outline-none" />
+            <button id="btnToggleConfirmPassword" type="button" aria-label="Show password"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
 
           <button id="btnAuthSubmit" type="submit"
             class="w-full py-2 bg-black text-white rounded-xl mb-3">
