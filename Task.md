@@ -1,45 +1,50 @@
-Add a search input to Jubro so the job table can be filtered.
+Improve the dashboard modal UI for the Jubro job tracker.
 
-Goal:
-Create a simple search bar that filters the visible rows in the current active tracker.
+Requirements:
 
-UI:
-- Add a search input above or near the job table.
-- Placeholder text: "Search jobs..."
-- Use the same color palette and existing input/button styling.
-- Do not change the table layout.
+* Keep the current clean minimalist style.
+* Make the dashboard look more modern and balanced.
+* Fix spacing, alignment, and visual hierarchy.
 
-Search behavior:
-- As the user types, filter the table rows in real time.
-- Search should check these fields:
-  - Company
-  - Position
-  - Status
-  - Link
-  - Date Applied
-- Search should be case-insensitive.
-- Partial matches should work.
-  Example: typing "goo" should show "Google".
-- If the search box is empty, show all rows.
-- If no rows match, show a simple message like "No matching jobs found."
+Layout:
 
-Important:
-- This should only filter what is displayed.
-- Do not delete rows from localStorage.
-- Do not change the saved data structure.
-- Do not affect adding, editing, deleting, or status changing.
-- Search should work with the current active tracker only.
+* Make all 4 status cards align evenly in one row on desktop:
 
-Rules:
-- Do not add Firebase/backend changes.
-- Do not add authentication changes.
-- Do not add charts or analytics.
-- Do not refactor unrelated code.
-- Keep the feature beginner-friendly and MVP-focused.
-- Make the search input simple and clean.
-- Make any search clear button use cursor pointer if you add one.
+  * Applied
+  * Interview
+  * Rejected
+  * Prospect
+* On mobile, make cards responsive in a 2x2 grid.
+* Remove the awkward empty space under the cards.
 
-After implementing:
-- Test with different companies, positions, statuses, links, and dates.
-- Confirm clearing the search shows all rows again.
-- Confirm localStorage data is unchanged.
+Charts:
+
+* Keep the pie chart on the left.
+* Replace the current right-side percentage/legend section with a real chart.
+* Use a line chart for “Applications Over Time”.
+* The line chart should display dates/weeks/months on the x-axis.
+* Make the chart container match the pie chart height.
+* Add smooth rounded cards and consistent padding.
+
+Pie Chart:
+
+* Keep the pie chart simple and clean.
+* Percentages inside the pie slices are optional for now.
+* Remove duplicate percentage information if unnecessary.
+
+UI Improvements:
+
+* Add better spacing between sections.
+* Use equal card heights.
+* Improve modal width responsiveness.
+* Make the dashboard visually balanced on both desktop and mobile.
+* Keep Tailwind CSS only.
+* Keep existing IDs and functionality working.
+* Do not break existing dashboard logic or data rendering.
+
+Design vibe:
+
+* Modern SaaS dashboard
+* Similar to Notion / Linear / Vercel style
+* Minimal but professional
+* Clean grayscale base with status accent colors

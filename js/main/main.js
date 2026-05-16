@@ -1,5 +1,6 @@
 import { Table } from './table.js';
 import { closeMenu, UIState } from './ui.js';
+import { renderDashboardCharts } from './dashboardCharts.js';
 import { Storage } from '../storage/storage.js';
 import { JSONService } from '../services/jsonService.js';
 
@@ -7,11 +8,15 @@ export class TrackerApp {
   constructor() {
     this.appBody = document.getElementById('appBody');
     this.tableContainer = document.getElementById('tableContainer');
-    this.titleInput = document.querySelector('header input');
+    this.titleInput = document.getElementById('trackerTitleInput');
+    this.searchWrapper = document.getElementById('searchWrapper');
+    this.searchInput = document.getElementById('jobSearchInput');
+    this.btnCloseSearch = document.getElementById('btnCloseSearch');
+    this.noSearchResults = document.getElementById('noSearchResults');
     this.dashboardModal = document.getElementById('dashboardModal');
-    this.dashboardApplied = document.getElementById('dashboardApplied');
-    this.dashboardInterview = document.getElementById('dashboardInterview');
-    this.dashboardRejected = document.getElementById('dashboardRejected');
+    this.dashboardSelectColumn = document.getElementById('dashboardSelectColumn');
+    this.dashboardCards = document.getElementById('dashboardCards');
+    this.dashboardCharts = document.getElementById('dashboardCharts');
     this.state = this.initializeState();
     this.jsonService = new JSONService();
     this.save();
@@ -125,46 +130,138 @@ export class TrackerApp {
     Storage.save(this.state);
   }
 
-  getStatusCounts() {
+  getSelectColumns() {
     const tracker = this.getTracker();
-    const counts = {
-      applied: 0,
-      interview: 0,
-      rejected: 0
-    };
 
-    if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) {
-      return counts;
-    }
+    if (!tracker || !Array.isArray(tracker.columns)) return [];
 
-    const statusIndex = tracker.columns.findIndex((col) => {
-      const name = typeof col === 'object' ? col.name : col;
-      return String(name || '').trim().toLowerCase() === 'status';
+    return tracker.columns
+      .map((column, index) => ({ column, index }))
+      .filter(({ column }) => typeof column === 'object' && column.type === 'select');
+  }
+
+  getColumnName(column) {
+    return typeof column === 'object' ? column.name : column;
+  }
+
+  getDashboardOptions(column) {
+    if (!column || !Array.isArray(column.options)) return [];
+
+    return column.options.map((option) => {
+      if (typeof option === 'string') {
+        return {
+          label: option,
+          color: '#6b7280'
+        };
+      }
+
+      return {
+        label: option.label || 'Option',
+        color: option.color || '#6b7280'
+      };
     });
+  }
 
-    if (statusIndex === -1) return counts;
+  countDashboardOptions(columnIndex, options) {
+    const tracker = this.getTracker();
+    const counts = new Map(options.map((option) => [option.label, 0]));
+
+    if (!tracker || !Array.isArray(tracker.rows)) return counts;
 
     tracker.rows.forEach((row) => {
-      const cell = row?.[statusIndex];
+      const cell = row?.[columnIndex];
       const value = typeof cell === 'object' ? cell.value : cell;
-      const status = String(value || '').trim().toLowerCase();
 
-      if (status === 'applied') counts.applied += 1;
-      if (status === 'interview') counts.interview += 1;
-      if (status === 'rejected') counts.rejected += 1;
+      if (counts.has(value)) {
+        counts.set(value, counts.get(value) + 1);
+      }
     });
 
     return counts;
   }
 
+  renderDashboardCards(columnIndex) {
+    const tracker = this.getTracker();
+    const column = tracker?.columns?.[columnIndex];
+    const options = this.getDashboardOptions(column);
+
+    if (!this.dashboardCards) return;
+
+    this.dashboardCards.innerHTML = '';
+
+    if (!column || options.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-400 lg:col-span-3';
+      empty.textContent = 'No options found.';
+      this.dashboardCards.appendChild(empty);
+      renderDashboardCharts(this.dashboardCharts, [], new Map(), tracker);
+      return;
+    }
+
+    const counts = this.countDashboardOptions(columnIndex, options);
+
+    options.forEach((option) => {
+      const card = document.createElement('div');
+      card.className = 'rounded-xl border p-4 text-center';
+      card.style.borderColor = option.color;
+
+      const label = document.createElement('p');
+      label.className = 'truncate text-sm font-medium';
+      label.textContent = option.label;
+      label.style.color = option.color;
+
+      const count = document.createElement('p');
+      count.className = 'mt-2 text-3xl font-semibold';
+      count.textContent = counts.get(option.label) || 0;
+      count.style.color = option.color;
+
+      card.appendChild(label);
+      card.appendChild(count);
+      this.dashboardCards.appendChild(card);
+    });
+
+    renderDashboardCharts(this.dashboardCharts, options, counts, tracker);
+  }
+
+  renderDashboard() {
+    if (!this.dashboardSelectColumn) return;
+
+    const selectColumns = this.getSelectColumns();
+    const currentValue = this.dashboardSelectColumn.value;
+
+    this.dashboardSelectColumn.innerHTML = '';
+
+    if (selectColumns.length === 0) {
+      const option = document.createElement('option');
+      option.textContent = 'No select columns';
+      option.value = '';
+      this.dashboardSelectColumn.appendChild(option);
+      this.dashboardSelectColumn.disabled = true;
+      this.renderDashboardCards(null);
+      return;
+    }
+
+    this.dashboardSelectColumn.disabled = false;
+
+    selectColumns.forEach(({ column, index }) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = this.getColumnName(column) || `Column ${index + 1}`;
+      this.dashboardSelectColumn.appendChild(option);
+    });
+
+    const selected = selectColumns.some(({ index }) => String(index) === currentValue)
+      ? currentValue
+      : String(selectColumns[0].index);
+
+    this.dashboardSelectColumn.value = selected;
+    this.renderDashboardCards(Number(selected));
+  }
+
   openDashboard() {
     if (!this.dashboardModal) return;
 
-    const counts = this.getStatusCounts();
-
-    this.dashboardApplied.textContent = counts.applied;
-    this.dashboardInterview.textContent = counts.interview;
-    this.dashboardRejected.textContent = counts.rejected;
+    this.renderDashboard();
     this.dashboardModal.classList.remove('hidden');
   }
 
@@ -172,10 +269,73 @@ export class TrackerApp {
     this.dashboardModal?.classList.add('hidden');
   }
 
+  openMobileSearch() {
+    this.searchWrapper?.classList.remove('hidden');
+    this.searchWrapper?.classList.add('flex');
+    this.btnCloseSearch?.classList.remove('hidden');
+    this.btnCloseSearch?.classList.add('inline-flex');
+    this.searchInput?.focus();
+  }
+
+  closeMobileSearch() {
+    this.searchWrapper?.classList.add('hidden');
+    this.searchWrapper?.classList.remove('flex');
+    this.btnCloseSearch?.classList.add('hidden');
+    this.btnCloseSearch?.classList.remove('inline-flex');
+  }
+
+  getSearchColumnIndexes(tracker) {
+    const searchableNames = ['company', 'position', 'status', 'link', 'date applied', 'date'];
+
+    if (!tracker || !Array.isArray(tracker.columns)) return [];
+
+    return tracker.columns
+      .map((col, index) => {
+        const name = typeof col === 'object' ? col.name : col;
+        return searchableNames.includes(String(name || '').trim().toLowerCase()) ? index : null;
+      })
+      .filter((index) => index !== null);
+  }
+
+  rowMatchesSearch(row, columnIndexes, query) {
+    if (!query) return true;
+
+    return columnIndexes.some((index) => {
+      const cell = row?.[index];
+      const value = typeof cell === 'object' ? cell.value : cell;
+
+      return String(value || '').toLowerCase().includes(query);
+    });
+  }
+
+  applySearchFilter() {
+    const tracker = this.getTracker();
+    const query = this.searchInput?.value.trim().toLowerCase() || '';
+    const rows = document.querySelectorAll('#tableBody tr');
+    const columnIndexes = this.getSearchColumnIndexes(tracker);
+    let visibleCount = 0;
+
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+
+    rows.forEach((rowElement, rowIndex) => {
+      const row = tracker.rows[rowIndex];
+      const isVisible = this.rowMatchesSearch(row, columnIndexes, query);
+
+      rowElement.classList.toggle('hidden', !isVisible);
+      if (isVisible) visibleCount += 1;
+    });
+
+    this.noSearchResults?.classList.toggle('hidden', visibleCount > 0 || !query);
+  }
+
   refresh() {
     const tracker = this.getTracker();
     Table.render(tracker.columns, tracker.rows);
     this.titleInput.value = tracker.title;
+    this.applySearchFilter();
+    if (this.dashboardModal && !this.dashboardModal.classList.contains('hidden')) {
+      this.renderDashboard();
+    }
     this.save();
   }
   copyCol() {
@@ -239,6 +399,22 @@ export class TrackerApp {
     const { activeCol } = UIState;
   
     if (activeCol === null) return;
+
+    const currentColumn = tracker.columns[activeCol];
+    const columnName = typeof currentColumn === 'object' ? currentColumn.name : currentColumn;
+    const existingOptions = Array.isArray(currentColumn?.options) ? currentColumn.options : [];
+
+    tracker.columns[activeCol] = {
+      name: columnName || 'New',
+      type,
+      ...(type === 'select'
+        ? {
+            options: existingOptions.length
+              ? existingOptions
+              : [{ label: 'Option 1', color: '#cccccc' }]
+          }
+        : {})
+    };
   
     tracker.rows.forEach((row) => {
       const oldCell = row[activeCol];
@@ -252,8 +428,7 @@ export class TrackerApp {
       if (type === 'select') {
         row[activeCol] = {
           value: value || '',
-          type: 'select',
-          options: oldCell?.options || ['Option 1']
+          type: 'select'
         };
       } else {
         row[activeCol] = {
@@ -273,6 +448,8 @@ export class TrackerApp {
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
+    const btnOpenSearch = document.getElementById('btnOpenSearch');
+    const btnCloseSearch = document.getElementById('btnCloseSearch');
     
     document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
       this.setColumnType('checkbox');
@@ -342,6 +519,19 @@ export class TrackerApp {
       this.openDashboard();
     });
 
+    btnOpenSearch?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      this.openMobileSearch();
+    });
+
+    btnCloseSearch?.addEventListener('click', () => {
+      this.closeMobileSearch();
+    });
+
+    this.dashboardSelectColumn?.addEventListener('change', (e) => {
+      this.renderDashboardCards(Number(e.target.value));
+    });
+
     btnCloseDashboard?.addEventListener('click', () => {
       this.closeDashboard();
     });
@@ -354,6 +544,7 @@ export class TrackerApp {
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        this.closeMobileSearch();
         this.closeDashboard();
       }
     });
@@ -368,6 +559,10 @@ export class TrackerApp {
 
       e.preventDefault();
       this.titleInput.blur();
+    });
+
+    this.searchInput?.addEventListener('input', () => {
+      this.applySearchFilter();
     });
 
     this.appBody.addEventListener('click', (e) => {
