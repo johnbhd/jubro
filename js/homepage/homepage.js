@@ -57,6 +57,13 @@ export class TrackerHome {
       e.preventDefault();
       this.createTracker();
     });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        this.showModal();
+      }
+    });
   }
 
   getNextId() {
@@ -68,6 +75,7 @@ export class TrackerHome {
   showModal() {
     if (!this.modal) return;
     this.modal.classList.remove('hidden');
+    requestAnimationFrame(() => this.titleInput?.focus());
   }
 
   hideModal() {

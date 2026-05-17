@@ -25,6 +25,7 @@ export class TrackerApp {
     this.dashboardCharts = document.getElementById('dashboardCharts');
     this.state = this.initializeState();
     this.jsonService = new JSONService();
+    this.tableClipboard = null;
     this.save();
     this.initEvents();
     this.refresh();
@@ -445,6 +446,110 @@ export class TrackerApp {
     }
   }
 
+  isEditableTarget(target) {
+    return Boolean(target?.closest?.('input, textarea, select, [contenteditable="true"]'));
+  }
+
+  focusSearchShortcut() {
+    this.openMobileSearch();
+    this.searchInput?.focus();
+    this.searchInput?.select();
+  }
+
+  deleteHoveredTableTarget() {
+    if (UIState.activeType === 'row') {
+      this.deleteRow();
+      return true;
+    }
+
+    if (UIState.activeType === 'col') {
+      this.deleteCol();
+      return true;
+    }
+
+    return false;
+  }
+
+  cloneTableValue(value) {
+    return typeof structuredClone === 'function'
+      ? structuredClone(value)
+      : JSON.parse(JSON.stringify(value));
+  }
+
+  copyHoveredTableTarget() {
+    const tracker = this.getTracker();
+
+    if (!tracker) return false;
+
+    if (UIState.activeType === 'row' && UIState.activeRow !== null) {
+      const row = tracker.rows?.[UIState.activeRow];
+      if (!row) return false;
+
+      this.tableClipboard = {
+        type: 'row',
+        row: this.cloneTableValue(row)
+      };
+      return true;
+    }
+
+    if (UIState.activeType === 'col' && UIState.activeCol !== null) {
+      const column = tracker.columns?.[UIState.activeCol];
+      if (!column) return false;
+
+      this.tableClipboard = {
+        type: 'col',
+        column: this.cloneTableValue(column),
+        cells: tracker.rows.map((row) => this.cloneTableValue(row[UIState.activeCol]))
+      };
+      return true;
+    }
+
+    return false;
+  }
+
+  pasteHoveredTableTarget() {
+    const tracker = this.getTracker();
+
+    if (!tracker || !this.tableClipboard) return false;
+
+    if (
+      this.tableClipboard.type === 'row'
+      && UIState.activeType === 'row'
+      && UIState.activeRow !== null
+    ) {
+      tracker.rows.splice(UIState.activeRow + 1, 0, this.cloneTableValue(this.tableClipboard.row));
+      this.clearTableSortControls();
+      this.refresh();
+      closeMenu();
+      return true;
+    }
+
+    if (
+      this.tableClipboard.type === 'col'
+      && UIState.activeType === 'col'
+      && UIState.activeCol !== null
+    ) {
+      const insertIndex = UIState.activeCol + 1;
+
+      tracker.columns.splice(insertIndex, 0, this.cloneTableValue(this.tableClipboard.column));
+      tracker.rows.forEach((row, rowIndex) => {
+        const hasCopiedCell = rowIndex < this.tableClipboard.cells.length;
+        const pastedCell = hasCopiedCell
+          ? this.cloneTableValue(this.tableClipboard.cells[rowIndex])
+          : { value: '', type: 'text' };
+
+        row.splice(insertIndex, 0, pastedCell);
+      });
+
+      this.clearTableSortControls();
+      this.refresh();
+      closeMenu();
+      return true;
+    }
+
+    return false;
+  }
+
   getSearchColumnIndexes(tracker) {
     const searchableNames = ['company', 'position', 'status', 'link', 'date applied', 'date'];
 
@@ -518,6 +623,55 @@ export class TrackerApp {
       this.renderDashboard();
     }
     this.save();
+  }
+
+  clearTableSortControls() {
+    if (this.sortSelect) {
+      this.sortSelect.value = '';
+    }
+
+    if (this.selectValueFilterSelect) {
+      this.selectValueFilterSelect.value = '';
+    }
+
+    this.updateSelectTextSortVisibility();
+  }
+
+  reorderRow(fromIndex, toIndex) {
+    const tracker = this.getTracker();
+
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || toIndex < 0) return;
+    if (fromIndex >= tracker.rows.length || toIndex >= tracker.rows.length) return;
+
+    const [row] = tracker.rows.splice(fromIndex, 1);
+    tracker.rows.splice(toIndex, 0, row);
+
+    this.clearTableSortControls();
+    this.refresh();
+    closeMenu();
+  }
+
+  reorderColumn(fromIndex, toIndex) {
+    const tracker = this.getTracker();
+
+    if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) return;
+    if (fromIndex === toIndex) return;
+    if (fromIndex < 0 || toIndex < 0) return;
+    if (fromIndex >= tracker.columns.length || toIndex >= tracker.columns.length) return;
+
+    const [column] = tracker.columns.splice(fromIndex, 1);
+    tracker.columns.splice(toIndex, 0, column);
+
+    tracker.rows.forEach((row) => {
+      const [cell] = row.splice(fromIndex, 1);
+      row.splice(toIndex, 0, cell);
+    });
+
+    this.clearTableSortControls();
+    this.refresh();
+    closeMenu();
   }
   copyCol() {
     const tracker = this.getTracker();
@@ -647,6 +801,16 @@ export class TrackerApp {
     document.addEventListener('table:update', () => {
       this.refresh();
     });
+
+    document.addEventListener('table:row-reorder', (e) => {
+      const { fromIndex, toIndex } = e.detail || {};
+      this.reorderRow(Number(fromIndex), Number(toIndex));
+    });
+
+    document.addEventListener('table:col-reorder', (e) => {
+      const { fromIndex, toIndex } = e.detail || {};
+      this.reorderColumn(Number(fromIndex), Number(toIndex));
+    });
     
     document.getElementById('btn-type-text')?.addEventListener('click', () => {
       this.setColumnType('text');
@@ -733,6 +897,35 @@ export class TrackerApp {
     });
 
     document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+
+      if ((e.ctrlKey || e.metaKey) && key === 'k') {
+        e.preventDefault();
+        this.focusSearchShortcut();
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && key === 'c' && !this.isEditableTarget(e.target)) {
+        if (this.copyHoveredTableTarget()) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if ((e.ctrlKey || e.metaKey) && key === 'v' && !this.isEditableTarget(e.target)) {
+        if (this.pasteHoveredTableTarget()) {
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !this.isEditableTarget(e.target)) {
+        if (this.deleteHoveredTableTarget()) {
+          e.preventDefault();
+        }
+        return;
+      }
+
       if (e.key === 'Escape') {
         this.closeMobileSearch();
         this.closeDashboard();
@@ -878,16 +1071,11 @@ export class TrackerApp {
   }
 
   moveUp() {
-    const tracker = this.getTracker();
     const { activeRow, activeType } = UIState;
 
     if (activeType !== 'row' || activeRow === null || activeRow === 0) return;
 
-    [tracker.rows[activeRow - 1], tracker.rows[activeRow]] =
-    [tracker.rows[activeRow], tracker.rows[activeRow - 1]];
-
-    this.refresh();
-    closeMenu();
+    this.reorderRow(activeRow, activeRow - 1);
   }
 
   moveDown() {
@@ -896,28 +1084,15 @@ export class TrackerApp {
 
     if (activeType !== 'row' || activeRow === null || activeRow === tracker.rows.length - 1) return;
 
-    [tracker.rows[activeRow + 1], tracker.rows[activeRow]] =
-    [tracker.rows[activeRow], tracker.rows[activeRow + 1]];
-
-    this.refresh();
-    closeMenu();
+    this.reorderRow(activeRow, activeRow + 1);
   }
 
   moveLeft() {
-    const tracker = this.getTracker();
     const { activeCol, activeType } = UIState;
 
     if (activeType !== 'col' || activeCol === null || activeCol === 0) return;
 
-    [tracker.columns[activeCol - 1], tracker.columns[activeCol]] =
-    [tracker.columns[activeCol], tracker.columns[activeCol - 1]];
-
-    tracker.rows.forEach(r => {
-      [r[activeCol - 1], r[activeCol]] = [r[activeCol], r[activeCol - 1]];
-    });
-
-    this.refresh();
-    closeMenu();
+    this.reorderColumn(activeCol, activeCol - 1);
   }
 
   moveRight() {
@@ -926,15 +1101,7 @@ export class TrackerApp {
 
     if (activeType !== 'col' || activeCol === null || activeCol === tracker.columns.length - 1) return;
 
-    [tracker.columns[activeCol + 1], tracker.columns[activeCol]] =
-    [tracker.columns[activeCol], tracker.columns[activeCol + 1]];
-
-    tracker.rows.forEach(r => {
-      [r[activeCol + 1], r[activeCol]] = [r[activeCol], r[activeCol + 1]];
-    });
-
-    this.refresh();
-    closeMenu();
+    this.reorderColumn(activeCol, activeCol + 1);
   }
 
   deleteRow() {

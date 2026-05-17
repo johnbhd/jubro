@@ -1,4 +1,4 @@
-import { startPress, cancelPress, showMenu } from './ui.js';
+import { startPress, cancelPress, showMenu, setActiveTarget, clearActiveTarget } from './ui.js';
 
 let activeDropdown = null;
 
@@ -21,10 +21,33 @@ function blurOnEnter(input) {
   });
 }
 
+function dispatchRowReorder(fromIndex, toIndex) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+
+  document.dispatchEvent(new CustomEvent('table:row-reorder', {
+    detail: {
+      fromIndex,
+      toIndex
+    }
+  }));
+}
+
+function dispatchColumnReorder(fromIndex, toIndex) {
+  if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return;
+
+  document.dispatchEvent(new CustomEvent('table:col-reorder', {
+    detail: {
+      fromIndex,
+      toIndex
+    }
+  }));
+}
+
 export const Table = {
   render: (columns, data) => {
     const headerRow = document.getElementById('headerRow');
     const tbody = document.getElementById('tableBody');
+    const canUseNativeDrag = window.matchMedia('(pointer: fine)').matches;
     headerRow.innerHTML = '';
     tbody.innerHTML = '';
 
@@ -39,7 +62,44 @@ export const Table = {
 
     columns.forEach((col, colIndex) => {
       const th = document.createElement('th');
-      th.className = 'px-4 py-3 cursor-pointer select-none bg-gray-50 border-b whitespace-nowrap';
+      th.className = `px-4 py-3 select-none bg-gray-50 border-b whitespace-nowrap ${canUseNativeDrag ? 'cursor-grab active:cursor-grabbing' : ''}`;
+      th.draggable = canUseNativeDrag;
+      th.dataset.colIndex = String(colIndex);
+
+      if (canUseNativeDrag) {
+        th.addEventListener('dragstart', (e) => {
+          closeDropdown();
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(colIndex));
+          th.classList.add('opacity-50');
+        });
+
+        th.addEventListener('dragend', () => {
+          th.classList.remove('opacity-50');
+          headerRow.querySelectorAll('th').forEach((headerCell) => {
+            headerCell.classList.remove('border-l-2', 'border-black');
+          });
+        });
+
+        th.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          th.classList.add('border-l-2', 'border-black');
+        });
+
+        th.addEventListener('dragleave', () => {
+          th.classList.remove('border-l-2', 'border-black');
+        });
+
+        th.addEventListener('drop', (e) => {
+          e.preventDefault();
+          th.classList.remove('border-l-2', 'border-black');
+
+          const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+          const toIndex = Number(th.dataset.colIndex);
+          dispatchColumnReorder(fromIndex, toIndex);
+        });
+      }
 
       const input = document.createElement('input');
       input.value = typeof col === 'object' ? col.name : col;
@@ -54,9 +114,18 @@ export const Table = {
 
       th.appendChild(input);
 
-      th.addEventListener('mousedown', (e) => startPress(e, null, colIndex, 'col'));
-      th.addEventListener('mouseup', cancelPress);
-      th.addEventListener('mouseleave', cancelPress);
+      th.addEventListener('pointerdown', (e) => {
+        setActiveTarget(null, colIndex, 'col');
+        startPress(e, null, colIndex, 'col');
+      });
+      th.addEventListener('pointerenter', () => setActiveTarget(null, colIndex, 'col'));
+      th.addEventListener('click', () => setActiveTarget(null, colIndex, 'col'));
+      th.addEventListener('pointerup', cancelPress);
+      th.addEventListener('pointercancel', cancelPress);
+      th.addEventListener('pointerleave', () => {
+        cancelPress();
+        clearActiveTarget(null, colIndex, 'col');
+      });
       th.addEventListener('contextmenu', (e) => showMenu(e, null, colIndex, 'col'));
 
       th.addEventListener('dblclick', () => input.classList.remove('pointer-events-none'));
@@ -67,11 +136,51 @@ export const Table = {
 
     data.forEach((row, rowIndex) => {
       const tr = document.createElement('tr');
-      tr.className = 'border-t hover:bg-gray-50';
+      tr.className = `border-t hover:bg-gray-50 ${canUseNativeDrag ? 'cursor-grab active:cursor-grabbing' : ''}`;
+      tr.draggable = canUseNativeDrag;
+      tr.dataset.rowIndex = String(rowIndex);
+
+      if (canUseNativeDrag) {
+        tr.addEventListener('dragstart', (e) => {
+          closeDropdown();
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(rowIndex));
+          tr.classList.add('opacity-50');
+        });
+
+        tr.addEventListener('dragend', () => {
+          tr.classList.remove('opacity-50');
+          tbody.querySelectorAll('tr').forEach((rowElement) => {
+            rowElement.classList.remove('border-t-2', 'border-black');
+          });
+        });
+
+        tr.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          tr.classList.add('border-t-2', 'border-black');
+        });
+
+        tr.addEventListener('dragleave', () => {
+          tr.classList.remove('border-t-2', 'border-black');
+        });
+
+        tr.addEventListener('drop', (e) => {
+          e.preventDefault();
+          tr.classList.remove('border-t-2', 'border-black');
+
+          const fromIndex = Number(e.dataTransfer.getData('text/plain'));
+          const toIndex = Number(tr.dataset.rowIndex);
+          dispatchRowReorder(fromIndex, toIndex);
+        });
+      }
 
       row.forEach((cell, colIndex) => {
         const td = document.createElement('td');
         td.className = 'px-4 py-3 select-none whitespace-nowrap';
+        td.addEventListener('pointerenter', () => setActiveTarget(rowIndex, colIndex, 'row'));
+        td.addEventListener('click', () => setActiveTarget(rowIndex, colIndex, 'row'));
+        td.addEventListener('pointerleave', () => clearActiveTarget(rowIndex, colIndex, 'row'));
 
         const cellData = typeof cell === 'object' ? cell : { value: cell, type: 'text' };
 
@@ -309,7 +418,7 @@ export const Table = {
               input.classList.add('pointer-events-none');
             });
           
-            td.appendChild(input);
+          td.appendChild(input);
         }
 
         if (!isSelect) {
@@ -327,9 +436,13 @@ export const Table = {
         }
 
         if (!isSelect) {
-          td.addEventListener('mousedown', (e) => startPress(e, rowIndex, colIndex, 'row'));
-          td.addEventListener('mouseup', cancelPress);
-          td.addEventListener('mouseleave', cancelPress);
+          td.addEventListener('pointerdown', (e) => {
+            setActiveTarget(rowIndex, colIndex, 'row');
+            startPress(e, rowIndex, colIndex, 'row');
+          });
+          td.addEventListener('pointerup', cancelPress);
+          td.addEventListener('pointercancel', cancelPress);
+          td.addEventListener('pointerleave', cancelPress);
         }
 
         td.addEventListener('contextmenu', (e) => showMenu(e, rowIndex, colIndex, 'row'));
