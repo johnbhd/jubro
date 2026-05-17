@@ -3,8 +3,15 @@ import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12
 import { app } from './firebase/firebaseApp.js';
 
 const db = getFirestore(app);
+const THEME_KEY = 'jubro_theme';
 
 console.log("Firestore instance:", db);
+
+function applySavedTheme() {
+  const theme = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+  localStorage.setItem(THEME_KEY, theme);
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+}
 
 async function testFirestore() {
   try {
@@ -22,6 +29,7 @@ async function testFirestore() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log("APP LOADED");
 
+  applySavedTheme();
   testFirestore();
 
   if (document.getElementById('appBody')) {

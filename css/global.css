@@ -12,3 +12,236 @@ button[disabled],
 input:disabled {
   cursor: not-allowed;
 }
+
+.dark body {
+  background-color: #111827;
+  color: #e5e7eb;
+}
+
+.dark .bg-white {
+  background-color: #1f2937 !important;
+}
+
+
+
+.dark .bg-gray-200 {
+  background-color: #374151 !important;
+}
+
+.dark .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.dark .text-gray-500,
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .text-gray-800 {
+  color: #e5e7eb !important;
+}
+
+.dark .border,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: #374151 !important;
+}
+
+.dark input,
+.dark select {
+  background-color: transparent;
+  color: #f9fafb !important;
+  color-scheme: dark;
+}
+
+.dark input::placeholder {
+  color: #6b7280 !important;
+}
+
+.dark input[type="date"] {
+  color: #f9fafb !important;
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-gray-50:hover {
+  background-color: #374151 !important;
+}
+
+.dark .theme-create-button {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark .theme-create-button:hover {
+  background-color: #e5e7eb !important;
+}
+
+.dark #appNavbar,
+.dark #navDropdown,
+.dark #contextMenu,
+.dark #subMenu {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb;
+}
+
+.dark #searchWrapper {
+  background-color: #1f2937 !important;
+}
+
+.dark #jobSearchInput,
+.dark #trackerTitleInput,
+.dark #dashboardSelectColumn {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  outline: none;
+}
+
+.dark #trackerTitleInput {
+  background-color: transparent !important;
+}
+
+.dark #btnDashboard {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark #btnDashboard:hover {
+  background-color: #e5e7eb !important;
+}
+
+.dark #btnOpenSearch,
+.dark #btnMenu,
+.dark #btnCloseSearch,
+.dark #btnCloseDashboard {
+  color: #e5e7eb !important;
+}
+
+.dark #btnOpenSearch:hover,
+.dark #btnMenu:hover,
+.dark #btnCloseSearch:hover,
+.dark #navDropdown button:hover,
+.dark #contextMenu button:hover,
+.dark #subMenu button:hover {
+  background-color: #374151 !important;
+}
+
+.dark table {
+  color: #e5e7eb;
+}
+
+.dark table .text-blue-500 {
+  color: #3b82f6 !important;
+}
+
+.dark thead,
+.dark th {
+  background-color: #374151 !important;
+}
+
+.dark tr {
+  border-color: #374151 !important;
+}
+
+.dark tbody tr:hover {
+  background-color: #374151 !important;
+}
+
+.dark #dashboardCards > div,
+.dark #dashboardCharts > div > div {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark #dashboardModal .bg-gray-50,
+.dark #dashboardModal .bg-gray-100 {
+  background-color: #111827 !important;
+}
+
+.dark .shadow,
+.dark .shadow-sm,
+.dark .shadow-xl {
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35) !important;
+}
+
+.dark {
+  scrollbar-color: #4b5563 #111827;
+}
+
+.dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #111827;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border: 2px solid #111827;
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+.dark ::-webkit-scrollbar-corner {
+  background: #111827;
+}
+
+.dark #userDropdown {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb;
+}
+
+.dark #userDropdown .border-b,
+.dark #userDropdown .border-t {
+  border-color: #374151 !important;
+}
+
+.dark #userDropdown .bg-gray-100 {
+  background-color: #374151 !important;
+}
+
+.dark #userEmail {
+  color: #f9fafb !important;
+}
+
+.dark #btnTheme,
+.dark #btnSettings {
+  color: #e5e7eb !important;
+}
+
+.dark #btnTheme:hover,
+.dark #btnSettings:hover {
+  background-color: #374151 !important;
+}
+
+.dark #themeToggle {
+  background-color: #111827 !important;
+  border: 1px solid #4b5563;
+}
+
+.dark #themeCircle {
+  background-color: #f9fafb !important;
+}
+
+.dark #btnSignIn {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark #btnSignIn:hover {
+  background-color: #374151 !important;
+}
+
+.dark #btnLogout:hover {
+  background-color: rgb(127 29 29 / 0.25) !important;
+}

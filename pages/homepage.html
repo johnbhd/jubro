@@ -32,24 +32,35 @@
           A simple way to track your job applications 
         </p>
       </div>
-      <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+      <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
         <!-- New Tracker -->
         <button
           id="btnOpenModal"
           type="button"
-          class="cursor-pointer w-full sm:w-auto px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition"
+          class="theme-create-button flex gap-3 items-center cursor-pointer w-full sm:w-auto px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition"
         >
-          + New Tracker
+          <span>+</span> 
+          <span>New Tracker</span> 
         </button>
-        <!-- Sign In Button -->
-        <button
-          id="btnSignIn"
-          type="button"
-          class="cursor-pointer w-full sm:w-auto px-5 py-3 border border-gray-300 rounded-2xl hover:bg-gray-100 transition"
-        >
-          <i class="fa-solid fa-user mr-2"></i>
-          Sign In
-        </button>
+        <div class="flex gap-2 w-full sm:w-auto">
+          <!-- Sign In Button -->
+          <button
+            id="btnSignIn"
+            type="button"
+            class="inline-flex min-w-0 flex-1 cursor-pointer items-center justify-center px-5 py-3 border border-gray-300 rounded-2xl hover:bg-gray-100 transition sm:w-auto"
+          >
+            <i class="fa-solid fa-user mr-2"></i>
+            Sign In
+          </button>
+          <button
+            id="btnGuestTheme"
+            type="button"
+            class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-gray-300 text-gray-700 transition hover:bg-gray-100"
+            aria-label="Toggle theme"
+          >
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
     
       </div>
     </div>
@@ -76,7 +87,7 @@
             Cancel
           </button>
 
-          <button id="btnCreate" type="submit" class="flex-1 py-2 bg-black text-white rounded-xl">
+          <button id="btnCreate" type="submit" class="theme-create-button flex-1 py-2 bg-black text-white rounded-xl">
             Create
           </button>
         </div>

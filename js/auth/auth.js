@@ -1,6 +1,8 @@
 import { authService } from "./firebaseAuth.js";
 import { Message } from "./message.js";
 
+const THEME_KEY = 'jubro_theme';
+
 export class Auth {
   constructor() {
     this.modal = null;
@@ -10,26 +12,131 @@ export class Auth {
   }
 
   init() {
+    this.applySavedTheme();
     this.createModal();
     this.createDropdown();
     this.bindEvents();
     this.listenAuth();
   }
 
+  getStoredTheme() {
+    const theme = localStorage.getItem(THEME_KEY);
+    return theme === 'dark' ? 'dark' : 'light';
+  }
+
+  setStoredTheme(theme) {
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  applyTheme(theme) {
+    const isDark = theme === 'dark';
+
+    document.documentElement.classList.toggle('dark', isDark);
+    this.updateThemeToggle(isDark);
+  }
+
+  applySavedTheme() {
+    const theme = this.getStoredTheme();
+    this.setStoredTheme(theme);
+    this.applyTheme(theme);
+  }
+
+  updateThemeToggle(isDark) {
+    const icon = document.querySelector('#btnTheme i');
+    const label = document.querySelector('#btnTheme span');
+    const toggle = document.getElementById('themeToggle');
+    const circle = document.getElementById('themeCircle');
+    const guestTheme = document.getElementById('btnGuestTheme');
+    const guestIcon = guestTheme?.querySelector('i');
+
+    icon?.classList.toggle('fa-moon', !isDark);
+    icon?.classList.toggle('fa-sun', isDark);
+    label && (label.textContent = isDark ? 'Light Mode' : 'Dark Mode');
+    toggle?.classList.toggle('bg-gray-300', !isDark);
+    toggle?.classList.toggle('bg-black', isDark);
+    circle?.classList.toggle('translate-x-5', isDark);
+    guestIcon?.classList.toggle('fa-moon', !isDark);
+    guestIcon?.classList.toggle('fa-sun', isDark);
+    guestTheme?.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+
+  toggleTheme() {
+    const nextTheme = this.getStoredTheme() === 'dark' ? 'light' : 'dark';
+    this.setStoredTheme(nextTheme);
+    this.applyTheme(nextTheme);
+  }
+
   createDropdown() {
     const div = document.createElement('div');
     div.id = 'userDropdown';
-    div.className = 'hidden absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow z-50';
+    div.className = 'hidden fixed z-50 w-63 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl mt-2';
 
     div.innerHTML = `
-      <div id="userEmail" class="px-4 py-2 text-sm text-gray-500 border-b"></div>
-      <button id="btnLogout" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-        Logout
-      </button>
-    `;
+      <div class="border-b border-gray-100 px-4 py-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+            <i class="fa-solid fa-user text-sm"></i>
+          </div>
+
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-medium uppercase tracking-wide text-gray-400">
+              Signed in as
+            </p>
+
+            <div id="userEmail" class="mt-1 truncate text-sm font-medium text-gray-700"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-2 space-y-1">
+
+        <button
+      id="btnTheme"
+      type="button"
+      class="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+    >
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-moon w-4 text-center text-gray-500"></i>
+        <span>Dark Mode</span>
+      </div>
+
+      <div
+        id="themeToggle"
+        class="relative h-6 w-11 rounded-full bg-gray-300 transition"
+      >
+        <div
+          id="themeCircle"
+          class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow transition"
+        ></div>
+      </div>
+    </button>
+
+    <button
+      id="btnSettings"
+      type="button"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+    >
+      <i class="fa-solid fa-gear w-4 text-center text-gray-500"></i>
+      <span>Settings</span>
+    </button>
+
+    <div class="my-1 border-t border-gray-100"></div>
+
+    <button
+      id="btnLogout"
+      type="button"
+      class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+    >
+      <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center"></i>
+      <span>Logout</span>
+    </button>
+
+  </div>
+`;
 
     document.body.appendChild(div);
     this.dropdown = div;
+    this.updateThemeToggle(this.getStoredTheme() === 'dark');
   }
 
   listenAuth() {
@@ -39,9 +146,13 @@ export class Auth {
       if (!btn) return;
 
       if (user) {
+        const guestTheme = document.getElementById('btnGuestTheme');
+        guestTheme?.classList.add('hidden');
+        guestTheme?.classList.remove('inline-flex');
+
         btn.innerHTML = `
-          <i class="fa-solid fa-user mr-2"></i>
-          ${user.displayName || 'Account'}
+          <i class="fa-solid fa-user mr-2 shrink-0"></i>
+          <span class="min-w-0 truncate">${user.displayName || 'Account'}</span>
         `;
 
         btn.onclick = (e) => {
@@ -49,6 +160,10 @@ export class Auth {
           this.toggleDropdown(btn, user);
         };
       } else {
+        const guestTheme = document.getElementById('btnGuestTheme');
+        guestTheme?.classList.remove('hidden');
+        guestTheme?.classList.add('inline-flex');
+
         btn.innerHTML = `
           <i class="fa-solid fa-user mr-2"></i>
           Sign In
@@ -62,11 +177,15 @@ export class Auth {
 
   toggleDropdown(btn, user) {
     const rect = btn.getBoundingClientRect();
+    const dropdownWidth = Math.min(256, window.innerWidth - 32);
+    const left = Math.max(16, Math.min(rect.right - dropdownWidth, window.innerWidth - dropdownWidth - 16));
 
-    this.dropdown.style.top = rect.bottom + 'px';
-    this.dropdown.style.left = rect.right - 192 + 'px';
+    this.dropdown.style.top = rect.bottom + 8 + 'px';
+    this.dropdown.style.left = left + 'px';
 
-    document.getElementById('userEmail').textContent = user.email;
+    const email = document.getElementById('userEmail');
+    email.textContent = user.email;
+    email.title = user.email;
 
     this.dropdown.classList.toggle('hidden');
   }
@@ -79,6 +198,8 @@ export class Auth {
       if (id === 'btnCloseAuth') this.close();
       if (id === 'btnSwitchMode') this.toggleMode();
       if (id === 'btnGoogle') this.googleLogin();
+      if (id === 'btnTheme') this.toggleTheme();
+      if (id === 'btnGuestTheme') this.toggleTheme();
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
@@ -246,7 +367,7 @@ export class Auth {
           </div>
 
           <button id="btnAuthSubmit" type="submit"
-            class="w-full py-2 bg-black text-white rounded-xl mb-3">
+            class="theme-create-button w-full py-2 bg-black text-white rounded-xl mb-3">
             Sign In
           </button>
         </form>

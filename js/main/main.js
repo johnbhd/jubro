@@ -137,7 +137,19 @@ export class TrackerApp {
 
     return tracker.columns
       .map((column, index) => ({ column, index }))
-      .filter(({ column }) => typeof column === 'object' && column.type === 'select');
+      .filter(({ column }) => {
+        const name = String(this.getColumnName(column) || '').trim().toLowerCase();
+
+        return (typeof column === 'object' && column.type === 'select') || name === 'status';
+      })
+      .sort((a, b) => {
+        const aName = String(this.getColumnName(a.column) || '').trim().toLowerCase();
+        const bName = String(this.getColumnName(b.column) || '').trim().toLowerCase();
+
+        if (aName === 'status' && bName !== 'status') return -1;
+        if (aName !== 'status' && bName === 'status') return 1;
+        return a.index - b.index;
+      });
   }
 
   getColumnName(column) {
