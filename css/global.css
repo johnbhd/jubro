@@ -94,10 +94,20 @@ input:disabled {
 
 .dark #jobSearchInput,
 .dark #trackerTitleInput,
-.dark #dashboardSelectColumn {
+.dark #dashboardSelectColumn,
+.dark #tableSortSelect,
+.dark #selectTextSortSelect,
+.dark #selectValueFilterSelect {
   background-color: #111827 !important;
   color: #f9fafb !important;
   outline: none;
+}
+
+.dark #tableSortSelect option,
+.dark #selectTextSortSelect option,
+.dark #selectValueFilterSelect option {
+  background-color: #111827;
+  color: #f9fafb;
 }
 
 .dark #trackerTitleInput {
@@ -116,17 +126,27 @@ input:disabled {
 .dark #btnOpenSearch,
 .dark #btnMenu,
 .dark #btnCloseSearch,
-.dark #btnCloseDashboard {
+.dark #btnCloseDashboard,
+.dark #btnClearSelectFilter {
   color: #e5e7eb !important;
+}
+
+.dark #btnCloseSearch {
+  background-color: #111827 !important;
 }
 
 .dark #btnOpenSearch:hover,
 .dark #btnMenu:hover,
 .dark #btnCloseSearch:hover,
+.dark #btnClearSelectFilter:hover,
 .dark #navDropdown button:hover,
 .dark #contextMenu button:hover,
 .dark #subMenu button:hover {
   background-color: #374151 !important;
+}
+
+.dark #btnClearSelectFilter {
+  background-color: #1f2937 !important;
 }
 
 .dark table {

@@ -11,6 +11,12 @@ export class TrackerApp {
     this.titleInput = document.getElementById('trackerTitleInput');
     this.searchWrapper = document.getElementById('searchWrapper');
     this.searchInput = document.getElementById('jobSearchInput');
+    this.sortSelect = document.getElementById('tableSortSelect');
+    this.selectTextSortWrapper = document.getElementById('selectTextSortWrapper');
+    this.selectTextSortSelect = document.getElementById('selectTextSortSelect');
+    this.selectValueFilterWrapper = document.getElementById('selectValueFilterWrapper');
+    this.selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
+    this.btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
     this.btnCloseSearch = document.getElementById('btnCloseSearch');
     this.noSearchResults = document.getElementById('noSearchResults');
     this.dashboardModal = document.getElementById('dashboardModal');
@@ -128,6 +134,147 @@ export class TrackerApp {
   }
   save() {
     Storage.save(this.state);
+  }
+
+  getDateColumnIndex(tracker) {
+    if (!tracker || !Array.isArray(tracker.columns)) return -1;
+
+    const typedIndex = tracker.columns.findIndex((column) => (
+      typeof column === 'object' && column.type === 'date'
+    ));
+
+    if (typedIndex !== -1) return typedIndex;
+
+    return tracker.columns.findIndex((column) => {
+      const name = String(this.getColumnName(column) || '').trim().toLowerCase();
+      return name === 'date' || name === 'date applied';
+    });
+  }
+
+  getDateSortValue(row, dateIndex) {
+    const cell = row?.[dateIndex];
+    const value = typeof cell === 'object' ? cell.value : cell;
+    const time = new Date(`${value || ''}T00:00:00`).getTime();
+
+    return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
+  }
+
+  getCellSortText(row, columnIndex) {
+    const cell = row?.[columnIndex];
+    const value = typeof cell === 'object' ? cell.value : cell;
+
+    return String(value || '').trim().toLowerCase();
+  }
+
+  applyCurrentSort() {
+    const tracker = this.getTracker();
+    const sortValue = this.sortSelect?.value || '';
+
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+
+    if (sortValue === 'select-text') {
+      const columnIndex = Number(this.selectTextSortSelect?.value);
+      if (!Number.isInteger(columnIndex) || columnIndex < 0) return;
+
+      tracker.rows.sort((a, b) => (
+        this.getCellSortText(a, columnIndex).localeCompare(this.getCellSortText(b, columnIndex))
+      ));
+      return;
+    }
+
+    if (!['date-asc', 'date-desc'].includes(sortValue)) return;
+
+    const dateIndex = this.getDateColumnIndex(tracker);
+    if (dateIndex === -1) return;
+
+    const direction = sortValue === 'date-desc' ? -1 : 1;
+
+    tracker.rows.sort((a, b) => {
+      const aTime = this.getDateSortValue(a, dateIndex);
+      const bTime = this.getDateSortValue(b, dateIndex);
+
+      return (aTime - bTime) * direction;
+    });
+  }
+
+  renderSelectTextSortOptions() {
+    if (!this.selectTextSortSelect) return;
+
+    const selectColumns = this.getSelectColumns();
+    const currentValue = this.selectTextSortSelect.value;
+
+    this.selectTextSortSelect.innerHTML = '';
+
+    selectColumns.forEach(({ column, index }) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = this.getColumnName(column) || `Column ${index + 1}`;
+      this.selectTextSortSelect.appendChild(option);
+    });
+
+    if (selectColumns.some(({ index }) => String(index) === currentValue)) {
+      this.selectTextSortSelect.value = currentValue;
+    }
+  }
+
+  renderSelectValueFilterOptions() {
+    if (!this.selectValueFilterSelect) return;
+
+    const tracker = this.getTracker();
+    const columnIndex = Number(this.selectTextSortSelect?.value);
+    const column = tracker?.columns?.[columnIndex];
+    const options = this.getDashboardOptions(column);
+    const currentValue = this.selectValueFilterSelect.value;
+
+    this.selectValueFilterSelect.innerHTML = '';
+
+    const allOption = document.createElement('option');
+    allOption.value = '';
+    allOption.textContent = 'All';
+    this.selectValueFilterSelect.appendChild(allOption);
+
+    options.forEach((selectOption) => {
+      const option = document.createElement('option');
+      option.value = selectOption.label;
+      option.textContent = selectOption.label;
+      this.selectValueFilterSelect.appendChild(option);
+    });
+
+    if (options.some((option) => option.label === currentValue)) {
+      this.selectValueFilterSelect.value = currentValue;
+    }
+  }
+
+  updateSelectTextSortVisibility() {
+    if (!this.selectTextSortWrapper) return;
+
+    const shouldShow = this.sortSelect?.value === 'select-text';
+    this.selectTextSortWrapper.classList.toggle('hidden', !shouldShow);
+    this.selectValueFilterWrapper?.classList.toggle('hidden', !shouldShow);
+    this.btnCloseSearch?.classList.toggle('hidden', !shouldShow);
+    this.btnCloseSearch?.classList.toggle('inline-flex', shouldShow);
+    this.btnClearSelectFilter?.classList.toggle('hidden', !shouldShow);
+    this.btnClearSelectFilter?.classList.toggle('inline-flex', shouldShow);
+
+    if (shouldShow) {
+      this.renderSelectTextSortOptions();
+      this.renderSelectValueFilterOptions();
+    } else if (this.selectValueFilterSelect) {
+      this.selectValueFilterSelect.value = '';
+    }
+  }
+
+  clearSelectFilter() {
+    if (this.sortSelect) {
+      this.sortSelect.value = 'date-desc';
+    }
+
+    if (this.selectValueFilterSelect) {
+      this.selectValueFilterSelect.value = '';
+    }
+
+    this.updateSelectTextSortVisibility();
+    this.refresh();
   }
 
   getSelectColumns() {
@@ -292,8 +439,10 @@ export class TrackerApp {
   closeMobileSearch() {
     this.searchWrapper?.classList.add('hidden');
     this.searchWrapper?.classList.remove('flex');
-    this.btnCloseSearch?.classList.add('hidden');
-    this.btnCloseSearch?.classList.remove('inline-flex');
+    if (this.sortSelect?.value !== 'select-text') {
+      this.btnCloseSearch?.classList.add('hidden');
+      this.btnCloseSearch?.classList.remove('inline-flex');
+    }
   }
 
   getSearchColumnIndexes(tracker) {
@@ -320,6 +469,21 @@ export class TrackerApp {
     });
   }
 
+  rowMatchesSelectFilter(row) {
+    if (this.sortSelect?.value !== 'select-text') return true;
+
+    const selectedValue = this.selectValueFilterSelect?.value || '';
+    if (!selectedValue) return true;
+
+    const columnIndex = Number(this.selectTextSortSelect?.value);
+    if (!Number.isInteger(columnIndex) || columnIndex < 0) return true;
+
+    const cell = row?.[columnIndex];
+    const value = typeof cell === 'object' ? cell.value : cell;
+
+    return String(value || '') === selectedValue;
+  }
+
   applySearchFilter() {
     const tracker = this.getTracker();
     const query = this.searchInput?.value.trim().toLowerCase() || '';
@@ -331,7 +495,8 @@ export class TrackerApp {
 
     rows.forEach((rowElement, rowIndex) => {
       const row = tracker.rows[rowIndex];
-      const isVisible = this.rowMatchesSearch(row, columnIndexes, query);
+      const isVisible = this.rowMatchesSearch(row, columnIndexes, query)
+        && this.rowMatchesSelectFilter(row);
 
       rowElement.classList.toggle('hidden', !isVisible);
       if (isVisible) visibleCount += 1;
@@ -342,6 +507,10 @@ export class TrackerApp {
 
   refresh() {
     const tracker = this.getTracker();
+    this.renderSelectTextSortOptions();
+    this.renderSelectValueFilterOptions();
+    this.updateSelectTextSortVisibility();
+    this.applyCurrentSort();
     Table.render(tracker.columns, tracker.rows);
     this.titleInput.value = tracker.title;
     this.applySearchFilter();
@@ -462,6 +631,10 @@ export class TrackerApp {
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
     const btnCloseSearch = document.getElementById('btnCloseSearch');
+    const tableSortSelect = document.getElementById('tableSortSelect');
+    const selectTextSortSelect = document.getElementById('selectTextSortSelect');
+    const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
+    const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
     
     document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
       this.setColumnType('checkbox');
@@ -537,6 +710,11 @@ export class TrackerApp {
     });
 
     btnCloseSearch?.addEventListener('click', () => {
+      if (this.sortSelect?.value === 'select-text') {
+        this.clearSelectFilter();
+        return;
+      }
+
       this.closeMobileSearch();
     });
 
@@ -575,6 +753,27 @@ export class TrackerApp {
 
     this.searchInput?.addEventListener('input', () => {
       this.applySearchFilter();
+    });
+
+    tableSortSelect?.addEventListener('change', () => {
+      this.updateSelectTextSortVisibility();
+      this.refresh();
+    });
+
+    selectTextSortSelect?.addEventListener('change', () => {
+      if (this.selectValueFilterSelect) {
+        this.selectValueFilterSelect.value = '';
+      }
+      this.renderSelectValueFilterOptions();
+      this.refresh();
+    });
+
+    selectValueFilterSelect?.addEventListener('change', () => {
+      this.refresh();
+    });
+
+    btnClearSelectFilter?.addEventListener('click', () => {
+      this.clearSelectFilter();
     });
 
     this.appBody.addEventListener('click', (e) => {

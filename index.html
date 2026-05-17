@@ -23,20 +23,82 @@
           aria-label="Tracker title"
         />
       </div>
-      <div id="searchWrapper" class="relative hidden w-full max-md:absolute max-md:inset-0 max-md:z-20 max-md:items-center max-md:bg-white max-md:p-3 md:block">
-        <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-sm text-gray-400 md:left-3"></i>
+<div
+  id="searchWrapper"
+  class="relative hidden w-full gap-2 overflow-x-auto max-md:absolute max-md:inset-0 max-md:z-20 max-md:items-center max-md:bg-white max-md:p-3 md:flex"
+>
+  <!-- SEARCH -->
+  <div
+    id="searchInputWrapper"
+    class="relative min-w-0 flex-1"
+  >
+    <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
 
-        <input
-          id="jobSearchInput"
-          type="text"
-          placeholder="Search jobs..."
-          class="h-10 w-full rounded-full bg-gray-100 py-2 pl-10 pr-11 text-sm outline-none focus:bg-gray-50 focus:ring-2 focus:ring-gray-200"
-        />
+    <input
+      id="jobSearchInput"
+      type="text"
+      placeholder="Search jobs..."
+      class="h-10 w-full rounded-full bg-gray-100 py-2 pl-10 pr-11 text-sm outline-none focus:bg-gray-50"
+    />
+  </div>
 
-        <button id="btnCloseSearch" type="button" class="absolute right-5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-gray-500 hover:bg-gray-200 md:hidden" aria-label="Close search">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
+  <!-- SORT -->
+  <div class="relative shrink-0">
+    <i
+      class="fa-solid fa-arrow-down-wide-short pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"
+    ></i>
+
+    <select
+      id="tableSortSelect"
+      class="cursor-pointer h-10 w-[90px] appearance-none rounded-full bg-gray-100 pl-8 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
+      aria-label="Sort table by date"
+    >
+      <option value="date-desc">New</option>
+      <option value="date-asc">Old</option>
+      <option value="select-text">Select</option>
+    </select>
+
+    <i
+      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+    ></i>
+  </div>
+
+  <!-- TEXT FILTER -->
+  <div id="selectTextSortWrapper" class="relative hidden shrink-0">
+    <select
+      id="selectTextSortSelect"
+      class="cursor-pointer h-10 w-[95px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
+      aria-label="Select text column"
+    ></select>
+
+    <i
+      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+    ></i>
+  </div>
+
+  <!-- VALUE FILTER -->
+  <div id="selectValueFilterWrapper" class="relative hidden shrink-0">
+    <select
+      id="selectValueFilterSelect"
+      class="cursor-pointer h-10 w-[95px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
+      aria-label="Select option value"
+    ></select>
+
+    <i
+      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+    ></i>
+  </div>
+
+  <!-- CLOSE -->
+  <button
+    id="btnCloseSearch"
+    type="button"
+    class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+    aria-label="Close search"
+  >
+    <i class="fa-solid fa-xmark text-sm"></i>
+  </button>
+</div>
       <div class="relative justify-self-end">
         <div class="flex items-center gap-2 justify-center">
           <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 md:hidden" aria-label="Open search">
