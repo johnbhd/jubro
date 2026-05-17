@@ -262,6 +262,10 @@ input:disabled {
   background-color: #374151 !important;
 }
 
+.dark #btnSwitchMode {
+  color: #e5e7eb !important;
+}
+
 .dark #btnLogout:hover {
   background-color: rgb(127 29 29 / 0.25) !important;
 }
