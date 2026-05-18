@@ -1,0 +1,104 @@
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-[auto_1fr_auto] lg:items-center mb-12">
+  <div class="flex items-center justify-between lg:justify-start">
+    <a href="./homepage.html" class="flex items-center gap-3">
+      <img
+        src="../img/jubro.png"
+        alt="Jubro logo"
+        class="w-11 h-11 rounded-xl"
+      />
+
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+          Jubro
+        </h1>
+
+        <p class="text-sm text-gray-500">
+          Simple job application tracker
+        </p>
+      </div>
+    </a>
+
+    <button
+      id="btnMobileMenu"
+      type="button"
+      class="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-300 bg-white text-gray-900 shadow-sm transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 lg:hidden"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="mobileTrackerMenu"
+    >
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+
+  <div
+    id="mobileTrackerMenu"
+    class="hidden fixed left-4 right-4 top-24 z-40 rounded-3xl border border-gray-200 bg-gray-100 p-3 shadow-lg sm:left-6 sm:right-6 sm:top-28 lg:static lg:z-auto lg:contents lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none"
+  >
+    <nav
+      class="flex flex-col gap-1 overflow-x-auto lg:flex-row lg:flex-nowrap lg:items-center lg:justify-center lg:gap-2"
+      aria-label="Primary navigation"
+    >
+      <a
+        href="./homepage.html"
+        data-nav-link="home"
+        class="rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 hover:text-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 lg:rounded-full lg:py-2"
+      >
+        Home
+      </a>
+
+      <a
+        href="./homepage.html#how-it-works"
+        data-nav-link="how-it-works"
+        class="rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 hover:text-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 lg:rounded-full lg:py-2"
+      >
+        How It Works
+      </a>
+
+      <a
+        href="./homepage.html#about"
+        data-nav-link="about"
+        class="rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 hover:text-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 lg:rounded-full lg:py-2"
+      >
+        About
+      </a>
+
+      <a
+        href="./tracker.html"
+        data-nav-link="trackers"
+        class="rounded-2xl px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-200 hover:text-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 lg:rounded-full lg:py-2"
+      >
+        Trackers
+      </a>
+    </nav>
+
+    <div class="mt-3 flex flex-col justify-center gap-3 border-t border-gray-200 pt-3 sm:flex-row lg:mt-0 lg:justify-end lg:border-0 lg:pt-0">
+      <a
+        id="btnOpenModal"
+        href="./tracker.html"
+        class="theme-create-button flex items-center justify-center gap-3 cursor-pointer px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+      >
+        <span>+</span>
+        <span>New Tracker</span>
+      </a>
+
+      <button
+        id="btnSignIn"
+        type="button"
+        class="inline-flex cursor-pointer items-center justify-center px-5 py-3 border border-gray-300 bg-white text-gray-900 rounded-2xl hover:bg-gray-100 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+      >
+        <i class="fa-solid fa-user mr-2"></i>
+        Sign In
+      </button>
+
+      <button
+        id="btnGuestTheme"
+        type="button"
+        class="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-2xl border border-gray-300 bg-white px-4 text-gray-900 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 sm:w-auto"
+        aria-label="Switch to dark mode"
+      >
+        <i class="fa-solid fa-moon"></i>
+        <span class="text-sm font-medium md:hidden">Dark Mode</span>
+      </button>
+    </div>
+  </div>
+</div>

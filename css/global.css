@@ -90,6 +90,100 @@ input:disabled {
   background-color: #e5e7eb !important;
 }
 
+.dark #btnOpenModal.theme-create-button,
+.dark #btnOpenModal.theme-create-button span {
+  color: #111827 !important;
+}
+
+.dark #btnOpenModal.theme-create-button:hover {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+.dark #btnOpenModal.theme-create-button:hover span {
+  color: #111827 !important;
+}
+
+.dark #homeBody h1 {
+  color: #f9fafb !important;
+}
+
+.dark #btnMobileMenu {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark #btnMobileMenu:hover {
+  background-color: #374151 !important;
+}
+
+.dark #mobileTrackerMenu {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark #mobileTrackerMenu a:not([aria-current="page"]) {
+  color: #e5e7eb !important;
+}
+
+.dark #mobileTrackerMenu a:not([aria-current="page"]):hover,
+.dark #mobileTrackerMenu a:not([aria-current="page"]):focus-visible {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark #mobileTrackerMenu [aria-current="page"] {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark #mobileTrackerMenu .border-t {
+  border-color: #374151 !important;
+}
+
+.dark #btnGuestTheme {
+  color: #f9fafb !important;
+}
+
+.dark #heroSection {
+  color: #e5e7eb;
+}
+
+.dark #heroSection .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark #heroSection .text-gray-700,
+.dark #heroSection .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark #heroSection .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.dark #heroSection .bg-gray-50,
+.dark #heroSection .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark #heroSection .bg-gray-100 {
+  background-color: #374151 !important;
+}
+
+.dark #heroSection .border-gray-200,
+.dark #heroSection .border-gray-300 {
+  border-color: #374151 !important;
+}
+
+.dark #mobileTrackerMenu a:focus-visible,
+.dark #mobileTrackerMenu button:focus-visible,
+.dark #btnMobileMenu:focus-visible {
+  outline-color: #f9fafb !important;
+}
+
 .dark #appNavbar,
 .dark #navDropdown,
 .dark #contextMenu,

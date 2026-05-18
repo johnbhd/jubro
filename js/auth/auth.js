@@ -48,6 +48,7 @@ export class Auth {
     const circle = document.getElementById('themeCircle');
     const guestTheme = document.getElementById('btnGuestTheme');
     const guestIcon = guestTheme?.querySelector('i');
+    const guestLabel = guestTheme?.querySelector('span');
 
     icon?.classList.toggle('fa-moon', !isDark);
     icon?.classList.toggle('fa-sun', isDark);
@@ -57,6 +58,7 @@ export class Auth {
     circle?.classList.toggle('translate-x-5', isDark);
     guestIcon?.classList.toggle('fa-moon', !isDark);
     guestIcon?.classList.toggle('fa-sun', isDark);
+    guestLabel && (guestLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode');
     guestTheme?.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
   }
 
