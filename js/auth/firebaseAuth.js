@@ -23,6 +23,11 @@ class FirebaseAuthService {
     this.db = getFirestore(app);
     this.googleProvider = new GoogleAuthProvider();
     this.syncedUserId = null;
+    this.conflictResolver = null;
+  }
+
+  setConflictResolver(resolveConflict) {
+    this.conflictResolver = resolveConflict;
   }
 
   async loginWithGoogle() {
@@ -98,7 +103,12 @@ class FirebaseAuthService {
     this.syncedUserId = user.uid;
 
     try {
-      await firebaseTrackerSync.syncLocalData(user);
+      await firebaseTrackerSync.syncLocalData(user, {
+        resolveConflict: this.conflictResolver
+      });
+      document.dispatchEvent(new CustomEvent("tracker:sync-complete", {
+        detail: { userId: user.uid }
+      }));
     } catch (err) {
       this.syncedUserId = null;
       console.error("Tracker sync error:", err);

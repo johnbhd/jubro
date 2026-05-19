@@ -236,6 +236,17 @@ input:disabled {
   color: #f9fafb !important;
 }
 
+.dark footer a[aria-label] {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark footer a[aria-label]:hover {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
 .dark #homeBody main h3,
 .dark #homeBody main h4 {
   color: #f9fafb !important;
@@ -243,6 +254,20 @@ input:disabled {
 
 .dark #how-it-works .uppercase.tracking-wider {
   color: #d1d5db !important;
+}
+
+.dark #about .bg-white {
+  background-color: #1f2937 !important;
+}
+
+.dark #about .bg-gray-50,
+.dark #about .bg-gray-100 {
+  background-color: #111827 !important;
+}
+
+.dark #about .border-gray-200,
+.dark #about .border-gray-300 {
+  border-color: #374151 !important;
 }
 
 .dark #mobileTrackerMenu a:focus-visible,
@@ -431,6 +456,34 @@ input:disabled {
 }
 
 .dark #btnSignIn:hover {
+  background-color: #374151 !important;
+}
+
+.dark #authModal h2,
+.dark #authModal p,
+.dark #syncConflictModal h2,
+.dark #syncConflictModal p {
+  color: #f9fafb !important;
+}
+
+.dark #authModal button:not(.theme-create-button),
+.dark #syncConflictModal button:not(.theme-create-button) {
+  color: #f9fafb !important;
+}
+
+.dark #authModal .bg-gray-200,
+.dark #syncConflictModal .bg-gray-200 {
+  background-color: #374151 !important;
+}
+
+.dark #btnGoogle,
+.dark #btnKeepCloudTracker {
+  background-color: #111827 !important;
+  border-color: #374151 !important;
+}
+
+.dark #btnGoogle:hover,
+.dark #btnKeepCloudTracker:hover {
   background-color: #374151 !important;
 }
 

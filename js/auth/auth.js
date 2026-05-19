@@ -14,7 +14,9 @@ export class Auth {
   init() {
     this.applySavedTheme();
     this.createModal();
+    this.createSyncConflictModal();
     this.createDropdown();
+    authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
     this.bindEvents();
     this.listenAuth();
   }
@@ -232,6 +234,71 @@ export class Auth {
 
   close() {
     this.modal.classList.add('hidden');
+  }
+
+  createSyncConflictModal() {
+    const div = document.createElement('div');
+
+    div.id = 'syncConflictModal';
+    div.className = 'hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4';
+
+    div.innerHTML = `
+      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+        <h2 class="text-xl font-semibold text-gray-900">
+          Tracker already exists
+        </h2>
+
+        <p id="syncConflictText" class="mt-3 leading-7 text-gray-600"></p>
+
+        <div class="mt-6 flex flex-col gap-2 sm:flex-row">
+          <button
+            id="btnKeepCloudTracker"
+            type="button"
+            class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-100"
+          >
+            Keep Cloud
+          </button>
+
+          <button
+            id="btnOverwriteCloudTracker"
+            type="button"
+            class="theme-create-button flex-1 rounded-xl bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
+          >
+            Overwrite
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(div);
+    this.syncConflictModal = div;
+    this.syncConflictText = div.querySelector('#syncConflictText');
+  }
+
+  confirmTrackerOverwrite({ localTracker, firebaseTracker }) {
+    const localTitle = localTracker?.title || 'Untitled tracker';
+    const cloudTitle = firebaseTracker?.title || localTitle;
+
+    this.syncConflictText.textContent = `"${localTitle}" already exists in Firebase as "${cloudTitle}", but the entries do not match. Do you want to overwrite the Firebase tracker with this local tracker?`;
+    this.syncConflictModal.classList.remove('hidden');
+
+    return new Promise((resolve) => {
+      const keepCloud = document.getElementById('btnKeepCloudTracker');
+      const overwriteCloud = document.getElementById('btnOverwriteCloudTracker');
+
+      const cleanup = (shouldOverwrite) => {
+        keepCloud.removeEventListener('click', keepHandler);
+        overwriteCloud.removeEventListener('click', overwriteHandler);
+        this.syncConflictModal.classList.add('hidden');
+        resolve(shouldOverwrite);
+      };
+
+      const keepHandler = () => cleanup(false);
+      const overwriteHandler = () => cleanup(true);
+
+      keepCloud.addEventListener('click', keepHandler);
+      overwriteCloud.addEventListener('click', overwriteHandler);
+    });
   }
 
   toggleMode() {

@@ -6,6 +6,12 @@ export const UIState = {
   activeType: null
 };
 
+function resetActiveTarget() {
+  UIState.activeRow = null;
+  UIState.activeCol = null;
+  UIState.activeType = null;
+}
+
 export function setActiveTarget(rowIndex, colIndex, type) {
   UIState.activeRow = rowIndex;
   UIState.activeCol = colIndex;
@@ -13,6 +19,12 @@ export function setActiveTarget(rowIndex, colIndex, type) {
 }
 
 export function clearActiveTarget(rowIndex, colIndex, type) {
+  const menu = getMenu();
+
+  if (menu && !menu.classList.contains('hidden')) {
+    return;
+  }
+
   if (
     UIState.activeRow === rowIndex
     && UIState.activeCol === colIndex
@@ -99,6 +111,7 @@ export function closeMenu() {
   const menu = getMenu();
   if (!menu) return;
   menu.classList.add('hidden');
+  resetActiveTarget();
 }
 
 export function startPress(e, row, col, type) {

@@ -1,4 +1,6 @@
 import { Storage } from '../storage/storage.js';
+import { authService } from '../auth/firebaseAuth.js';
+import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
 
 export class TrackerHome {
   constructor() {
@@ -34,6 +36,13 @@ export class TrackerHome {
     this.render();
   }
 
+  reloadFromStorage() {
+    const state = Storage.load();
+
+    this.state = state?.data ? state : { active: null, data: {} };
+    this.render();
+  }
+
   bindEvents() {
     this.btnOpen?.addEventListener('click', (e) => {
       e.preventDefault();
@@ -63,6 +72,10 @@ export class TrackerHome {
         e.preventDefault();
         this.showModal();
       }
+    });
+
+    document.addEventListener('tracker:sync-complete', () => {
+      this.reloadFromStorage();
     });
   }
 
@@ -160,6 +173,7 @@ export class TrackerHome {
     this.state.active = id;
   
     Storage.save(this.state);
+    this.syncLocalStateToFirebase();
   
     this.titleInput.value = "";
     this.clearError();
@@ -222,9 +236,20 @@ export class TrackerHome {
     }
   
     Storage.save(this.state);
+    this.syncLocalStateToFirebase();
   
     this.hideDeleteModal();
     this.render();
+  }
+
+  syncLocalStateToFirebase() {
+    const user = authService.getCurrentUser();
+
+    if (!user) return;
+
+    firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
+      console.error("Tracker Firebase sync error:", err);
+    });
   }
   render() {
     if (!this.grid) return;
@@ -233,7 +258,16 @@ export class TrackerHome {
 
     const data = this.state?.data || {};
 
-    const keys = Object.keys(data);
+    const keys = Object.keys(data).sort((a, b) => {
+      const aNumber = Number(a);
+      const bNumber = Number(b);
+
+      if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) {
+        return bNumber - aNumber;
+      }
+
+      return String(b).localeCompare(String(a));
+    });
 
     if (keys.length === 0) {
       this.grid.innerHTML = `
@@ -248,7 +282,7 @@ export class TrackerHome {
 
       const card = document.createElement('div');
       card.className =
-        "bg-white p-5 rounded-2xl shadow hover:shadow-md cursor-pointer overflow-hidden";
+        "group bg-white p-5 rounded-2xl shadow cursor-pointer overflow-hidden border border-transparent transition duration-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl";
 
       card.addEventListener('click', () => {
         this.state.active = t.id;
@@ -266,13 +300,13 @@ export class TrackerHome {
             data-id="${t.id}"
             data-title="${t.title}"
           >
-            <i class="fa-solid fa-trash"></i>
+            <i class="fa-solid fa-trash hover:text-red-500"></i>
           </button>
         </div>
       
         <p class="text-gray-500 mt-1">${t.rows.length} entries</p>
       
-        <button type="button" class="mt-4 text-sm text-blue-500">
+        <button type="button" class="mt-4 text-sm text-blue-500 transition group-hover:text-blue-600">
           Open
         </button>
       `;

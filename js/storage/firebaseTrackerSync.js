@@ -27,7 +27,39 @@ class FirebaseTrackerSync {
     this.db = getFirestore(app);
   }
 
-  async syncLocalData(user) {
+  clone(value) {
+    return typeof structuredClone === "function"
+      ? structuredClone(value)
+      : JSON.parse(JSON.stringify(value));
+  }
+
+  normalizeTracker(tracker) {
+    if (!tracker || typeof tracker !== "object") return null;
+
+    return {
+      title: tracker.title || "",
+      columns: tracker.columns || [],
+      rows: tracker.rows || []
+    };
+  }
+
+  trackersMatch(a, b) {
+    return JSON.stringify(this.normalizeTracker(a)) === JSON.stringify(this.normalizeTracker(b));
+  }
+
+  findMatchingTrackerId(firebaseData, localId, localTracker) {
+    if (firebaseData[localId]) return localId;
+
+    const localTitle = String(localTracker?.title || "").trim().toLowerCase();
+    if (!localTitle) return null;
+
+    return Object.keys(firebaseData).find((firebaseId) => {
+      const firebaseTitle = String(firebaseData[firebaseId]?.title || "").trim().toLowerCase();
+      return firebaseTitle === localTitle;
+    }) || null;
+  }
+
+  async syncLocalData(user, options = {}) {
     if (!user) return;
 
     const localState = Storage.load();
@@ -42,13 +74,65 @@ class FirebaseTrackerSync {
       return;
     }
 
-    if (hasLocalData) {
+    if (hasLocalData && !hasFirebaseData) {
       await this.uploadLocalState(user, localState);
       console.log("Uploaded local trackerData to Firestore");
       return;
     }
 
+    if (hasLocalData && hasFirebaseData) {
+      const mergedState = await this.mergeStates(localState, firebaseState, options.resolveConflict);
+
+      Storage.save(mergedState);
+      await this.uploadLocalState(user, mergedState);
+      console.log("Merged local and Firestore trackerData");
+      return;
+    }
+
     console.log("No valid trackerData to sync");
+  }
+
+  async mergeStates(localState, firebaseState, resolveConflict) {
+    const mergedData = this.clone(firebaseState?.data || {});
+    const localData = localState?.data || {};
+
+    for (const [localId, localTracker] of Object.entries(localData)) {
+      const firebaseId = this.findMatchingTrackerId(mergedData, localId, localTracker);
+
+      if (!firebaseId) {
+        mergedData[localId] = this.clone(localTracker);
+        continue;
+      }
+
+      if (this.trackersMatch(localTracker, mergedData[firebaseId])) {
+        continue;
+      }
+
+      const shouldOverwrite = typeof resolveConflict === "function"
+        ? await resolveConflict({
+            localId,
+            firebaseId,
+            localTracker: this.clone(localTracker),
+            firebaseTracker: this.clone(mergedData[firebaseId])
+          })
+        : false;
+
+      if (shouldOverwrite) {
+        mergedData[firebaseId] = {
+          ...this.clone(localTracker),
+          id: firebaseId
+        };
+      }
+    }
+
+    const active = mergedData[localState?.active]
+      ? localState.active
+      : firebaseState?.active || Object.keys(mergedData)[0] || null;
+
+    return {
+      active,
+      data: mergedData
+    };
   }
 
   async loadFirebaseState(userId) {
@@ -92,7 +176,7 @@ class FirebaseTrackerSync {
   }
 
   async uploadLocalState(user, state) {
-    if (!hasValidTrackerData(state)) return;
+    if (!state || typeof state !== "object" || !state.data || typeof state.data !== "object") return;
 
     const trackerData = {
       active: state.active || null,
@@ -106,6 +190,29 @@ class FirebaseTrackerSync {
     }, { merge: true });
 
     await setDoc(doc(this.db, "trackerData", user.uid), trackerData, { merge: true });
+  }
+
+  async syncCurrentLocalState(user) {
+    if (!user) return;
+
+    const state = Storage.load();
+    await this.uploadLocalState(user, state);
+  }
+
+  async deleteTracker(user, trackerId) {
+    if (!user || !trackerId) return;
+
+    const state = Storage.load();
+    if (state.data && state.data[trackerId]) {
+      delete state.data[trackerId];
+    }
+
+    if (state.active === trackerId) {
+      state.active = Object.keys(state.data || {})[0] || null;
+    }
+
+    Storage.save(state);
+    await this.uploadLocalState(user, state);
   }
 }
 

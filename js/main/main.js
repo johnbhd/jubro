@@ -3,6 +3,8 @@ import { closeMenu, UIState } from './ui.js';
 import { renderDashboardCharts } from './dashboardCharts.js';
 import { Storage } from '../storage/storage.js';
 import { JSONService } from '../services/jsonService.js';
+import { authService } from '../auth/firebaseAuth.js';
+import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
 
 export class TrackerApp {
   constructor() {
@@ -154,6 +156,17 @@ export class TrackerApp {
   }
   save() {
     Storage.save(this.state);
+    this.syncLocalStateToFirebase();
+  }
+
+  syncLocalStateToFirebase() {
+    const user = authService.getCurrentUser();
+
+    if (!user) return;
+
+    firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
+      console.error("Tracker Firebase sync error:", err);
+    });
   }
 
   getDateColumnIndex(tracker) {
