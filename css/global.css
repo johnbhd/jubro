@@ -248,12 +248,19 @@ input:disabled {
 }
 
 .dark #homeBody main h3,
-.dark #homeBody main h4 {
+.dark #homeBody main h4,
+.dark #homeTotalApplications {
   color: #f9fafb !important;
 }
 
 .dark #how-it-works .uppercase.tracking-wider {
   color: #d1d5db !important;
+}
+
+.dark #how-it-works .grid .group > div:first-child {
+  background-color: #111827 !important;
+  border: 1px solid #374151;
+  color: #f9fafb !important;
 }
 
 .dark #about .bg-white {
@@ -263,6 +270,16 @@ input:disabled {
 .dark #about .bg-gray-50,
 .dark #about .bg-gray-100 {
   background-color: #111827 !important;
+}
+
+.dark #about h2 {
+  color: #f9fafb !important;
+}
+
+.dark #about .space-y-5 .flex.h-12 {
+  background-color: #111827 !important;
+  border: 1px solid #374151;
+  color: #f9fafb !important;
 }
 
 .dark #about .border-gray-200,
