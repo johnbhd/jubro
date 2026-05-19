@@ -247,6 +247,10 @@ input:disabled {
   color: #111827 !important;
 }
 
+.dark footer .mt-14 a:hover {
+  color: #f9fafb !important;
+}
+
 .dark #homeBody main h3,
 .dark #homeBody main h4,
 .dark #homeTotalApplications {
