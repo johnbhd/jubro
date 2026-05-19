@@ -1,3 +1,5 @@
+import { Storage } from './storage/storage.js';
+
 const THEME_KEY = 'jubro_theme';
 
 export async function loadComponent(selector, componentPath) {
@@ -93,6 +95,49 @@ function setupActiveNavigation() {
   });
 }
 
+function getStatusValue(cell) {
+  return String(typeof cell === 'object' ? cell.value : cell || '').trim().toLowerCase();
+}
+
+function updateHomepageStats() {
+  const activeTrackerCount = document.getElementById('homeActiveTrackerCount');
+  const totalApplications = document.getElementById('homeTotalApplications');
+  const appliedCount = document.getElementById('homeAppliedCount');
+  const interviewCount = document.getElementById('homeInterviewCount');
+  const rejectedCount = document.getElementById('homeRejectedCount');
+
+  if (!activeTrackerCount && !totalApplications) return;
+
+  const state = Storage.load();
+  const trackers = Object.values(state.data || {});
+  const rows = trackers.flatMap((tracker) => Array.isArray(tracker.rows) ? tracker.rows : []);
+  const statusCounts = rows.reduce((counts, row) => {
+    const status = getStatusValue(row?.[3]);
+    if (status) counts[status] = (counts[status] || 0) + 1;
+    return counts;
+  }, {});
+
+  if (activeTrackerCount) {
+    activeTrackerCount.textContent = `${trackers.length} Active`;
+  }
+
+  if (totalApplications) {
+    totalApplications.textContent = String(rows.length);
+  }
+
+  if (appliedCount) {
+    appliedCount.textContent = String(statusCounts.applied || 0);
+  }
+
+  if (interviewCount) {
+    interviewCount.textContent = String(statusCounts.interview || 0);
+  }
+
+  if (rejectedCount) {
+    rejectedCount.textContent = String(statusCounts.rejected || 0);
+  }
+}
+
 async function setupAuth() {
   try {
     const { Auth } = await import('./auth/auth.js');
@@ -120,7 +165,10 @@ const componentsReady = new Promise((resolve) => {
     if (document.getElementById('homeBody')) {
       initHomepage()
         .catch((error) => console.error(error))
-        .finally(resolve);
+        .finally(() => {
+          updateHomepageStats();
+          resolve();
+        });
       return;
     }
 
