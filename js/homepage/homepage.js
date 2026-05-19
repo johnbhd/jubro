@@ -287,7 +287,7 @@ export class TrackerHome {
       card.addEventListener('click', () => {
         this.state.active = t.id;
         Storage.save(this.state);
-        window.location.href = `./board.html?tracker=${t.id}`;
+        window.location.href = `/board?tracker=${encodeURIComponent(t.id)}`;
       });
 
       card.innerHTML = `

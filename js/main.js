@@ -231,8 +231,8 @@ function updateHomepageStats() {
 
   if (previewBoardLink) {
     previewBoardLink.href = activeTrackerId
-      ? `./pages/board.html?tracker=${encodeURIComponent(activeTrackerId)}`
-      : './pages/tracker.html';
+      ? `/board?tracker=${encodeURIComponent(activeTrackerId)}`
+      : '/trackers';
   }
 
   updateHomepagePreviewRows(activeTracker);
@@ -250,8 +250,8 @@ async function setupAuth() {
 
 async function initHomepage() {
   await Promise.all([
-    loadComponent('#navbar', '../components/navbar.html'),
-    loadComponent('#footer', '../components/footer.html')
+    loadComponent('#navbar', '/components/navbar.html'),
+    loadComponent('#footer', '/components/footer.html')
   ]);
 
   setupMobileMenu();
