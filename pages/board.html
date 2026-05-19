@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jubro || Your simple Job Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="icon" type="image/png" href="../img/jubro.png" />
+</head>
+<body id="appBody" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
+  <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
+    <header id="appNavbar" class="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3 bg-white shadow-sm sticky top-0 z-10 rounded-md sm:p-4 md:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)_minmax(0,1fr)] md:gap-4">
+      <div class="flex min-w-0 items-center gap-2">
+        <a href="./tracker.html" class="shrink-0 text-gray-600" aria-label="Back to home">
+          <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <input
+          id="trackerTitleInput"
+          type="text"
+          class="min-w-0 flex-1 truncate text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none"
+          aria-label="Tracker title"
+        />
+      </div>
+      <div
+        id="searchWrapper"
+        class="relative hidden w-full min-w-0 gap-2 overflow-x-auto max-md:absolute max-md:inset-0 max-md:z-20 max-md:items-center max-md:bg-white max-md:p-3 md:flex"
+      >
+        <!-- SEARCH -->
+        <div
+          id="searchInputWrapper"
+          class="relative min-w-[12rem] flex-1"
+        >
+          <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
+
+          <input
+            id="jobSearchInput"
+            type="text"
+            placeholder="Search jobs..."
+            class="h-10 w-full rounded-full bg-gray-100 py-2 pl-10 pr-11 text-sm outline-none focus:bg-gray-50"
+          />
+        </div>
+
+        <!-- SORT -->
+        <div class="relative shrink-0">
+          <i
+            class="fa-solid fa-arrow-down-wide-short pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"
+          ></i>
+
+          <select
+            id="tableSortSelect"
+            class="cursor-pointer h-10 w-[86px] appearance-none rounded-full bg-gray-100 pl-8 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[90px]"
+            aria-label="Sort table by date"
+          >
+            <option value="date-desc">New</option>
+            <option value="date-asc">Old</option>
+            <option value="select-text">Select</option>
+          </select>
+
+          <i
+            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+          ></i>
+        </div>
+
+        <!-- TEXT FILTER -->
+        <div id="selectTextSortWrapper" class="relative hidden shrink-0">
+          <select
+            id="selectTextSortSelect"
+            class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
+            aria-label="Select text column"
+          ></select>
+
+          <i
+            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+          ></i>
+        </div>
+
+        <!-- VALUE FILTER -->
+        <div id="selectValueFilterWrapper" class="relative hidden shrink-0">
+          <select
+            id="selectValueFilterSelect"
+            class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
+            aria-label="Select option value"
+          ></select>
+
+          <i
+            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+          ></i>
+        </div>
+
+        <!-- CLOSE -->
+        <button
+          id="btnCloseSearch"
+          type="button"
+          class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+          aria-label="Close search"
+        >
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <div class="relative justify-self-end">
+        <div class="flex items-center gap-2 justify-center">
+          <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 md:hidden" aria-label="Open search">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </button>
+          <button id="btnDashboard" type="button" class="inline-flex h-10 w-10 items-center justify-center bg-black text-white rounded-lg text-sm hover:bg-gray-800" aria-label="Dashboard">
+            <i class="fa-solid fa-chart-simple"></i>
+          </button>
+          <button id="btnMenu" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-xl" aria-label="More options">
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+          </button>
+        </div>
+      
+        <!-- DROPDOWN -->
+        <div id="navDropdown" class="hidden absolute right-0 mt-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
+          <button id="btnImport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
+            <i class="fa-solid fa-file-import w-4 text-gray-500"></i>
+            <span>Import JSON</span>
+          </button>
+          <button id="btnExport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
+            <i class="fa-solid fa-file-export w-4 text-gray-500"></i>
+            <span>Export JSON</span>
+          </button>
+          <div class="border-t border-gray-100"></div>
+          <button id="btnExportExcel" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
+            <i class="fa-solid fa-file-excel w-4 text-gray-500"></i>
+            <span>Export Excel</span>
+          </button>
+        </div>
+      </div>
+    </header>
+    
+    <main class="min-w-0 py-3 sm:py-4" id="tableContainer">
+      <div class="bg-white rounded-md shadow overflow-x-auto">
+        <table class="min-w-max w-full text-sm text-center" id="table">
+          <thead class="bg-gray-50 dark:bg-[#374151] sticky top-0">
+            <tr id="headerRow"></tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <p id="noSearchResults" class="hidden text-gray-400 text-center py-6">
+        No matching jobs found.
+      </p>
+    </main>
+  </div>
+
+  <div id="dashboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
+    <div class="mx-auto my-4 max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:my-8 sm:max-h-[calc(100vh-4rem)] sm:p-6">
+      <div class="mb-4 flex items-start justify-between gap-3 sm:items-center">
+        <div class="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
+          <select
+            id="dashboardSelectColumn"
+            class="h-8 min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
+            aria-label="Dashboard select column"
+          ></select>
+        </div>
+        <button id="btnCloseDashboard" type="button" class="text-gray-500 text-xl hover:text-black">
+          &times;
+        </button>
+      </div>
+
+      <div id="dashboardCards" class="grid grid-cols-1 gap-3 lg:grid-cols-3"></div>
+      <div id="dashboardCharts"></div>
+    </div>
+  </div>
+  
+  <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
+    <div class="relative group">
+      <button id="btn-customize" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+        Customize ▶
+      </button>
+    
+      <!-- SUBMENU -->
+      <div id="subMenu"
+        class="hidden absolute left-full top-0 ml-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
+        
+        <button id="btn-type-text" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Text
+        </button>
+        <button id="btn-type-checkbox" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Checkbox
+        </button>
+        <button id="btn-type-date" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Date
+        </button>
+        <button id="btn-type-select" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+          Select
+        </button>
+    
+      </div>
+    </div>
+    <button id="btn-addRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
+    <button id="btn-addCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
+    <button id="btn-copyRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+      Copy Row
+    </button>
+    
+    <button id="btn-copyCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
+      Copy Column
+    </button>
+    <button id="btn-moveUp" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
+    <button id="btn-moveDown" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
+    <button id="btn-moveLeft" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
+    <button id="btn-moveRight" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
+    <button id="btn-delRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
+    <button id="btn-delCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
+  </div>
+
+<script type="module" src="../js/app.js"></script>
+</body>
+</html>

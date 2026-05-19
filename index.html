@@ -4,212 +4,468 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jubro || Your simple Job Tracker</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="./css/global.css" />
-  <link rel="icon" type="image/png" href="./img/jubro.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="icon" type="image/png" href="../img/jubro.png" />
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    @media (min-width: 1024px) {
+      #mobileTrackerMenu.hidden {
+        display: contents !important;
+      }
+    }
+  </style>
 </head>
-<body id="appBody" class="bg-gray-100 text-gray-800 flex justify-center">
-  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 ">
-    <header id="appNavbar" class="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-4 bg-white shadow-sm sticky top-0 z-10 rounded-md md:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)_minmax(0,1fr)] md:gap-4">
-      <div class="flex min-w-0 items-center gap-2">
-        <a href="./pages/tracker.html" class="shrink-0 text-gray-600" aria-label="Back to home">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <input
-          id="trackerTitleInput"
-          type="text"
-          class="min-w-0 flex-1 truncate text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none"
-          aria-label="Tracker title"
-        />
-      </div>
-<div
-  id="searchWrapper"
-  class="relative hidden w-full gap-2 overflow-x-auto max-md:absolute max-md:inset-0 max-md:z-20 max-md:items-center max-md:bg-white max-md:p-3 md:flex"
->
-  <!-- SEARCH -->
-  <div
-    id="searchInputWrapper"
-    class="relative min-w-0 flex-1"
-  >
-    <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
 
-    <input
-      id="jobSearchInput"
-      type="text"
-      placeholder="Search jobs..."
-      class="h-10 w-full rounded-full bg-gray-100 py-2 pl-10 pr-11 text-sm outline-none focus:bg-gray-50"
-    />
-  </div>
+<body id="homeBody" data-page="homepage" class="bg-gray-100 min-h-screen">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
+    <div id="navbar"></div>
 
-  <!-- SORT -->
-  <div class="relative shrink-0">
-    <i
-      class="fa-solid fa-arrow-down-wide-short pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"
-    ></i>
+    <main>
+      <section id="heroSection" class="relative overflow-hidden px-6 py-7 sm:px-10">
+        <div class="relative grid items-center gap-12 lg:grid-cols-2">
+          <div class="max-w-2xl">
+            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-700">
+              <span class="h-2 w-2 rounded-full bg-green-500"></span>
+              Organize your job applications easier
+            </div>
 
-    <select
-      id="tableSortSelect"
-      class="cursor-pointer h-10 w-[90px] appearance-none rounded-full bg-gray-100 pl-8 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
-      aria-label="Sort table by date"
-    >
-      <option value="date-desc">New</option>
-      <option value="date-asc">Old</option>
-      <option value="select-text">Select</option>
-    </select>
+            <h1 class="text-4xl font-black leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
+              Track Every Job
+              <span class="block text-gray-500">
+                Without The Mess
+              </span>
+            </h1>
 
-    <i
-      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-    ></i>
-  </div>
+            <p class="mt-6 max-w-xl text-base leading-7 text-gray-600 sm:text-lg">
+              Jubro helps students, freelancers, and job seekers organize applications,
+              interviews, and job links in one clean and simple tracker.
+            </p>
 
-  <!-- TEXT FILTER -->
-  <div id="selectTextSortWrapper" class="relative hidden shrink-0">
-    <select
-      id="selectTextSortSelect"
-      class="cursor-pointer h-10 w-[95px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
-      aria-label="Select text column"
-    ></select>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="./tracker.html"
+                class="theme-create-button inline-flex items-center justify-center rounded-2xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-gray-800"
+              >
+                Start Tracking
+              </a>
 
-    <i
-      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-    ></i>
-  </div>
+              <a
+                href="#how-it-works"
+                class="inline-flex items-center justify-center rounded-2xl border border-gray-300 bg-white px-6 py-4 text-sm font-semibold text-gray-900 transition hover:bg-gray-100"
+              >
+                Learn More
+              </a>
+            </div>
 
-  <!-- VALUE FILTER -->
-  <div id="selectValueFilterWrapper" class="relative hidden shrink-0">
-    <select
-      id="selectValueFilterSelect"
-      class="cursor-pointer h-10 w-[95px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50"
-      aria-label="Select option value"
-    ></select>
+            <div class="mt-10 flex flex-wrap items-center gap-6">
+              <div>
+                <h3 class="text-2xl font-bold text-gray-900">Simple</h3>
+                <p class="text-sm text-gray-500">
+                  Beginner friendly UI
+                </p>
+              </div>
 
-    <i
-      class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-    ></i>
-  </div>
+              <div class="h-10 w-px bg-gray-200"></div>
 
-  <!-- CLOSE -->
-  <button
-    id="btnCloseSearch"
-    type="button"
-    class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-    aria-label="Close search"
-  >
-    <i class="fa-solid fa-xmark text-sm"></i>
-  </button>
-</div>
-      <div class="relative justify-self-end">
-        <div class="flex items-center gap-2 justify-center">
-          <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 md:hidden" aria-label="Open search">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-          <button id="btnDashboard" type="button" class="inline-flex h-10 w-10 items-center justify-center bg-black text-white rounded-lg text-sm hover:bg-gray-800" aria-label="Dashboard">
-            <i class="fa-solid fa-chart-simple"></i>
-          </button>
-          <button id="btnMenu" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-xl" aria-label="More options">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
-          </button>
+              <div>
+                <h3 class="text-2xl font-bold text-gray-900">Fast</h3>
+                <p class="text-sm text-gray-500">
+                  Track jobs instantly
+                </p>
+              </div>
+
+              <div class="h-10 w-px bg-gray-200"></div>
+
+              <div>
+                <h3 class="text-2xl font-bold text-gray-900">Clean</h3>
+                <p class="text-sm text-gray-500">
+                  No clutter dashboard
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="rounded-[2rem] border border-gray-200 bg-gray-50 p-5 shadow-lg">
+              <div class="mb-5 flex items-center justify-between border-b border-gray-200 pb-4">
+                <div class="flex items-center gap-3">
+                  <div class="h-10 w-10 rounded-2xl bg-black"></div>
+
+                  <div>
+                    <h3 class="font-semibold text-gray-900">
+                      Frontend Internship
+                    </h3>
+
+                    <p class="text-sm text-gray-500">
+                      Google Careers
+                    </p>
+                  </div>
+                </div>
+
+                <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                  Applied
+                </span>
+              </div>
+
+              <div class="space-y-4">
+                <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900">
+                        UI/UX Designer
+                      </h4>
+
+                      <p class="text-sm text-gray-500">
+                        Remote - Upwork
+                      </p>
+                    </div>
+
+                    <span class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                      Interview
+                    </span>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900">
+                        Backend Developer
+                      </h4>
+
+                      <p class="text-sm text-gray-500">
+                        Hybrid - Startup
+                      </p>
+                    </div>
+
+                    <span class="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                      Rejected
+                    </span>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-gray-200 bg-white p-4">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900">
+                        Full Stack Developer
+                      </h4>
+
+                      <p class="text-sm text-gray-500">
+                        Manila - Tech Company
+                      </p>
+                    </div>
+
+                    <span class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
+                      Pending
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      
-        <!-- DROPDOWN -->
-        <div id="navDropdown" class="hidden absolute right-0 mt-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
-          <button id="btnImport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-file-import w-4 text-gray-500"></i>
-            <span>Import JSON</span>
-          </button>
-          <button id="btnExport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-file-export w-4 text-gray-500"></i>
-            <span>Export JSON</span>
-          </button>
-          <div class="border-t border-gray-100"></div>
-          <button id="btnExportExcel" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-file-excel w-4 text-gray-500"></i>
-            <span>Export Excel</span>
-          </button>
-        </div>
-      </div>
-    </header>
-    
-    <main class="py-4" id="tableContainer">
-      <div class="bg-white rounded-md shadow overflow-x-auto">
-        <table class="min-w-max w-full text-sm text-center" id="table">
-          <thead class="bg-gray-50 dark:bg-[#374151] sticky top-0">
-            <tr id="headerRow"></tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
+      </section>
 
-      <p id="noSearchResults" class="hidden text-gray-400 text-center py-6">
-        No matching jobs found.
-      </p>
+      <section id="how-it-works" class="mt-24">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
+            <span class="h-2 w-2 rounded-full bg-black"></span>
+            How Jubro Works
+          </div>
+
+          <h2 class="mt-6 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">
+            Organize Your Job Hunt
+            <span class="block text-gray-500">
+              In 3 Simple Steps
+            </span>
+          </h2>
+
+          <p class="mt-6 text-lg leading-8 text-gray-600">
+            No complicated setup. Just create trackers, save applications,
+            and monitor your job progress in one clean dashboard.
+          </p>
+        </div>
+
+        <div class="mt-16 grid gap-6 lg:grid-cols-3">
+          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
+            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-900 text-2xl text-white">
+              <i class="fa-solid fa-folder-plus"></i>
+            </div>
+
+            <div class="mt-8">
+              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
+                Step 01
+              </span>
+
+              <h3 class="mt-3 text-2xl font-bold text-gray-900">
+                Create A Tracker
+              </h3>
+
+              <p class="mt-4 leading-7 text-gray-600">
+                Start by creating a tracker for internships, freelance jobs,
+                remote work, or company applications.
+              </p>
+            </div>
+          </div>
+
+          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
+            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-black text-2xl text-white">
+              <i class="fa-solid fa-briefcase"></i>
+            </div>
+
+            <div class="mt-8">
+              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
+                Step 02
+              </span>
+
+              <h3 class="mt-3 text-2xl font-bold text-gray-900">
+                Save Job Applications
+              </h3>
+
+              <p class="mt-4 leading-7 text-gray-600">
+                Add company names, positions, dates applied,
+                status updates, and important job links.
+              </p>
+            </div>
+          </div>
+
+          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
+            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-800 text-2xl text-white">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+
+            <div class="mt-8">
+              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
+                Step 03
+              </span>
+
+              <h3 class="mt-3 text-2xl font-bold text-gray-900">
+                Track Your Progress
+              </h3>
+
+              <p class="mt-4 leading-7 text-gray-600">
+                Monitor interviews, rejections, pending applications,
+                and organize your entire job hunting journey.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-16 overflow-hidden rounded-[2rem] border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-8 sm:p-12">
+          <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
+            <div>
+              <h3 class="text-3xl font-black text-white sm:text-4xl">
+                Keep Your Job Search
+                Organized & Stress Free
+              </h3>
+
+              <p class="mt-5 max-w-2xl text-base leading-7 text-gray-300">
+                Jubro gives students, fresh graduates, and freelancers
+                a simple way to manage applications without messy spreadsheets.
+              </p>
+            </div>
+
+            <a
+              href="./tracker.html"
+              class="theme-create-button inline-flex items-center justify-center rounded-2xl bg-white px-7 py-4 text-sm font-semibold text-gray-900 transition hover:bg-gray-200"
+            >
+              Start Tracking Now
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="mt-24">
+        <div class="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
+              <span class="h-2 w-2 rounded-full bg-black"></span>
+              About Jubro
+            </div>
+
+            <h2 class="mt-6 text-4xl font-black leading-tight text-gray-900 sm:text-5xl">
+              Built For Students,
+              Freelancers &
+              Job Seekers
+            </h2>
+
+            <p class="mt-6 text-lg leading-8 text-gray-600">
+              Jubro is a simple job application tracker designed to help people
+              organize applications, interviews, and opportunities without
+              complicated dashboards or messy spreadsheets.
+            </p>
+
+            <p class="mt-5 text-base leading-7 text-gray-500">
+              Whether you're applying for internships, freelance projects,
+              remote work, or full-time jobs, Jubro keeps everything
+              organized in one clean and beginner-friendly workspace.
+            </p>
+
+            <div class="mt-10 space-y-5">
+              <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-black text-white">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Simple & Minimal UI
+                  </h3>
+
+                  <p class="mt-1 text-gray-600">
+                    Easy to use even if you are not familiar with productivity tools.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-900 text-white">
+                  <i class="fa-solid fa-briefcase"></i>
+                </div>
+
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Track Job Applications
+                  </h3>
+
+                  <p class="mt-1 text-gray-600">
+                    Save positions, companies, statuses, and important job links.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-800 text-white">
+                  <i class="fa-solid fa-chart-simple"></i>
+                </div>
+
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">
+                    Organize Everything
+                  </h3>
+
+                  <p class="mt-1 text-gray-600">
+                    Keep your entire job hunting journey in one place.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-xl">
+              <div class="border-b border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="h-12 w-12 rounded-2xl bg-black"></div>
+
+                    <div>
+                      <h3 class="font-semibold text-gray-900">
+                        Jubro Dashboard
+                      </h3>
+
+                      <p class="text-sm text-gray-500">
+                        Simple job tracker workspace
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    Active
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-5 bg-gray-50 p-6">
+                <div class="rounded-2xl border border-gray-200 bg-white p-5">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-semibold text-gray-900">
+                        Applications
+                      </h4>
+
+                      <p class="mt-1 text-sm text-gray-500">
+                        Total tracked jobs
+                      </p>
+                    </div>
+
+                    <span class="text-3xl font-black text-gray-900">
+                      24
+                    </span>
+                  </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-3">
+                  <div class="rounded-2xl bg-white p-5 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-gray-500">
+                        Applied
+                      </p>
+
+                      <div class="h-3 w-3 rounded-full bg-blue-500"></div>
+                    </div>
+
+                    <h4 class="mt-4 text-3xl font-black text-gray-900">
+                      12
+                    </h4>
+                  </div>
+
+                  <div class="rounded-2xl bg-white p-5 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-gray-500">
+                        Interview
+                      </p>
+
+                      <div class="h-3 w-3 rounded-full bg-green-500"></div>
+                    </div>
+
+                    <h4 class="mt-4 text-3xl font-black text-gray-900">
+                      8
+                    </h4>
+                  </div>
+
+                  <div class="rounded-2xl bg-white p-5 border border-gray-200">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm text-gray-500">
+                        Rejected
+                      </p>
+
+                      <div class="h-3 w-3 rounded-full bg-red-500"></div>
+                    </div>
+
+                    <h4 class="mt-4 text-3xl font-black text-gray-900">
+                      4
+                    </h4>
+                  </div>
+                </div>
+
+                <div class="rounded-2xl border border-dashed border-gray-300 bg-white p-6 text-center">
+                  <h4 class="text-lg font-semibold text-gray-900">
+                    Clean & Organized Tracking
+                  </h4>
+
+                  <p class="mt-2 text-gray-500">
+                    No spreadsheets. No complicated setup.
+                    Just simple job tracking.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <div id="dashboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
-    <div class="mx-auto my-4 max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:my-8 sm:max-h-[calc(100vh-4rem)] sm:p-6">
-      <div class="mb-4 flex items-start justify-between gap-3 sm:items-center">
-        <div class="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
-          <select
-            id="dashboardSelectColumn"
-            class="h-8 min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
-            aria-label="Dashboard select column"
-          ></select>
-        </div>
-        <button id="btnCloseDashboard" type="button" class="text-gray-500 text-xl hover:text-black">
-          &times;
-        </button>
-      </div>
+  <div id="footer"></div>
 
-      <div id="dashboardCards" class="grid grid-cols-1 gap-3 lg:grid-cols-3"></div>
-      <div id="dashboardCharts"></div>
-    </div>
-  </div>
-  
-  <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
-    <div class="relative group">
-      <button id="btn-customize" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-        Customize ▶
-      </button>
-    
-      <!-- SUBMENU -->
-      <div id="subMenu"
-        class="hidden absolute left-full top-0 ml-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
-        
-        <button id="btn-type-text" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Text
-        </button>
-        <button id="btn-type-checkbox" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Checkbox
-        </button>
-        <button id="btn-type-date" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Date
-        </button>
-        <button id="btn-type-select" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Select
-        </button>
-    
-      </div>
-    </div>
-    <button id="btn-addRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
-    <button id="btn-addCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
-    <button id="btn-copyRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-      Copy Row
-    </button>
-    
-    <button id="btn-copyCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-      Copy Column
-    </button>
-    <button id="btn-moveUp" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
-    <button id="btn-moveDown" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
-    <button id="btn-moveLeft" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
-    <button id="btn-moveRight" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
-    <button id="btn-delRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
-    <button id="btn-delCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
-  </div>
-
-<script type="module" src="./js/app.js"></script>
+  <script type="module" src="../js/main.js"></script>
 </body>
 </html>

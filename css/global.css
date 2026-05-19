@@ -19,6 +19,59 @@ input:disabled {
   touch-action: pan-x pan-y;
 }
 
+#appNavbar,
+#tableContainer {
+  width: 100%;
+  min-width: 0;
+}
+
+#tableContainer > .overflow-x-auto {
+  max-width: 100%;
+}
+
+#contextMenu,
+#subMenu {
+  max-width: calc(100vw - 1rem);
+}
+
+@media (max-width: 767px) {
+  #searchWrapper {
+    max-width: 100%;
+    scrollbar-width: thin;
+  }
+
+  #trackerTitleInput {
+    font-size: 1rem;
+  }
+
+  #navDropdown {
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  #contextMenu {
+    max-height: min(28rem, calc(100vh - 1rem));
+    overflow-y: auto;
+  }
+
+  #subMenu {
+    left: auto;
+    right: 0;
+    top: 100%;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 420px) {
+  #searchInputWrapper {
+    min-width: 9.5rem;
+  }
+
+  #jobSearchInput {
+    padding-right: 0.75rem;
+  }
+}
+
 .dark body {
   background-color: #111827;
   color: #e5e7eb;
@@ -176,6 +229,20 @@ input:disabled {
 .dark #heroSection .border-gray-200,
 .dark #heroSection .border-gray-300 {
   border-color: #374151 !important;
+}
+
+.dark footer h2,
+.dark footer h3 {
+  color: #f9fafb !important;
+}
+
+.dark #homeBody main h3,
+.dark #homeBody main h4 {
+  color: #f9fafb !important;
+}
+
+.dark #how-it-works .uppercase.tracking-wider {
+  color: #d1d5db !important;
 }
 
 .dark #mobileTrackerMenu a:focus-visible,

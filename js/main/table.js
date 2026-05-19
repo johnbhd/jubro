@@ -43,6 +43,27 @@ function dispatchColumnReorder(fromIndex, toIndex) {
   }));
 }
 
+function placeDropdown(dropdown, anchor) {
+  const viewportPadding = 8;
+  const rect = anchor.getBoundingClientRect();
+
+  dropdown.style.left = `${viewportPadding}px`;
+  dropdown.style.top = `${viewportPadding}px`;
+
+  const dropdownRect = dropdown.getBoundingClientRect();
+  const maxLeft = window.innerWidth - dropdownRect.width - viewportPadding;
+  const maxTop = window.innerHeight - dropdownRect.height - viewportPadding;
+  const left = Math.max(viewportPadding, Math.min(rect.left, maxLeft));
+  const preferredTop = rect.bottom + viewportPadding;
+  const fallbackTop = rect.top - dropdownRect.height - viewportPadding;
+  const top = preferredTop <= maxTop
+    ? preferredTop
+    : Math.max(viewportPadding, Math.min(fallbackTop, maxTop));
+
+  dropdown.style.left = `${left}px`;
+  dropdown.style.top = `${top}px`;
+}
+
 export const Table = {
   render: (columns, data) => {
     const headerRow = document.getElementById('headerRow');
@@ -361,16 +382,14 @@ export const Table = {
           display.addEventListener('click', (e) => {
             e.stopPropagation();
         
-            const rect = display.getBoundingClientRect();
-        
-            dropdown.style.top = rect.bottom + 'px';
-            dropdown.style.left = rect.left + 'px';
-        
             if (activeDropdown && activeDropdown !== dropdown) {
               activeDropdown.classList.add('hidden');
             }
         
             dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+              placeDropdown(dropdown, display);
+            }
             activeDropdown = dropdown;
           });
         
