@@ -1,46 +1,97 @@
-# SEO Optimization Prompt
+# Google Sitelinks SEO Prompt
 
-Improve my homepage HTML SEO for production quality without changing the current UI design or layout. Add complete SEO optimization for a modern web app/job tracker website.
+Improve my website structure and SEO so Google can generate sitelinks/subpages in search results like Figma, Notion, or other SaaS websites.
+
+## Goals
+Make the website optimized for:
+- Google sitelinks
+- Better indexing
+- Brand search visibility
+- Rich search results
+- Higher crawlability
 
 ## Requirements
-- Add proper semantic SEO tags
-- Improve the `<head>` section
-- Add:
-  - meta description
-  - keywords
-  - robots
-  - canonical URL
-  - Open Graph tags
-  - Twitter card tags
-  - theme-color
-  - author
-  - favicon improvements
-- Add structured data JSON-LD using Schema.org for a SoftwareApplication
-- Make titles and descriptions optimized for keywords:
-  - job tracker
-  - application tracker
-  - internship tracker
-  - freelance tracker
-  - job dashboard
-- Improve accessibility SEO:
-  - proper alt text
-  - semantic tags
-  - aria labels if needed
-- Ensure all sections use proper heading hierarchy (`h1 → h2 → h3`)
-- Keep the code beginner friendly
-- Do not remove TailwindCSS
+
+### Site Structure
+Create clean SEO-friendly page structure:
+
+```txt
+/
+├── /trackers
+├── /dashboard
+├── /features
+├── /about
+├── /login
+├── /contact
+├── /privacy
+└── /terms
+```
+
+### Navigation SEO
+- Improve navbar and footer internal linking
+- Ensure all important pages are linked site-wide
+- Add semantic navigation structure
+- Add breadcrumb navigation
+
+### Head SEO
+Add:
+- unique titles per page
+- unique meta descriptions
+- canonical URLs
+- Open Graph tags
+- Twitter card tags
+- robots meta tags
+
+### Structured Data
+Add Schema.org structured data:
+- WebSite
+- Organization
+- BreadcrumbList
+- SoftwareApplication
+
+### Technical SEO
+Create:
+- robots.txt
+- sitemap.xml
+- clean URL structure
+- semantic HTML layout
+
+### Accessibility SEO
+Improve:
+- heading hierarchy
+- alt text
+- aria-label usage
+- semantic sections
+
+### Internal Linking
+Ensure:
+- homepage links to all important pages
+- footer links important pages
+- CTA buttons use crawlable links
+- no broken links
+
+### Performance SEO
+- optimize images
+- lazy load non-critical images
+- improve Lighthouse SEO score
+- improve mobile SEO
+
+### Important
 - Do not redesign the UI
-- Make it production-ready and optimized for Google indexing
-- Add comments separating SEO sections clearly
-- Add example `robots.txt`
-- Add example `sitemap.xml`
-- Keep everything in pure HTML, TailwindCSS, and JavaScript only
+- Keep TailwindCSS
+- Keep beginner-friendly code
+- Preserve responsiveness
+- Keep Firebase compatibility
+- Make it production-ready
+- Optimize for Google indexing and sitelinks generation
 
-## Extra
-- Preserve all existing components and responsiveness
-- Optimize for social sharing previews on Facebook, Twitter/X, Discord, and LinkedIn
-- Keep code clean and modular
-- Follow modern SEO best practices for 2026
+Target keywords:
+- job tracker
+- application tracker
+- internship tracker
+- freelance tracker
+- job dashboard
+- simple job tracker
 
-Source file:
-:contentReference[oaicite:0]{index=0}
+## Production URL
+Use `https://jubro.vercel.app/` for canonical URLs, Open Graph URLs, Twitter card images, `robots.txt`, and `sitemap.xml`.
