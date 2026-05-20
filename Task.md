@@ -1,48 +1,46 @@
-Refactor the project routing and folder structure to make the app more SEO-friendly and SaaS-like.
+# SEO Optimization Prompt
 
-Goals:
+Improve my homepage HTML SEO for production quality without changing the current UI design or layout. Add complete SEO optimization for a modern web app/job tracker website.
 
-* Remove `.html` from public URLs on Vercel
-* Make landing page the homepage
-* Separate public pages from dashboard/app pages
-* Improve navigation architecture
-* Keep static HTML + Tailwind + vanilla JS setup
+## Requirements
+- Add proper semantic SEO tags
+- Improve the `<head>` section
+- Add:
+  - meta description
+  - keywords
+  - robots
+  - canonical URL
+  - Open Graph tags
+  - Twitter card tags
+  - theme-color
+  - author
+  - favicon improvements
+- Add structured data JSON-LD using Schema.org for a SoftwareApplication
+- Make titles and descriptions optimized for keywords:
+  - job tracker
+  - application tracker
+  - internship tracker
+  - freelance tracker
+  - job dashboard
+- Improve accessibility SEO:
+  - proper alt text
+  - semantic tags
+  - aria labels if needed
+- Ensure all sections use proper heading hierarchy (`h1 → h2 → h3`)
+- Keep the code beginner friendly
+- Do not remove TailwindCSS
+- Do not redesign the UI
+- Make it production-ready and optimized for Google indexing
+- Add comments separating SEO sections clearly
+- Add example `robots.txt`
+- Add example `sitemap.xml`
+- Keep everything in pure HTML, TailwindCSS, and JavaScript only
 
-New structure:
+## Extra
+- Preserve all existing components and responsiveness
+- Optimize for social sharing previews on Facebook, Twitter/X, Discord, and LinkedIn
+- Keep code clean and modular
+- Follow modern SEO best practices for 2026
 
-/
-├── index.html                 -> Landing page
-├── trackers/
-│   └── index.html             -> Public trackers page
-├── dashboard/
-│   └── index.html             -> User dashboard
-├── board/
-│   └── index.html             -> Single tracker board
-├── signin/
-│   └── index.html             -> Authentication page
-├── css/
-├── js/
-├── img/
-
-Requirements:
-
-* Replace all links using `.html` paths with clean routes:
-
-  * `/trackers`
-  * `/dashboard`
-  * `/board`
-  * `/signin`
-* Remove `/pages/` from URLs
-* Update navbar links everywhere
-* Keep compatibility with Vercel static hosting using `folder/index.html`
-* Ensure semantic SEO structure:
-
-  * use `<header>`, `<main>`, `<section>`, `<footer>`
-  * proper `<h1>` and `<h2>`
-  * meaningful text content
-* Homepage (`/`) must become the marketing landing page
-* Dashboard should no longer be the homepage
-* Keep responsive behavior
-* Keep current dark SaaS design aesthetic
-* Do not convert to React or SPA
-* Keep modular JS architecture
+Source file:
+:contentReference[oaicite:0]{index=0}

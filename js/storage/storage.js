@@ -5,6 +5,10 @@ export const Storage = {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   },
 
+  exists: () => {
+    return localStorage.getItem(STORAGE_KEY) !== null;
+  },
+
   load: () => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);

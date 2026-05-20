@@ -1,16 +1,13 @@
 import { Storage } from '../storage/storage.js';
 import { authService } from '../auth/firebaseAuth.js';
 import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
+import { createDefaultTracker } from '../tracker/defaultTracker.js';
 
 export class TrackerHome {
   constructor() {
     console.log("TrackerHome initialized");
 
-    this.state = Storage.load();
-
-    if (!this.state?.data) {
-      this.state = { active: null, data: {} };
-    }
+    this.state = this.initializeState();
 
     this.grid = document.getElementById('trackerGrid');
     this.titleInput = document.getElementById('titleInput');
@@ -34,6 +31,25 @@ export class TrackerHome {
 
     this.bindEvents();
     this.render();
+  }
+
+  initializeState() {
+    if (!Storage.exists()) {
+      const defaultId = this.getNextId({ data: {} });
+      const state = {
+        active: defaultId,
+        data: {
+          [defaultId]: createDefaultTracker(defaultId)
+        }
+      };
+
+      Storage.save(state);
+      return state;
+    }
+
+    const state = Storage.load();
+
+    return state?.data ? state : { active: null, data: {} };
   }
 
   reloadFromStorage() {
@@ -79,8 +95,8 @@ export class TrackerHome {
     });
   }
 
-  getNextId() {
-    const ids = Object.keys(this.state.data || {});
+  getNextId(state = this.state) {
+    const ids = Object.keys(state.data || {});
     if (!ids.length) return "1";
     return String(Math.max(...ids.map(id => Number(id) || 0)) + 1);
   }
@@ -108,67 +124,7 @@ export class TrackerHome {
   
     const id = this.getNextId();
   
-    this.state.data[id] = {
-      id,
-      title,
-      columns: [
-        { name: 'Company', type: 'text' },
-        { name: 'Position', type: 'text' },
-
-        {
-          name: 'Platform',
-          type: 'select',
-          options: [
-            { label: 'LinkedIn', color: '#0a66c2' },
-            { label: 'JobStreet', color: '#2563eb' },
-            { label: 'Indeed', color: '#4338ca' },
-            { label: 'OnlineJobsPH', color: '#f59e0b' }
-          ]
-        },
-
-        {
-          name: 'Status',
-          type: 'select',
-          options: [
-            { label: 'Applied', color: '#3b82f6' },
-            { label: 'Interview', color: '#69df94' },
-            { label: 'Rejected', color: '#ef4444' }
-          ]
-        },
-
-        { name: 'Date', type: 'date' },
-        { name: 'Link', type: 'text' }
-      ],
-
-      rows: [
-        [
-          { value: 'Google', type: 'text' },
-          { value: 'Frontend Intern', type: 'text' },
-          { value: 'LinkedIn', type: 'select' },
-          { value: 'Applied', type: 'select' },
-          { value: '2026-04-10', type: 'date' },
-          { value: 'https://careers.google.com', type: 'text' }
-        ],
-
-        [
-          { value: 'Microsoft', type: 'text' },
-          { value: 'Software Engineer', type: 'text' },
-          { value: 'Indeed', type: 'select' },
-          { value: 'Interview', type: 'select' },
-          { value: '2026-04-12', type: 'date' },
-          { value: 'https://careers.microsoft.com', type: 'text' }
-        ],
-
-        [
-          { value: 'Meta', type: 'text' },
-          { value: 'Web Developer', type: 'text' },
-          { value: 'JobStreet', type: 'select' },
-          { value: 'Rejected', type: 'select' },
-          { value: '2026-04-08', type: 'date' },
-          { value: 'https://www.metacareers.com', type: 'text' }
-        ]
-      ]
-    };
+    this.state.data[id] = createDefaultTracker(id, title);
   
     this.state.active = id;
   
