@@ -437,10 +437,6 @@ export const Table = {
           input.classList.add('pointer-events-none');
           
           const isLink = typeof cellData.value === 'string' && /^https?:\/\//.test(cellData.value);
-          const isLinkColumn = ['link', 'url', 'job link'].includes(
-            String(getColumnName(columns[colIndex]) || '').trim().toLowerCase()
-          );
-          
           if (isLink) {
             input.classList.add('text-blue-500');
           } else {
@@ -473,7 +469,7 @@ export const Table = {
               input.classList.add('pointer-events-none');
             });
           
-          if (isLinkColumn) {
+          if (isLink) {
             const linkWrapper = document.createElement('div');
             linkWrapper.className = 'flex min-w-[180px] items-center justify-center gap-2';
             linkWrapper.appendChild(createFaviconElement(getLinkFavicon(cellData.value)));

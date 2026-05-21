@@ -20,6 +20,7 @@ export class TrackerApp {
     this.listCards = document.getElementById('listCards');
     this.listSearchInput = document.getElementById('listSearchInput');
     this.listSortSelect = document.getElementById('listSortSelect');
+    this.listFilterSections = document.getElementById('listFilterSections');
     this.listThisMonthCount = document.getElementById('listThisMonthCount');
     this.listTotalCount = document.getElementById('listTotalCount');
     this.titleInput = document.getElementById('trackerTitleInput');
@@ -46,10 +47,7 @@ export class TrackerApp {
     this.jsonService = new JSONService();
     this.tableClipboard = null;
     this.currentPage = 1;
-    this.activeListFilters = {
-      status: '',
-      platform: ''
-    };
+    this.activeListFilters = {};
     if (!this.getTracker()) {
       window.location.href = '/trackers';
       return;
@@ -350,6 +348,41 @@ export class TrackerApp {
       .toLowerCase();
   }
 
+  getListSelectColumns() {
+    return this.getSelectColumns();
+  }
+
+  getActiveListFilterValues() {
+    return Object.values(this.activeListFilters).filter(Boolean);
+  }
+
+  isHttpLink(value) {
+    return /^https?:\/\//i.test(String(value || '').trim());
+  }
+
+  getFirstRowLink(row) {
+    const cell = row.find((item) => this.isHttpLink(this.getCellValue(item)));
+
+    return this.getCellValue(cell) || '';
+  }
+
+  pruneListFilters() {
+    const validOptionsByIndex = new Map(
+      this.getListSelectColumns().map(({ column, index }) => [
+        String(index),
+        new Set(this.getDashboardOptions(column).map((option) => option.label))
+      ])
+    );
+
+    Object.keys(this.activeListFilters).forEach((index) => {
+      const validOptions = validOptionsByIndex.get(index);
+
+      if (!validOptions || !validOptions.has(this.activeListFilters[index])) {
+        delete this.activeListFilters[index];
+      }
+    });
+  }
+
   getFaviconHtml(favicon) {
     if (!favicon?.url) {
       return '<span class="favicon-holder"><i class="fa-solid fa-globe text-[11px] text-gray-500"></i></span>';
@@ -367,6 +400,26 @@ export class TrackerApp {
         />
       </span>
     `;
+  }
+
+  renderListSelectBadges(tracker, row) {
+    return this.getListSelectColumns().map(({ column, index }) => {
+      const value = this.getCellDisplay(row[index]);
+      const safeValue = this.escapeHtml(value);
+      const color = this.getOptionColor(column, value, '#6b7280');
+      const textColor = this.getContrastColor(color);
+      const columnName = this.normalizeText(this.getColumnName(column));
+      const platformIcon = ['platform', 'source'].includes(columnName)
+        ? this.getFaviconHtml(getPlatformFavicon(value))
+        : '';
+
+      return `
+        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${color}; color: ${textColor};">
+          ${platformIcon}
+          ${safeValue}
+        </span>
+      `;
+    }).join('');
   }
 
   escapeHtml(value) {
@@ -673,8 +726,7 @@ export class TrackerApp {
     const hasSelectFilter = this.sortSelect?.value === 'select-text' && Boolean(this.selectValueFilterSelect?.value);
     const hasListFilter = isListView && (
       Boolean(this.listSearchInput?.value.trim())
-      || Boolean(this.activeListFilters.status)
-      || Boolean(this.activeListFilters.platform)
+      || this.getActiveListFilterValues().length > 0
     );
     const hasActiveFilter = Boolean(query) || hasSelectFilter || hasListFilter;
     const matchedElements = [];
@@ -744,24 +796,17 @@ export class TrackerApp {
 
   rowMatchesListFilters(row, tracker) {
     const listQuery = this.normalizeText(this.listSearchInput?.value);
-    const indexes = this.getListColumnIndexes(tracker);
 
     if (listQuery && !this.getListRowText(row).includes(listQuery)) {
       return false;
     }
 
-    if (
-      this.activeListFilters.status
-      && this.normalizeText(this.getCellValue(row?.[indexes.status])) !== this.normalizeText(this.activeListFilters.status)
-    ) {
-      return false;
-    }
+    for (const [columnIndex, filterValue] of Object.entries(this.activeListFilters)) {
+      if (!filterValue) continue;
 
-    if (
-      this.activeListFilters.platform
-      && this.normalizeText(this.getCellValue(row?.[indexes.platform])) !== this.normalizeText(this.activeListFilters.platform)
-    ) {
-      return false;
+      if (this.normalizeText(this.getCellValue(row?.[Number(columnIndex)])) !== this.normalizeText(filterValue)) {
+        return false;
+      }
     }
 
     return true;
@@ -827,31 +872,86 @@ export class TrackerApp {
     this.listTotalCount.textContent = String(rows.length);
   }
 
-  updateListFilterCounts(tracker) {
+  countColumnValue(rows, columnIndex, value) {
+    if (!value) return rows.length;
+
+    return rows.filter((row) => (
+      this.normalizeText(this.getCellValue(row?.[columnIndex])) === this.normalizeText(value)
+    )).length;
+  }
+
+  createListFilterChip(column, columnIndex, value, count) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'list-filter-chip';
+    chip.dataset.columnIndex = String(columnIndex);
+    chip.dataset.filterValue = value;
+
+    const optionColor = value
+      ? this.getOptionColor(column, value)
+      : '#111827';
+    chip.style.setProperty('--chip-color', optionColor);
+    chip.style.setProperty('--chip-text-color', this.getContrastColor(optionColor));
+
+    chip.append(document.createTextNode(value || 'All'));
+
+    const countBadge = document.createElement('span');
+    countBadge.className = 'list-filter-count';
+    countBadge.textContent = String(count);
+    chip.appendChild(countBadge);
+
+    return chip;
+  }
+
+  renderListFilterSections(tracker) {
+    if (!this.listFilterSections) return;
+
     const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
-    const indexes = this.getListColumnIndexes(tracker);
+    const selectColumns = this.getListSelectColumns();
+    this.listFilterSections.innerHTML = '';
+    this.pruneListFilters();
 
-    document.querySelectorAll('.list-filter-chip').forEach((chip) => {
-      const count = chip.querySelector('.list-filter-count');
-      const type = chip.dataset.filterType;
-      const value = chip.dataset.filterValue || '';
+    if (selectColumns.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'rounded-md border border-dashed border-gray-200 p-3 text-sm text-gray-400';
+      empty.textContent = 'No data exists.';
+      this.listFilterSections.appendChild(empty);
+      return;
+    }
 
-      if (!count || !type) return;
+    selectColumns.forEach(({ column, index }) => {
+      const options = this.getDashboardOptions(column);
+      const section = document.createElement('div');
+      const title = document.createElement('p');
+      const chips = document.createElement('div');
 
-      if (type === 'status' && value === '') {
-        count.textContent = String(rows.length);
-        return;
+      title.className = 'text-xs font-medium uppercase text-gray-400';
+      title.textContent = this.getColumnName(column) || `Column ${index + 1}`;
+      chips.className = 'mt-3 flex flex-wrap gap-2';
+
+      chips.appendChild(this.createListFilterChip(column, index, '', rows.length));
+
+      options.forEach((option) => {
+        chips.appendChild(
+          this.createListFilterChip(
+            column,
+            index,
+            option.label,
+            this.countColumnValue(rows, index, option.label)
+          )
+        );
+      });
+
+      if (options.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-sm text-gray-400';
+        empty.textContent = 'No options yet.';
+        chips.appendChild(empty);
       }
 
-      const columnIndex = type === 'status' ? indexes.status : indexes.platform;
-      const optionColor = this.getOptionColor(tracker?.columns?.[columnIndex], value);
-      const total = rows.filter((row) => (
-        this.normalizeText(this.getCellValue(row?.[columnIndex])) === this.normalizeText(value)
-      )).length;
-
-      chip.style.setProperty('--chip-color', optionColor);
-      chip.style.setProperty('--chip-text-color', this.getContrastColor(optionColor));
-      count.textContent = String(total);
+      section.appendChild(title);
+      section.appendChild(chips);
+      this.listFilterSections.appendChild(section);
     });
   }
 
@@ -874,7 +974,7 @@ export class TrackerApp {
 
     this.listCards.innerHTML = '';
     this.updateListStats(tracker);
-    this.updateListFilterCounts(tracker);
+    this.renderListFilterSections(tracker);
 
     if (!tracker || !Array.isArray(tracker.rows) || tracker.rows.length === 0) {
       const empty = document.createElement('p');
@@ -894,21 +994,14 @@ export class TrackerApp {
       const dateApplied = this.getCellDisplay(row[indexes.date]);
       const position = this.getCellDisplay(row[indexes.position]);
       const company = this.getCellDisplay(row[indexes.company]);
-      const platform = this.getCellDisplay(row[indexes.platform]);
-      const status = this.getCellDisplay(row[indexes.status]);
-      const link = this.getCellValue(row[indexes.link]);
+      const link = this.getFirstRowLink(row);
       const safeDateApplied = this.escapeHtml(dateApplied);
       const safePosition = this.escapeHtml(position);
       const safeCompany = this.escapeHtml(company);
-      const safePlatform = this.escapeHtml(platform);
-      const safeStatus = this.escapeHtml(status);
       const safeLink = this.escapeHtml(link || '#');
       const linkFavicon = getLinkFavicon(link);
-      const platformFavicon = getPlatformFavicon(platform);
       const safeHostname = this.escapeHtml(linkFavicon.hostname);
-      const platformColor = this.getOptionColor(tracker.columns[indexes.platform], platform, '#6b7280');
-      const statusColor = this.getOptionColor(tracker.columns[indexes.status], status, '#6b7280');
-      const statusTextColor = this.getContrastColor(statusColor);
+      const selectBadges = this.renderListSelectBadges(tracker, row);
 
       article.innerHTML = `
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -918,15 +1011,11 @@ export class TrackerApp {
             <p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>
           </div>
           <div class="flex flex-wrap items-center gap-3">
-            <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium" style="border-color: ${platformColor}; color: ${platformColor};">
-              ${this.getFaviconHtml(platformFavicon)}
-              ${safePlatform}
-            </span>
             <a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
               ${this.getFaviconHtml(linkFavicon)}
               <span class="truncate">${safeHostname || 'Open link'}</span>
             </a>
-            <span class="rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${statusColor}; color: ${statusTextColor};">${safeStatus}</span>
+            ${selectBadges}
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
@@ -1004,11 +1093,11 @@ export class TrackerApp {
 
   updateListFilterChipStyles() {
     document.querySelectorAll('.list-filter-chip').forEach((chip) => {
-      const type = chip.dataset.filterType;
+      const columnIndex = chip.dataset.columnIndex;
       const value = chip.dataset.filterValue || '';
-      const isActive = type === 'status' && value === ''
-        ? this.activeListFilters.status === ''
-        : this.activeListFilters[type] === value;
+      const isActive = value === ''
+        ? !this.activeListFilters[columnIndex]
+        : this.activeListFilters[columnIndex] === value;
 
       chip.classList.toggle('is-active', isActive);
     });
@@ -1198,6 +1287,7 @@ export class TrackerApp {
     const boardViewSelect = document.getElementById('boardViewSelect');
     const listSearchInput = document.getElementById('listSearchInput');
     const listSortSelect = document.getElementById('listSortSelect');
+    const listFilterSections = document.getElementById('listFilterSections');
     const btnListAddJob = document.getElementById('btnListAddJob');
     const selectTextSortSelect = document.getElementById('selectTextSortSelect');
     const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
@@ -1384,18 +1474,24 @@ export class TrackerApp {
       this.addRow();
     });
 
-    document.querySelectorAll('.list-filter-chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const type = chip.dataset.filterType;
-        const value = chip.dataset.filterValue || '';
+    listFilterSections?.addEventListener('click', (e) => {
+      const chip = e.target.closest('.list-filter-chip');
+      if (!chip) return;
 
-        if (!type) return;
+      const columnIndex = chip.dataset.columnIndex;
+      const value = chip.dataset.filterValue || '';
 
-        this.activeListFilters[type] = value === '' || this.activeListFilters[type] === value ? '' : value;
-        this.resetPagination();
-        this.updateListFilterChipStyles();
-        this.applySearchFilter();
-      });
+      if (columnIndex === undefined) return;
+
+      if (value === '' || this.activeListFilters[columnIndex] === value) {
+        delete this.activeListFilters[columnIndex];
+      } else {
+        this.activeListFilters[columnIndex] = value;
+      }
+
+      this.resetPagination();
+      this.updateListFilterChipStyles();
+      this.applySearchFilter();
     });
 
     tableSortSelect?.addEventListener('change', () => {
