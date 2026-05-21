@@ -1,4 +1,5 @@
 import { startPress, cancelPress, showMenu, setActiveTarget, clearActiveTarget } from './ui.js';
+import { createFaviconElement, getLinkFavicon, getPlatformFavicon } from './favicon.js';
 
 let activeDropdown = null;
 
@@ -10,6 +11,22 @@ function getContrastColor(hex) {
   const b = parseInt(c.substr(4, 2), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 128 ? '#000000' : '#ffffff';
+}
+
+function getColumnName(column) {
+  return typeof column === 'object' ? column.name : column;
+}
+
+function getCellValue(cell) {
+  return typeof cell === 'object' ? cell.value : cell;
+}
+
+function getColumnIndexByNames(columns, names) {
+  const wantedNames = names.map((name) => String(name).trim().toLowerCase());
+
+  return columns.findIndex((column) => (
+    wantedNames.includes(String(getColumnName(column) || '').trim().toLowerCase())
+  ));
 }
 
 function blurOnEnter(input) {
@@ -239,6 +256,9 @@ export const Table = {
         
           const column = columns[colIndex];
           if (!column.options) column.options = [];
+          const isPlatformColumn = ['platform', 'source'].includes(
+            String(getColumnName(column) || '').trim().toLowerCase()
+          );
         
           const wrapper = document.createElement('div');
           wrapper.className = 'relative';
@@ -249,8 +269,21 @@ export const Table = {
         
           const current = column.options.find(o => o.label === cellData.value);
         
-        display.textContent = current?.label || 'Select';
-        display.className = 'cursor-pointer text-center px-2 rounded';
+        const renderDisplayContent = (labelText) => {
+          display.innerHTML = '';
+
+          if (isPlatformColumn && labelText !== 'Select') {
+            display.appendChild(createFaviconElement(getPlatformFavicon(labelText)));
+          }
+
+          const text = document.createElement('span');
+          text.className = 'truncate';
+          text.textContent = labelText;
+          display.appendChild(text);
+        };
+
+        renderDisplayContent(current?.label || 'Select');
+        display.className = 'cursor-pointer inline-flex items-center justify-center gap-2 px-2 rounded';
         
         if (current) {
           display.style.backgroundColor = current.color;
@@ -307,7 +340,7 @@ export const Table = {
                   type: 'select'
                 };
         
-                display.textContent = opt.label;
+                renderDisplayContent(opt.label);
                 display.style.backgroundColor = opt.color;
                 display.style.color = getContrastColor(opt.color);
         
@@ -317,10 +350,10 @@ export const Table = {
         
               colorInput.addEventListener('input', (e) => {
                 opt.color = e.target.value;
-                colorBox.style.borderColor = opt.color;
         
                 if (cellData.value === opt.label) {
-                  display.style.borderColor = opt.color;
+                  display.style.backgroundColor = opt.color;
+                  display.style.color = getContrastColor(opt.color);
                 }
         
                 document.dispatchEvent(new Event('table:update'));
@@ -404,6 +437,9 @@ export const Table = {
           input.classList.add('pointer-events-none');
           
           const isLink = typeof cellData.value === 'string' && /^https?:\/\//.test(cellData.value);
+          const isLinkColumn = ['link', 'url', 'job link'].includes(
+            String(getColumnName(columns[colIndex]) || '').trim().toLowerCase()
+          );
           
           if (isLink) {
             input.classList.add('text-blue-500');
@@ -437,7 +473,15 @@ export const Table = {
               input.classList.add('pointer-events-none');
             });
           
-          td.appendChild(input);
+          if (isLinkColumn) {
+            const linkWrapper = document.createElement('div');
+            linkWrapper.className = 'flex min-w-[180px] items-center justify-center gap-2';
+            linkWrapper.appendChild(createFaviconElement(getLinkFavicon(cellData.value)));
+            linkWrapper.appendChild(input);
+            td.appendChild(linkWrapper);
+          } else {
+            td.appendChild(input);
+          }
         }
 
         if (!isSelect) {
@@ -451,7 +495,9 @@ export const Table = {
             document.dispatchEvent(new Event('table:update'));
           });
 
-          td.appendChild(input);
+          if (!input.parentElement) {
+            td.appendChild(input);
+          }
         }
 
         if (!isSelect) {

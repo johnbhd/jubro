@@ -1,97 +1,45 @@
-# Google Sitelinks SEO Prompt
+Update my Jubro job tracker UI to show website favicon images beside the platform text.
 
-Improve my website structure and SEO so Google can generate sitelinks/subpages in search results like Figma, Notion, or other SaaS websites.
+Goal:
+Add a small website favicon/logo before the platform name in both Table View and List View cards.
 
-## Goals
-Make the website optimized for:
-- Google sitelinks
-- Better indexing
-- Brand search visibility
-- Rich search results
-- Higher crawlability
+Requirements:
+- Get the favicon based on the job link URL.
+- Use the job link/domain to generate the favicon image.
+- Show the favicon before the platform text.
+- Apply this in:
+  1. Table View platform column
+  2. List View job cards platform/source area
+- Do not change my existing data structure.
+- Do not remove existing platform text.
+- Keep the image small, clean, and aligned with the text.
 
-## Requirements
+Favicon logic:
+- Create a helper function like getFaviconUrl(link).
+- Extract the hostname from the job link using new URL(link).
+- Use this favicon source:
+  https://www.google.com/s2/favicons?domain=DOMAIN_HERE&sz=64
+- If the link is invalid or empty, show a default small globe/link icon instead.
 
-### Site Structure
-Create clean SEO-friendly page structure:
+UI design:
+- Favicon size: 20px to 24px.
+- Make it rounded.
+- Add small padding/background so it looks good in dark mode.
+- Align icon and platform text using flex items-center gap-2.
+- Keep the current platform badge colors.
+- The favicon should appear inside or beside the platform badge, depending on the current design.
+- Make sure it looks good in both dark and light mode.
 
-```txt
-/
-├── /trackers
-├── /dashboard
-├── /features
-├── /about
-├── /login
-├── /contact
-├── /privacy
-└── /terms
-```
+Example output:
+In Table View platform column:
+[ favicon ] LinkedIn
 
-### Navigation SEO
-- Improve navbar and footer internal linking
-- Ensure all important pages are linked site-wide
-- Add semantic navigation structure
-- Add breadcrumb navigation
+In List View card:
+[ favicon ] LinkedIn · careers.google.com
 
-### Head SEO
-Add:
-- unique titles per page
-- unique meta descriptions
-- canonical URLs
-- Open Graph tags
-- Twitter card tags
-- robots meta tags
-
-### Structured Data
-Add Schema.org structured data:
-- WebSite
-- Organization
-- BreadcrumbList
-- SoftwareApplication
-
-### Technical SEO
-Create:
-- robots.txt
-- sitemap.xml
-- clean URL structure
-- semantic HTML layout
-
-### Accessibility SEO
-Improve:
-- heading hierarchy
-- alt text
-- aria-label usage
-- semantic sections
-
-### Internal Linking
-Ensure:
-- homepage links to all important pages
-- footer links important pages
-- CTA buttons use crawlable links
-- no broken links
-
-### Performance SEO
-- optimize images
-- lazy load non-critical images
-- improve Lighthouse SEO score
-- improve mobile SEO
-
-### Important
-- Do not redesign the UI
-- Keep TailwindCSS
-- Keep beginner-friendly code
-- Preserve responsiveness
-- Keep Firebase compatibility
-- Make it production-ready
-- Optimize for Google indexing and sitelinks generation
-
-Target keywords:
-- job tracker
-- application tracker
-- internship tracker
-- freelance tracker
-- job dashboard
-- simple job tracker
-
-## Production URL
-Use `https://jubro.vercel.app/` for canonical URLs, Open Graph URLs, Twitter card images, `robots.txt`, and `sitemap.xml`.
+Important:
+- Use vanilla JavaScript, HTML, and Tailwind CSS only.
+- Do not use React.
+- Do not add backend or Firebase changes.
+- Do not add extra features.
+- Keep the code beginner-friendly.

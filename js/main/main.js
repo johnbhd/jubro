@@ -6,14 +6,26 @@ import { JSONService } from '../services/jsonService.js';
 import { authService } from '../auth/firebaseAuth.js';
 import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
 import { createDefaultTracker } from '../tracker/defaultTracker.js';
+import { getLinkFavicon, getPlatformFavicon } from './favicon.js';
+
+const BOARD_VIEW_KEY = 'jubro_board_view';
+const BOARD_PAGE_SIZE = 5;
 
 export class TrackerApp {
   constructor() {
     this.appBody = document.getElementById('appBody');
     this.tableContainer = document.getElementById('tableContainer');
+    this.tableView = document.getElementById('tableView');
+    this.listView = document.getElementById('listView');
+    this.listCards = document.getElementById('listCards');
+    this.listSearchInput = document.getElementById('listSearchInput');
+    this.listSortSelect = document.getElementById('listSortSelect');
+    this.listThisMonthCount = document.getElementById('listThisMonthCount');
+    this.listTotalCount = document.getElementById('listTotalCount');
     this.titleInput = document.getElementById('trackerTitleInput');
     this.searchWrapper = document.getElementById('searchWrapper');
     this.searchInput = document.getElementById('jobSearchInput');
+    this.viewSelect = document.getElementById('boardViewSelect');
     this.sortSelect = document.getElementById('tableSortSelect');
     this.selectTextSortWrapper = document.getElementById('selectTextSortWrapper');
     this.selectTextSortSelect = document.getElementById('selectTextSortSelect');
@@ -22,6 +34,10 @@ export class TrackerApp {
     this.btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
     this.btnCloseSearch = document.getElementById('btnCloseSearch');
     this.noSearchResults = document.getElementById('noSearchResults');
+    this.boardPagination = document.getElementById('boardPagination');
+    this.paginationLabel = document.getElementById('paginationLabel');
+    this.btnPaginationPrev = document.getElementById('btnPaginationPrev');
+    this.btnPaginationNext = document.getElementById('btnPaginationNext');
     this.dashboardModal = document.getElementById('dashboardModal');
     this.dashboardSelectColumn = document.getElementById('dashboardSelectColumn');
     this.dashboardCards = document.getElementById('dashboardCards');
@@ -29,12 +45,18 @@ export class TrackerApp {
     this.state = this.initializeState();
     this.jsonService = new JSONService();
     this.tableClipboard = null;
+    this.currentPage = 1;
+    this.activeListFilters = {
+      status: '',
+      platform: ''
+    };
     if (!this.getTracker()) {
       window.location.href = '/trackers';
       return;
     }
     this.save();
     this.initEvents();
+    this.restoreBoardViewPreference();
     this.refresh();
   }
   generateId() {
@@ -279,6 +301,82 @@ export class TrackerApp {
 
   getColumnName(column) {
     return typeof column === 'object' ? column.name : column;
+  }
+
+  getCellValue(cell) {
+    return typeof cell === 'object' ? cell.value : cell;
+  }
+
+  getCellDisplay(cell) {
+    const value = this.getCellValue(cell);
+
+    if (typeof value === 'boolean') {
+      return value ? 'Yes' : 'No';
+    }
+
+    return String(value || '').trim() || '-';
+  }
+
+  normalizeText(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  getColumnIndexByNames(tracker, names, fallbackIndex = -1) {
+    if (!tracker || !Array.isArray(tracker.columns)) return fallbackIndex;
+
+    const wantedNames = names.map((name) => this.normalizeText(name));
+    const index = tracker.columns.findIndex((column) => (
+      wantedNames.includes(this.normalizeText(this.getColumnName(column)))
+    ));
+
+    return index >= 0 ? index : fallbackIndex;
+  }
+
+  getListColumnIndexes(tracker) {
+    return {
+      company: this.getColumnIndexByNames(tracker, ['company'], 0),
+      position: this.getColumnIndexByNames(tracker, ['position', 'role', 'job title'], 1),
+      platform: this.getColumnIndexByNames(tracker, ['platform', 'source'], 2),
+      status: this.getColumnIndexByNames(tracker, ['status'], 3),
+      date: this.getDateColumnIndex(tracker),
+      link: this.getColumnIndexByNames(tracker, ['link', 'url', 'job link'], 5)
+    };
+  }
+
+  getListRowText(row) {
+    return row
+      .map((cell) => this.getCellDisplay(cell))
+      .join(' ')
+      .toLowerCase();
+  }
+
+  getFaviconHtml(favicon) {
+    if (!favicon?.url) {
+      return '<span class="favicon-holder"><i class="fa-solid fa-globe text-[11px] text-gray-500"></i></span>';
+    }
+
+    return `
+      <span class="favicon-holder">
+        <img
+          src="${this.escapeHtml(favicon.url)}"
+          alt=""
+          class="h-5 w-5 rounded"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          onerror="this.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-globe text-[11px] text-gray-500' }))"
+        />
+      </span>
+    `;
+  }
+
+  escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[char]);
   }
 
   getDashboardOptions(column) {
@@ -569,22 +667,351 @@ export class TrackerApp {
   applySearchFilter() {
     const tracker = this.getTracker();
     const query = this.searchInput?.value.trim().toLowerCase() || '';
-    const rows = document.querySelectorAll('#tableBody tr');
+    const isListView = this.viewSelect?.value === 'list';
+    const rowElements = document.querySelectorAll(isListView ? '#listCards [data-row-index]' : '#tableBody tr');
     const columnIndexes = this.getSearchColumnIndexes(tracker);
-    let visibleCount = 0;
+    const hasSelectFilter = this.sortSelect?.value === 'select-text' && Boolean(this.selectValueFilterSelect?.value);
+    const hasListFilter = isListView && (
+      Boolean(this.listSearchInput?.value.trim())
+      || Boolean(this.activeListFilters.status)
+      || Boolean(this.activeListFilters.platform)
+    );
+    const hasActiveFilter = Boolean(query) || hasSelectFilter || hasListFilter;
+    const matchedElements = [];
 
     if (!tracker || !Array.isArray(tracker.rows)) return;
 
-    rows.forEach((rowElement, rowIndex) => {
+    rowElements.forEach((rowElement) => {
+      const rowIndex = Number(rowElement.dataset.rowIndex);
       const row = tracker.rows[rowIndex];
       const isVisible = this.rowMatchesSearch(row, columnIndexes, query)
-        && this.rowMatchesSelectFilter(row);
+        && this.rowMatchesSelectFilter(row)
+        && (!isListView || this.rowMatchesListFilters(row, tracker));
 
-      rowElement.classList.toggle('hidden', !isVisible);
-      if (isVisible) visibleCount += 1;
+      if (isVisible) {
+        matchedElements.push(rowElement);
+      }
     });
 
-    this.noSearchResults?.classList.toggle('hidden', visibleCount > 0 || !query);
+    this.applyPagination(matchedElements);
+    this.noSearchResults?.classList.toggle('hidden', matchedElements.length > 0 || !hasActiveFilter);
+  }
+
+  applyPagination(matchedElements) {
+    const rowElements = document.querySelectorAll(
+      this.viewSelect?.value === 'list' ? '#listCards [data-row-index]' : '#tableBody tr'
+    );
+    const totalItems = matchedElements.length;
+    const totalPages = Math.max(1, Math.ceil(totalItems / BOARD_PAGE_SIZE));
+
+    this.currentPage = Math.min(Math.max(this.currentPage, 1), totalPages);
+
+    const startIndex = (this.currentPage - 1) * BOARD_PAGE_SIZE;
+    const endIndex = startIndex + BOARD_PAGE_SIZE;
+    const visiblePageElements = new Set(matchedElements.slice(startIndex, endIndex));
+
+    rowElements.forEach((rowElement) => {
+      rowElement.classList.toggle('hidden', !visiblePageElements.has(rowElement));
+    });
+
+    this.updatePaginationControls(totalItems, totalPages);
+  }
+
+  updatePaginationControls(totalItems, totalPages) {
+    if (!this.boardPagination || !this.paginationLabel) return;
+
+    this.boardPagination.classList.toggle('hidden', totalItems === 0);
+    this.boardPagination.classList.toggle('flex', totalItems > 0);
+    this.paginationLabel.textContent = `Page ${this.currentPage} of ${totalPages}`;
+
+    if (this.btnPaginationPrev) {
+      this.btnPaginationPrev.disabled = this.currentPage <= 1;
+    }
+
+    if (this.btnPaginationNext) {
+      this.btnPaginationNext.disabled = this.currentPage >= totalPages;
+    }
+  }
+
+  resetPagination() {
+    this.currentPage = 1;
+  }
+
+  changePage(direction) {
+    this.currentPage += direction;
+    this.applySearchFilter();
+  }
+
+  rowMatchesListFilters(row, tracker) {
+    const listQuery = this.normalizeText(this.listSearchInput?.value);
+    const indexes = this.getListColumnIndexes(tracker);
+
+    if (listQuery && !this.getListRowText(row).includes(listQuery)) {
+      return false;
+    }
+
+    if (
+      this.activeListFilters.status
+      && this.normalizeText(this.getCellValue(row?.[indexes.status])) !== this.normalizeText(this.activeListFilters.status)
+    ) {
+      return false;
+    }
+
+    if (
+      this.activeListFilters.platform
+      && this.normalizeText(this.getCellValue(row?.[indexes.platform])) !== this.normalizeText(this.activeListFilters.platform)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
+  getStatusBadgeClass(status) {
+    const normalized = this.normalizeText(status);
+
+    if (normalized === 'applied') return 'bg-blue-100 text-blue-700';
+    if (normalized === 'interview') return 'bg-green-100 text-green-700';
+    if (normalized === 'rejected') return 'bg-red-100 text-red-700';
+
+    return 'bg-gray-100 text-gray-700';
+  }
+
+  getPlatformDotClass(platform) {
+    const normalized = this.normalizeText(platform);
+
+    if (normalized === 'linkedin') return 'bg-blue-600';
+    if (normalized === 'indeed') return 'bg-indigo-600';
+    if (normalized === 'jobstreet') return 'bg-sky-600';
+    if (normalized === 'company website') return 'bg-emerald-600';
+
+    return 'bg-gray-400';
+  }
+
+  getContrastColor(hex) {
+    if (!hex || !/^#?[0-9a-f]{6}$/i.test(hex)) return '#111827';
+
+    const color = hex.replace('#', '');
+    const red = parseInt(color.slice(0, 2), 16);
+    const green = parseInt(color.slice(2, 4), 16);
+    const blue = parseInt(color.slice(4, 6), 16);
+    const yiq = (red * 299 + green * 587 + blue * 114) / 1000;
+
+    return yiq >= 128 ? '#111827' : '#ffffff';
+  }
+
+  getOptionColor(column, value, fallback = '#6b7280') {
+    const options = this.getDashboardOptions(column);
+    const option = options.find((item) => this.normalizeText(item.label) === this.normalizeText(value));
+    const color = option?.color || fallback;
+
+    return /^#[0-9a-f]{6}$/i.test(color) ? color : fallback;
+  }
+
+  updateListStats(tracker) {
+    if (!this.listThisMonthCount || !this.listTotalCount) return;
+
+    const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const dateIndex = this.getDateColumnIndex(tracker);
+    const now = new Date();
+    const thisMonthCount = rows.filter((row) => {
+      const dateValue = this.getCellValue(row?.[dateIndex]);
+      const date = new Date(`${dateValue || ''}T00:00:00`);
+
+      return !Number.isNaN(date.getTime())
+        && date.getFullYear() === now.getFullYear()
+        && date.getMonth() === now.getMonth();
+    }).length;
+
+    this.listThisMonthCount.textContent = String(thisMonthCount);
+    this.listTotalCount.textContent = String(rows.length);
+  }
+
+  updateListFilterCounts(tracker) {
+    const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const indexes = this.getListColumnIndexes(tracker);
+
+    document.querySelectorAll('.list-filter-chip').forEach((chip) => {
+      const count = chip.querySelector('.list-filter-count');
+      const type = chip.dataset.filterType;
+      const value = chip.dataset.filterValue || '';
+
+      if (!count || !type) return;
+
+      if (type === 'status' && value === '') {
+        count.textContent = String(rows.length);
+        return;
+      }
+
+      const columnIndex = type === 'status' ? indexes.status : indexes.platform;
+      const optionColor = this.getOptionColor(tracker?.columns?.[columnIndex], value);
+      const total = rows.filter((row) => (
+        this.normalizeText(this.getCellValue(row?.[columnIndex])) === this.normalizeText(value)
+      )).length;
+
+      chip.style.setProperty('--chip-color', optionColor);
+      chip.style.setProperty('--chip-text-color', this.getContrastColor(optionColor));
+      count.textContent = String(total);
+    });
+  }
+
+  getSortedListRows(tracker) {
+    const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const dateIndex = this.getDateColumnIndex(tracker);
+    const direction = this.listSortSelect?.value === 'date-asc' ? 1 : -1;
+
+    return rows
+      .map((row, rowIndex) => ({ row, rowIndex }))
+      .sort((a, b) => {
+        if (dateIndex < 0) return a.rowIndex - b.rowIndex;
+
+        return (this.getDateSortValue(a.row, dateIndex) - this.getDateSortValue(b.row, dateIndex)) * direction;
+      });
+  }
+
+  renderListView(tracker) {
+    if (!this.listCards) return;
+
+    this.listCards.innerHTML = '';
+    this.updateListStats(tracker);
+    this.updateListFilterCounts(tracker);
+
+    if (!tracker || !Array.isArray(tracker.rows) || tracker.rows.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'rounded-md border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-400';
+      empty.textContent = 'No rows yet.';
+      this.listCards.appendChild(empty);
+      return;
+    }
+
+    const indexes = this.getListColumnIndexes(tracker);
+
+    this.getSortedListRows(tracker).forEach(({ row, rowIndex }) => {
+      const article = document.createElement('article');
+      article.className = 'list-view-row rounded-md border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow';
+      article.dataset.rowIndex = String(rowIndex);
+
+      const dateApplied = this.getCellDisplay(row[indexes.date]);
+      const position = this.getCellDisplay(row[indexes.position]);
+      const company = this.getCellDisplay(row[indexes.company]);
+      const platform = this.getCellDisplay(row[indexes.platform]);
+      const status = this.getCellDisplay(row[indexes.status]);
+      const link = this.getCellValue(row[indexes.link]);
+      const safeDateApplied = this.escapeHtml(dateApplied);
+      const safePosition = this.escapeHtml(position);
+      const safeCompany = this.escapeHtml(company);
+      const safePlatform = this.escapeHtml(platform);
+      const safeStatus = this.escapeHtml(status);
+      const safeLink = this.escapeHtml(link || '#');
+      const linkFavicon = getLinkFavicon(link);
+      const platformFavicon = getPlatformFavicon(platform);
+      const safeHostname = this.escapeHtml(linkFavicon.hostname);
+      const platformColor = this.getOptionColor(tracker.columns[indexes.platform], platform, '#6b7280');
+      const statusColor = this.getOptionColor(tracker.columns[indexes.status], status, '#6b7280');
+      const statusTextColor = this.getContrastColor(statusColor);
+
+      article.innerHTML = `
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>
+            <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${safePosition}</h3>
+            <p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium" style="border-color: ${platformColor}; color: ${platformColor};">
+              ${this.getFaviconHtml(platformFavicon)}
+              ${safePlatform}
+            </span>
+            <a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
+              ${this.getFaviconHtml(linkFavicon)}
+              <span class="truncate">${safeHostname || 'Open link'}</span>
+            </a>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${statusColor}; color: ${statusTextColor};">${safeStatus}</span>
+            <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
+              <i class="fa-solid fa-pen text-xs"></i>
+            </button>
+            <button type="button" class="btn-list-delete inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-red-500 hover:bg-red-50" aria-label="Delete job">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const linkElement = article.querySelector('a');
+      if (!link || !/^https?:\/\//.test(String(link))) {
+        linkElement?.classList.add('pointer-events-none', 'opacity-40');
+        linkElement?.removeAttribute('href');
+      }
+
+      article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
+        this.showTableRow(rowIndex);
+      });
+
+      article.querySelector('.btn-list-delete')?.addEventListener('click', () => {
+        this.deleteRowAt(rowIndex);
+      });
+
+      this.listCards.appendChild(article);
+    });
+  }
+
+  updateBoardView() {
+    const isListView = this.viewSelect?.value === 'list';
+
+    this.tableView?.classList.toggle('hidden', isListView);
+    this.listView?.classList.toggle('hidden', !isListView);
+  }
+
+  saveBoardViewPreference() {
+    if (!this.viewSelect) return;
+
+    localStorage.setItem(BOARD_VIEW_KEY, this.viewSelect.value);
+  }
+
+  restoreBoardViewPreference() {
+    if (!this.viewSelect) return;
+
+    const savedView = localStorage.getItem(BOARD_VIEW_KEY);
+    if (savedView === 'list' || savedView === 'table') {
+      this.viewSelect.value = savedView;
+    }
+  }
+
+  showTableRow(rowIndex) {
+    if (this.viewSelect) {
+      this.viewSelect.value = 'table';
+      this.saveBoardViewPreference();
+    }
+
+    this.currentPage = Math.floor(rowIndex / BOARD_PAGE_SIZE) + 1;
+    this.updateBoardView();
+    this.applySearchFilter();
+
+    const rowElement = document.querySelector(`#tableBody tr[data-row-index="${rowIndex}"]`);
+    rowElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  deleteRowAt(rowIndex) {
+    const tracker = this.getTracker();
+
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+    if (rowIndex < 0 || rowIndex >= tracker.rows.length) return;
+
+    tracker.rows.splice(rowIndex, 1);
+    this.refresh();
+    closeMenu();
+  }
+
+  updateListFilterChipStyles() {
+    document.querySelectorAll('.list-filter-chip').forEach((chip) => {
+      const type = chip.dataset.filterType;
+      const value = chip.dataset.filterValue || '';
+      const isActive = type === 'status' && value === ''
+        ? this.activeListFilters.status === ''
+        : this.activeListFilters[type] === value;
+
+      chip.classList.toggle('is-active', isActive);
+    });
   }
 
   refresh() {
@@ -594,6 +1021,9 @@ export class TrackerApp {
     this.updateSelectTextSortVisibility();
     this.applyCurrentSort();
     Table.render(tracker.columns, tracker.rows);
+    this.renderListView(tracker);
+    this.updateListFilterChipStyles();
+    this.updateBoardView();
     this.titleInput.value = tracker.title;
     this.applySearchFilter();
     if (this.dashboardModal && !this.dashboardModal.classList.contains('hidden')) {
@@ -762,7 +1192,13 @@ export class TrackerApp {
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
     const btnCloseSearch = document.getElementById('btnCloseSearch');
+    const btnPaginationPrev = document.getElementById('btnPaginationPrev');
+    const btnPaginationNext = document.getElementById('btnPaginationNext');
     const tableSortSelect = document.getElementById('tableSortSelect');
+    const boardViewSelect = document.getElementById('boardViewSelect');
+    const listSearchInput = document.getElementById('listSearchInput');
+    const listSortSelect = document.getElementById('listSortSelect');
+    const btnListAddJob = document.getElementById('btnListAddJob');
     const selectTextSortSelect = document.getElementById('selectTextSortSelect');
     const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
     const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
@@ -922,10 +1358,48 @@ export class TrackerApp {
     });
 
     this.searchInput?.addEventListener('input', () => {
+      this.resetPagination();
       this.applySearchFilter();
     });
 
+    boardViewSelect?.addEventListener('change', () => {
+      this.saveBoardViewPreference();
+      this.resetPagination();
+      this.updateBoardView();
+      this.applySearchFilter();
+    });
+
+    listSearchInput?.addEventListener('input', () => {
+      this.resetPagination();
+      this.applySearchFilter();
+    });
+
+    listSortSelect?.addEventListener('change', () => {
+      this.resetPagination();
+      this.renderListView(this.getTracker());
+      this.applySearchFilter();
+    });
+
+    btnListAddJob?.addEventListener('click', () => {
+      this.addRow();
+    });
+
+    document.querySelectorAll('.list-filter-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const type = chip.dataset.filterType;
+        const value = chip.dataset.filterValue || '';
+
+        if (!type) return;
+
+        this.activeListFilters[type] = value === '' || this.activeListFilters[type] === value ? '' : value;
+        this.resetPagination();
+        this.updateListFilterChipStyles();
+        this.applySearchFilter();
+      });
+    });
+
     tableSortSelect?.addEventListener('change', () => {
+      this.resetPagination();
       this.updateSelectTextSortVisibility();
       this.refresh();
     });
@@ -935,11 +1409,21 @@ export class TrackerApp {
         this.selectValueFilterSelect.value = '';
       }
       this.renderSelectValueFilterOptions();
+      this.resetPagination();
       this.refresh();
     });
 
     selectValueFilterSelect?.addEventListener('change', () => {
+      this.resetPagination();
       this.refresh();
+    });
+
+    btnPaginationPrev?.addEventListener('click', () => {
+      this.changePage(-1);
+    });
+
+    btnPaginationNext?.addEventListener('click', () => {
+      this.changePage(1);
     });
 
     btnClearSelectFilter?.addEventListener('click', () => {
