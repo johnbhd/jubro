@@ -2,6 +2,17 @@ import { closeMenu } from './ui.js';
 import { getLinkFavicon, getPlatformFavicon } from './favicon.js';
 import { BOARD_PAGE_SIZE, BOARD_VIEW_KEY } from './constants.js';
 
+const LIST_VIEW_SETTINGS_KEY = 'jubro_list_view_settings';
+const LIST_FIELD_SETTINGS = [
+  { key: 'website', label: 'Website' },
+  { key: 'status', label: 'Status' },
+  { key: 'date', label: 'Date' },
+  { key: 'email', label: 'Email' },
+  { key: 'location', label: 'Location' },
+  { key: 'platform', label: 'Platform' }
+];
+const DEFAULT_HIDDEN_LIST_FIELDS = ['email'];
+
 export const trackerListViewMethods = {
 getListColumnIndexes(tracker) {
     return {
@@ -29,6 +40,48 @@ getListSelectColumns() {
 
 getActiveListFilterValues() {
     return Object.values(this.activeListFilters).filter(Boolean);
+  },
+
+loadListViewSettings() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(LIST_VIEW_SETTINGS_KEY) || '{}');
+      const hiddenFields = Array.isArray(parsed.hiddenFields)
+        ? parsed.hiddenFields
+        : DEFAULT_HIDDEN_LIST_FIELDS;
+
+      return { hiddenFields };
+    } catch (err) {
+      return { hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS] };
+    }
+  },
+
+saveListViewSettings(settings) {
+    localStorage.setItem(LIST_VIEW_SETTINGS_KEY, JSON.stringify(settings));
+  },
+
+isListFieldVisible(fieldKey) {
+    return !this.loadListViewSettings().hiddenFields.includes(fieldKey);
+  },
+
+setListFieldVisibility(fieldKey, isVisible) {
+    const settings = this.loadListViewSettings();
+
+    settings.hiddenFields = settings.hiddenFields.filter((key) => key !== fieldKey);
+
+    if (!isVisible) {
+      settings.hiddenFields.push(fieldKey);
+    }
+
+    this.saveListViewSettings(settings);
+    this.renderListView(this.getTracker());
+    this.applySearchFilter();
+  },
+
+resetListViewSettings() {
+    this.saveListViewSettings({ hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS] });
+    this.renderListSettingsToggles();
+    this.renderListView(this.getTracker());
+    this.applySearchFilter();
   },
 
 isUsefulListValue(value) {
@@ -109,9 +162,13 @@ renderListBadgesForCard(tracker, row, statusIndex) {
     const statusColumn = selectColumns.find(({ index }) => index === statusIndex);
     const otherBadges = selectColumns
       .filter(({ index }) => index !== statusIndex)
+      .filter(({ column }) => {
+        const name = this.normalizeText(this.getColumnName(column));
+        return !['platform', 'source'].includes(name) || this.isListFieldVisible('platform');
+      })
       .map(({ column, index }) => this.getListBadgeHtml(column, this.getCellDisplay(row[index])))
       .join('');
-    const statusBadge = statusColumn
+    const statusBadge = statusColumn && this.isListFieldVisible('status')
       ? this.getListBadgeHtml(statusColumn.column, this.getCellDisplay(row[statusColumn.index]))
       : '';
 
@@ -158,6 +215,98 @@ ensureListEditModal() {
     });
   },
 
+ensureListViewSettingsButton() {
+    if (!this.listSortSelect || document.getElementById('btnListViewSettings')) return;
+
+    const button = document.createElement('button');
+    button.id = 'btnListViewSettings';
+    button.type = 'button';
+    button.className = 'inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-600 hover:bg-white';
+    button.setAttribute('aria-label', 'View settings');
+    button.innerHTML = '<i class="fa-solid fa-sliders text-xs"></i>';
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.toggleListSettingsPopup(button);
+    });
+
+    this.listSortSelect.insertAdjacentElement('afterend', button);
+  },
+
+ensureListSettingsPopup() {
+    if (document.getElementById('listSettingsPopup')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="listSettingsPopup" class="hidden fixed inset-x-3 bottom-3 z-[65] rounded-2xl border border-gray-700 bg-gray-900 p-4 text-gray-100 shadow-xl sm:inset-x-auto sm:bottom-auto sm:w-72">
+        <div class="mb-3 flex items-center justify-between gap-3">
+          <h2 class="text-base font-semibold">View Settings</h2>
+          <button id="btnCloseListSettings" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white" aria-label="Close view settings">
+            <i class="fa-solid fa-xmark text-xs"></i>
+          </button>
+        </div>
+        <div id="listSettingsToggles" class="space-y-2"></div>
+        <button id="btnResetListSettings" type="button" class="mt-4 w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 hover:bg-gray-800">
+          Reset to Default
+        </button>
+      </div>
+    `);
+
+    document.getElementById('btnCloseListSettings')?.addEventListener('click', () => this.closeListSettingsPopup());
+    document.getElementById('btnResetListSettings')?.addEventListener('click', () => this.resetListViewSettings());
+    document.addEventListener('click', (event) => {
+      const popup = document.getElementById('listSettingsPopup');
+      const button = document.getElementById('btnListViewSettings');
+
+      if (!popup || popup.classList.contains('hidden')) return;
+      if (popup.contains(event.target) || button?.contains(event.target)) return;
+
+      this.closeListSettingsPopup();
+    });
+  },
+
+renderListSettingsToggles() {
+    const container = document.getElementById('listSettingsToggles');
+    if (!container) return;
+
+    const settings = this.loadListViewSettings();
+
+    container.innerHTML = LIST_FIELD_SETTINGS.map((field) => {
+      const checked = !settings.hiddenFields.includes(field.key) ? 'checked' : '';
+
+      return `
+        <label class="flex items-center justify-between gap-4 rounded-lg border border-gray-800 bg-gray-950/40 px-3 py-3">
+          <span class="text-sm text-gray-100">${this.escapeHtml(field.label)}</span>
+          <input type="checkbox" class="list-settings-toggle h-5 w-5" data-field-key="${this.escapeHtml(field.key)}" ${checked} />
+        </label>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.list-settings-toggle').forEach((toggle) => {
+      toggle.addEventListener('change', () => {
+        this.setListFieldVisibility(toggle.dataset.fieldKey, toggle.checked);
+      });
+    });
+  },
+
+toggleListSettingsPopup(anchor) {
+    this.ensureListSettingsPopup();
+    this.renderListSettingsToggles();
+
+    const popup = document.getElementById('listSettingsPopup');
+    if (!popup) return;
+
+    popup.classList.toggle('hidden');
+
+    if (!popup.classList.contains('hidden') && window.matchMedia('(min-width: 640px)').matches) {
+      const rect = anchor.getBoundingClientRect();
+      popup.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - 300))}px`;
+      popup.style.top = `${rect.bottom + 8}px`;
+    }
+  },
+
+closeListSettingsPopup() {
+    document.getElementById('listSettingsPopup')?.classList.add('hidden');
+  },
+
 getListEditFields(tracker) {
     if (!tracker || !Array.isArray(tracker.columns)) return [];
 
@@ -197,7 +346,7 @@ createListEditInput(field, row) {
         '<option value="">Select</option>',
         ...options.map((option) => {
           const selected = option.label === value ? 'selected' : '';
-          return `<option value="${this.escapeHtml(option.label)}" ${selected}>${this.escapeHtml(option.label)}</option>`;
+          return `<option value="${this.escapeHtml(option.label)}" style="background-color: #1f2937; color: #ffffff;" ${selected}>${this.escapeHtml(option.label)}</option>`;
         })
       ].join('');
 
@@ -205,7 +354,8 @@ createListEditInput(field, row) {
         <label class="block">
           <span class="text-sm font-medium text-gray-200">${this.escapeHtml(field.label)}</span>
           <select
-            class="mt-1 h-10 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-white outline-none focus:border-gray-400"
+            class="mt-1 h-10 w-full rounded-lg border border-gray-700 !bg-gray-800 px-3 text-sm !text-white outline-none focus:border-gray-400"
+            style="background-color: #1f2937; color: #ffffff; color-scheme: dark;"
             data-field-key="${this.escapeHtml(field.key)}"
           >
             ${optionHtml}
@@ -440,6 +590,8 @@ getSortedListRows(tracker) {
 renderListView(tracker) {
     if (!this.listCards) return;
 
+    this.ensureListViewSettingsButton();
+    this.ensureListSettingsPopup();
     this.ensureListEditModal();
     this.listCards.innerHTML = '';
     this.updateListStats(tracker);
@@ -464,6 +616,8 @@ renderListView(tracker) {
       const position = this.getCellDisplay(row[indexes.position]);
       const company = this.getCellDisplay(row[indexes.company]);
       const link = this.getFirstRowLink(row);
+      const email = indexes.email >= 0 ? this.getCellValue(row[indexes.email]) : '';
+      const location = indexes.location >= 0 ? this.getCellValue(row[indexes.location]) : '';
       const safeDateApplied = this.escapeHtml(dateApplied);
       const safePosition = this.escapeHtml(position);
       const safeCompany = this.escapeHtml(company);
@@ -471,19 +625,30 @@ renderListView(tracker) {
       const linkFavicon = getLinkFavicon(link);
       const safeHostname = this.escapeHtml(linkFavicon.hostname);
       const { otherBadges, statusBadge } = this.renderListBadgesForCard(tracker, row, indexes.status);
+      const shouldShowDate = this.isListFieldVisible('date') && this.isUsefulListValue(dateApplied);
+      const shouldShowWebsite = this.isListFieldVisible('website') && this.isUsefulListValue(link);
+      const extraDetails = [
+        this.isListFieldVisible('email') && this.isUsefulListValue(email)
+          ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-envelope mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(email)}</span>`
+          : '',
+        this.isListFieldVisible('location') && this.isUsefulListValue(location)
+          ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-location-dot mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(location)}</span>`
+          : ''
+      ].filter(Boolean).join('');
 
       article.innerHTML = `
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>
+            ${shouldShowDate ? `<p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>` : ''}
             <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${safePosition}</h3>
             <p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>
+            ${extraDetails ? `<div class="mt-2 flex flex-wrap gap-3">${extraDetails}</div>` : ''}
           </div>
           <div class="flex flex-wrap items-center gap-3">
-            <a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
+            ${shouldShowWebsite ? `<a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
               ${this.getFaviconHtml(linkFavicon)}
               <span class="truncate">${safeHostname || 'Open link'}</span>
-            </a>
+            </a>` : ''}
             ${otherBadges}
             ${statusBadge}
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
@@ -495,12 +660,6 @@ renderListView(tracker) {
           </div>
         </div>
       `;
-
-      const linkElement = article.querySelector('a');
-      if (!link || !/^https?:\/\//.test(String(link))) {
-        linkElement?.classList.add('pointer-events-none', 'opacity-40');
-        linkElement?.removeAttribute('href');
-      }
 
       article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
         this.openListEditModal(rowIndex);
