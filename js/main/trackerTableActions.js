@@ -58,6 +58,13 @@ moveArrayItem(items, fromIndex, toIndex) {
     return targetIndex;
   },
 
+persistTableMove() {
+    this.clearTableSortControls();
+    this.save();
+    this.refresh({ persist: false });
+    closeMenu();
+  },
+
 reorderRow(fromIndex, toIndex) {
     const tracker = this.getTracker();
 
@@ -71,10 +78,7 @@ reorderRow(fromIndex, toIndex) {
     UIState.activeCol = null;
     UIState.activeType = 'row';
 
-    this.clearTableSortControls();
-    this.save();
-    this.refresh({ persist: false });
-    closeMenu();
+    this.persistTableMove();
   },
 
 reorderColumn(fromIndex, toIndex) {
@@ -97,10 +101,7 @@ reorderColumn(fromIndex, toIndex) {
     UIState.activeCol = movedToIndex;
     UIState.activeType = 'col';
 
-    this.clearTableSortControls();
-    this.save();
-    this.refresh({ persist: false });
-    closeMenu();
+    this.persistTableMove();
   },
 
 copyCol() {

@@ -1,4 +1,36 @@
 export class JSONService {
+  normalizeColumns(columns) {
+    return columns.map((column) => (
+      typeof column === "object"
+        ? column
+        : {
+            name: String(column || "New"),
+            type: "text"
+          }
+    ));
+  }
+
+  normalizeRows(rows, columns) {
+    return rows.map((row) => (
+      columns.map((column, index) => {
+        const cell = row?.[index];
+        const columnType = typeof column === "object" && column.type ? column.type : "text";
+
+        if (cell && typeof cell === "object" && "value" in cell) {
+          return {
+            ...cell,
+            type: cell.type || columnType
+          };
+        }
+
+        return {
+          value: cell ?? "",
+          type: columnType
+        };
+      })
+    ));
+  }
+
   export(data, filename = "tracker.json") {
     if (!data) return;
 
@@ -48,9 +80,11 @@ export class JSONService {
           throw new Error("Invalid tracker file");
         }
 
+        const columns = this.normalizeColumns(data.columns);
+
         callback({
-          columns: data.columns,
-          rows: data.rows
+          columns,
+          rows: this.normalizeRows(data.rows, columns)
         });
 
       } catch (err) {

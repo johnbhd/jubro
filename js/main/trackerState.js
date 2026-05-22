@@ -80,6 +80,18 @@ getTracker() {
     return trackerKey ? this.state.data[trackerKey] : null;
   },
 
+getActiveTrackerKey() {
+    if (!this.state?.data) return null;
+
+    if (this.state.data[this.state.active]) {
+      return this.state.active;
+    }
+
+    return Object.keys(this.state.data).find(key => (
+      this.state.data[key]?.id === this.state.active
+    )) || null;
+  },
+
 getTrackerFromURL() {
     const params = new URLSearchParams(window.location.search);
     return params.get('tracker');
@@ -105,7 +117,7 @@ syncLocalStateToFirebase() {
 
     if (!user) return;
 
-    firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
+    return firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
       console.error("Tracker Firebase sync error:", err);
     });
   }

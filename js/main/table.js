@@ -177,6 +177,9 @@ export const Table = {
       tr.className = `border-t hover:bg-gray-50 ${canUseNativeDrag ? 'cursor-grab active:cursor-grabbing' : ''}`;
       tr.draggable = canUseNativeDrag;
       tr.dataset.rowIndex = String(rowIndex);
+      tr.addEventListener('pointerenter', () => setActiveTarget(rowIndex, null, 'row'));
+      tr.addEventListener('click', () => setActiveTarget(rowIndex, null, 'row'));
+      tr.addEventListener('contextmenu', (e) => showMenu(e, rowIndex, null, 'row'));
 
       if (canUseNativeDrag) {
         tr.addEventListener('dragstart', (e) => {

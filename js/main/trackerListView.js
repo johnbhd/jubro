@@ -10,7 +10,9 @@ getListColumnIndexes(tracker) {
       platform: this.getColumnIndexByNames(tracker, ['platform', 'source'], 2),
       status: this.getColumnIndexByNames(tracker, ['status'], 3),
       date: this.getDateColumnIndex(tracker),
-      link: this.getColumnIndexByNames(tracker, ['link', 'url', 'job link'], 5)
+      link: this.getColumnIndexByNames(tracker, ['website', 'link', 'url', 'job link'], 5),
+      email: this.getColumnIndexByNames(tracker, ['email'], -1),
+      location: this.getColumnIndexByNames(tracker, ['location'], -1)
     };
   },
 
@@ -27,6 +29,12 @@ getListSelectColumns() {
 
 getActiveListFilterValues() {
     return Object.values(this.activeListFilters).filter(Boolean);
+  },
+
+isUsefulListValue(value) {
+    const normalized = this.normalizeText(value);
+
+    return Boolean(normalized) && normalized !== '-' && normalized !== 'n/a' && normalized !== 'na';
   },
 
 getFirstRowLink(row) {
@@ -71,24 +79,207 @@ getFaviconHtml(favicon) {
     `;
   },
 
+getListBadgeHtml(column, value) {
+    if (!this.isUsefulListValue(value)) return '';
+
+    const safeValue = this.escapeHtml(value);
+    const color = this.getOptionColor(column, value, '#6b7280');
+    const textColor = this.getContrastColor(color);
+    const columnName = this.normalizeText(this.getColumnName(column));
+    const platformIcon = ['platform', 'source'].includes(columnName)
+      ? this.getFaviconHtml(getPlatformFavicon(value))
+      : '';
+
+    return `
+      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${color}; color: ${textColor};">
+        ${platformIcon}
+        ${safeValue}
+      </span>
+    `;
+  },
+
 renderListSelectBadges(tracker, row) {
-    return this.getListSelectColumns().map(({ column, index }) => {
-      const value = this.getCellDisplay(row[index]);
-      const safeValue = this.escapeHtml(value);
-      const color = this.getOptionColor(column, value, '#6b7280');
-      const textColor = this.getContrastColor(color);
-      const columnName = this.normalizeText(this.getColumnName(column));
-      const platformIcon = ['platform', 'source'].includes(columnName)
-        ? this.getFaviconHtml(getPlatformFavicon(value))
-        : '';
+    return this.getListSelectColumns().map(({ column, index }) => (
+      this.getListBadgeHtml(column, this.getCellDisplay(row[index]))
+    )).join('');
+  },
+
+renderListBadgesForCard(tracker, row, statusIndex) {
+    const selectColumns = this.getListSelectColumns();
+    const statusColumn = selectColumns.find(({ index }) => index === statusIndex);
+    const otherBadges = selectColumns
+      .filter(({ index }) => index !== statusIndex)
+      .map(({ column, index }) => this.getListBadgeHtml(column, this.getCellDisplay(row[index])))
+      .join('');
+    const statusBadge = statusColumn
+      ? this.getListBadgeHtml(statusColumn.column, this.getCellDisplay(row[statusColumn.index]))
+      : '';
+
+    return {
+      otherBadges,
+      statusBadge
+    };
+  },
+
+ensureListEditModal() {
+    if (document.getElementById('listEditModal')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="listEditModal" class="hidden fixed inset-0 z-[70] overflow-y-auto bg-black/60 p-4">
+        <div class="mx-auto my-6 w-full max-w-2xl rounded-2xl border border-gray-700 bg-gray-900 p-5 text-gray-100 shadow-xl">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="text-lg font-semibold">Edit Job Application</h2>
+              <p class="text-sm text-gray-400">Update this list item.</p>
+            </div>
+            <button id="btnCloseListEditModal" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white" aria-label="Close edit modal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <form id="listEditForm" class="space-y-4">
+            <div id="listEditFields" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+            <div class="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+              <button id="btnCancelListEdit" type="button" class="rounded-lg border border-gray-600 px-4 py-2 text-sm text-gray-100 hover:bg-gray-800">Cancel</button>
+              <button id="btnSaveListEdit" type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    `);
+
+    document.getElementById('btnCloseListEditModal')?.addEventListener('click', () => this.closeListEditModal());
+    document.getElementById('btnCancelListEdit')?.addEventListener('click', () => this.closeListEditModal());
+    document.getElementById('listEditModal')?.addEventListener('click', (event) => {
+      if (event.target.id === 'listEditModal') this.closeListEditModal();
+    });
+    document.getElementById('listEditForm')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      this.saveListEditModal();
+    });
+  },
+
+getListEditFields(tracker) {
+    if (!tracker || !Array.isArray(tracker.columns)) return [];
+
+    return tracker.columns.map((column, index) => ({
+      key: String(index),
+      label: this.getColumnName(column) || `Column ${index + 1}`,
+      index,
+      column
+    }));
+  },
+
+getListEditColumn(tracker, field) {
+    return Number.isInteger(field.index) && field.index >= 0 ? tracker?.columns?.[field.index] : null;
+  },
+
+getListEditFieldType(tracker, field) {
+    const column = this.getListEditColumn(tracker, field);
+
+    if (typeof column === 'object' && column.type) return column.type;
+
+    return 'text';
+  },
+
+ensureListEditColumn(tracker, field) {
+    return Number.isInteger(field.index) ? field.index : -1;
+  },
+
+createListEditInput(field, row) {
+    const tracker = this.getTracker();
+    const value = field.index >= 0 ? this.getCellValue(row[field.index]) : '';
+    const type = this.getListEditFieldType(tracker, field);
+
+    if (type === 'select') {
+      const column = this.getListEditColumn(tracker, field);
+      const options = this.getDashboardOptions(column);
+      const optionHtml = [
+        '<option value="">Select</option>',
+        ...options.map((option) => {
+          const selected = option.label === value ? 'selected' : '';
+          return `<option value="${this.escapeHtml(option.label)}" ${selected}>${this.escapeHtml(option.label)}</option>`;
+        })
+      ].join('');
 
       return `
-        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${color}; color: ${textColor};">
-          ${platformIcon}
-          ${safeValue}
-        </span>
+        <label class="block">
+          <span class="text-sm font-medium text-gray-200">${this.escapeHtml(field.label)}</span>
+          <select
+            class="mt-1 h-10 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-white outline-none focus:border-gray-400"
+            data-field-key="${this.escapeHtml(field.key)}"
+          >
+            ${optionHtml}
+          </select>
+        </label>
       `;
-    }).join('');
+    }
+
+    const inputType = type === 'date' ? 'date' : 'text';
+
+    return `
+      <label class="block">
+        <span class="text-sm font-medium text-gray-200">${this.escapeHtml(field.label)}</span>
+        <input
+          type="${inputType}"
+          class="mt-1 h-10 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-white outline-none focus:border-gray-400"
+          data-field-key="${this.escapeHtml(field.key)}"
+          value="${this.escapeHtml(value || '')}"
+        />
+      </label>
+    `;
+  },
+
+openListEditModal(rowIndex) {
+    const tracker = this.getTracker();
+    const row = tracker?.rows?.[rowIndex];
+    const fieldsContainer = document.getElementById('listEditFields');
+
+    if (!tracker || !row || !fieldsContainer) return;
+
+    this.activeListEditRowIndex = rowIndex;
+    fieldsContainer.innerHTML = this.getListEditFields(tracker)
+      .map((field) => this.createListEditInput(field, row))
+      .join('');
+
+    document.getElementById('listEditModal')?.classList.remove('hidden');
+  },
+
+closeListEditModal() {
+    this.activeListEditRowIndex = null;
+    document.getElementById('listEditModal')?.classList.add('hidden');
+  },
+
+saveListEditModal() {
+    const tracker = this.getTracker();
+    const rowIndex = this.activeListEditRowIndex;
+    const row = tracker?.rows?.[rowIndex];
+
+    if (!tracker || !row) return;
+
+    const fieldsByKey = new Map(this.getListEditFields(tracker).map((field) => [field.key, field]));
+
+    document.querySelectorAll('#listEditFields [data-field-key]').forEach((input) => {
+      const field = fieldsByKey.get(input.dataset.fieldKey);
+      if (!field) return;
+
+      const columnIndex = this.ensureListEditColumn(tracker, field);
+      if (columnIndex < 0) return;
+
+      const columnType = this.getListEditFieldType(tracker, {
+        ...field,
+        index: columnIndex
+      });
+
+      row[columnIndex] = {
+        value: input.value.trim(),
+        type: columnType
+      };
+    });
+
+    this.save();
+    this.closeListEditModal();
+    this.renderListView(tracker);
+    this.applySearchFilter();
   },
 
 rowMatchesListFilters(row, tracker) {
@@ -249,6 +440,7 @@ getSortedListRows(tracker) {
 renderListView(tracker) {
     if (!this.listCards) return;
 
+    this.ensureListEditModal();
     this.listCards.innerHTML = '';
     this.updateListStats(tracker);
     this.renderListFilterSections(tracker);
@@ -278,7 +470,7 @@ renderListView(tracker) {
       const safeLink = this.escapeHtml(link || '#');
       const linkFavicon = getLinkFavicon(link);
       const safeHostname = this.escapeHtml(linkFavicon.hostname);
-      const selectBadges = this.renderListSelectBadges(tracker, row);
+      const { otherBadges, statusBadge } = this.renderListBadgesForCard(tracker, row, indexes.status);
 
       article.innerHTML = `
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -292,7 +484,8 @@ renderListView(tracker) {
               ${this.getFaviconHtml(linkFavicon)}
               <span class="truncate">${safeHostname || 'Open link'}</span>
             </a>
-            ${selectBadges}
+            ${otherBadges}
+            ${statusBadge}
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
@@ -310,7 +503,7 @@ renderListView(tracker) {
       }
 
       article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
-        this.showTableRow(rowIndex);
+        this.openListEditModal(rowIndex);
       });
 
       article.querySelector('.btn-list-delete')?.addEventListener('click', () => {

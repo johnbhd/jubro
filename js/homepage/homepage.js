@@ -35,12 +35,9 @@ export class TrackerHome {
 
   initializeState() {
     if (!Storage.exists()) {
-      const defaultId = this.getNextId({ data: {} });
       const state = {
-        active: defaultId,
-        data: {
-          [defaultId]: createDefaultTracker(defaultId)
-        }
+        active: null,
+        data: {}
       };
 
       Storage.save(state);
@@ -134,7 +131,10 @@ export class TrackerHome {
   
     const id = this.getNextId();
   
-    this.state.data[id] = createDefaultTracker(id, title);
+    this.state.data[id] = {
+      ...createDefaultTracker(id, title),
+      rows: []
+    };
   
     this.state.active = id;
   
@@ -227,6 +227,9 @@ export class TrackerHome {
     const keys = Object.keys(data).sort((a, b) => {
       const aNumber = Number(a);
       const bNumber = Number(b);
+
+      if (a === this.state.active) return -1;
+      if (b === this.state.active) return 1;
 
       if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) {
         return bNumber - aNumber;

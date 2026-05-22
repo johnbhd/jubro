@@ -81,17 +81,23 @@ initEvents() {
     });
 
     btnImport?.addEventListener('click', () => {
-      this.jsonService.import((data) => {
+      this.jsonService.import(async (data) => {
+        const trackerKey = this.getActiveTrackerKey();
 
-        this.state.data[this.state.active] = {
-          ...this.state.data[this.state.active],
-          columns: structuredClone(data.columns),
-          rows: structuredClone(data.rows)
+        if (!trackerKey) return;
+
+        this.state.active = trackerKey;
+        this.state.data[trackerKey] = {
+          ...this.state.data[trackerKey],
+          id: trackerKey,
+          columns: this.cloneTableValue(data.columns),
+          rows: this.cloneTableValue(data.rows)
         };
 
         this.save();
-
-        window.location.reload();
+        await this.syncLocalStateToFirebase();
+        this.refresh({ persist: false });
+        dropdown?.classList.add('hidden');
       });
     });
 
