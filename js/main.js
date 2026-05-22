@@ -95,6 +95,16 @@ function setupActiveNavigation() {
   });
 }
 
+function getBoardUrl(trackerId) {
+  const query = `tracker=${encodeURIComponent(trackerId)}`;
+
+  if (window.location.pathname.includes('/pages/')) {
+    return `./board.html?${query}`;
+  }
+
+  return `/board/?${query}`;
+}
+
 function getStatusValue(cell) {
   return String(typeof cell === 'object' ? cell.value : cell || '').trim().toLowerCase();
 }
@@ -231,7 +241,7 @@ function updateHomepageStats() {
 
   if (previewBoardLink) {
     previewBoardLink.href = activeTrackerId
-      ? `/board?tracker=${encodeURIComponent(activeTrackerId)}`
+      ? getBoardUrl(activeTrackerId)
       : '/trackers';
   }
 

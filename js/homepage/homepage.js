@@ -101,6 +101,16 @@ export class TrackerHome {
     return String(Math.max(...ids.map(id => Number(id) || 0)) + 1);
   }
 
+  getBoardUrl(trackerId) {
+    const query = `tracker=${encodeURIComponent(trackerId)}`;
+
+    if (window.location.pathname.includes('/pages/')) {
+      return `./board.html?${query}`;
+    }
+
+    return `/board/?${query}`;
+  }
+
   showModal() {
     if (!this.modal) return;
     this.modal.classList.remove('hidden');
@@ -235,15 +245,21 @@ export class TrackerHome {
 
     keys.forEach((id) => {
       const t = data[id];
+      const trackerId = id;
+      const boardUrl = this.getBoardUrl(trackerId);
+
+      if (t.id !== trackerId) {
+        t.id = trackerId;
+      }
 
       const card = document.createElement('div');
       card.className =
         "group bg-white p-5 rounded-2xl shadow cursor-pointer overflow-hidden border border-transparent transition duration-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl";
 
       card.addEventListener('click', () => {
-        this.state.active = t.id;
+        this.state.active = trackerId;
         Storage.save(this.state);
-        window.location.href = `/board?tracker=${encodeURIComponent(t.id)}`;
+        window.location.href = boardUrl;
       });
 
       card.innerHTML = `
@@ -253,7 +269,7 @@ export class TrackerHome {
           <button 
             class="btn-delete text-gray-400 hover:text-red-500 transition"
             type="button"
-            data-id="${t.id}"
+            data-id="${trackerId}"
             data-title="${t.title}"
           >
             <i class="fa-solid fa-trash hover:text-red-500"></i>
@@ -262,10 +278,16 @@ export class TrackerHome {
       
         <p class="text-gray-500 mt-1">${t.rows.length} entries</p>
       
-        <button type="button" class="mt-4 text-sm text-blue-500 transition group-hover:text-blue-600">
+        <a href="${boardUrl}" class="mt-4 inline-block text-sm text-blue-500 transition group-hover:text-blue-600">
           Open
-        </button>
+        </a>
       `;
+
+      card.querySelector('a')?.addEventListener('click', () => {
+        this.state.active = trackerId;
+        Storage.save(this.state);
+      });
+
       const deleteBtn = card.querySelector('.btn-delete');
       
       deleteBtn.addEventListener('click', (e) => {

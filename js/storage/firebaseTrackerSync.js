@@ -16,8 +16,11 @@ export function hasValidTrackerData(state) {
     return (
       tracker &&
       typeof tracker === "object" &&
-      Array.isArray(tracker.rows) &&
-      tracker.rows.length > 0
+      (
+        Array.isArray(tracker.rows) ||
+        Array.isArray(tracker.columns) ||
+        Boolean(String(tracker.title || "").trim())
+      )
     );
   });
 }
