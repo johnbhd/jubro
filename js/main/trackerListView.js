@@ -678,6 +678,18 @@ updateBoardView() {
 
     this.tableView?.classList.toggle('hidden', isListView);
     this.listView?.classList.toggle('hidden', !isListView);
+    this.updateBoardViewToggle();
+  },
+
+updateBoardViewToggle() {
+    const currentView = this.viewSelect?.value || 'table';
+
+    document.querySelectorAll('[data-board-view-button]').forEach((button) => {
+      const isActive = button.dataset.boardViewButton === currentView;
+
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
   },
 
 saveBoardViewPreference() {
@@ -693,6 +705,8 @@ restoreBoardViewPreference() {
     if (savedView === 'list' || savedView === 'table') {
       this.viewSelect.value = savedView;
     }
+
+    this.updateBoardViewToggle();
   },
 
 showTableRow(rowIndex) {

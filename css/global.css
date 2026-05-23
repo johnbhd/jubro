@@ -13,6 +13,12 @@ input:disabled {
   cursor: not-allowed;
 }
 
+.board-view-button.is-active {
+  background: #111827 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+}
+
 #tableContainer .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -85,7 +91,7 @@ input:disabled {
   background: rgb(255 255 255 / 0.75);
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   #searchWrapper {
     max-width: 100%;
     scrollbar-width: thin;
@@ -389,6 +395,25 @@ input:disabled {
 }
 
 .dark #btnDashboard {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark #boardViewToggle {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .board-view-button {
+  color: #d1d5db !important;
+}
+
+.dark .board-view-button:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .board-view-button.is-active {
   background-color: #f9fafb !important;
   color: #111827 !important;
 }

@@ -194,6 +194,20 @@ initEvents() {
       this.applySearchFilter();
     });
 
+    document.querySelectorAll('[data-board-view-button]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const view = button.dataset.boardViewButton;
+
+        if (!this.viewSelect || (view !== 'table' && view !== 'list')) return;
+
+        this.viewSelect.value = view;
+        this.saveBoardViewPreference();
+        this.resetPagination();
+        this.updateBoardView();
+        this.applySearchFilter();
+      });
+    });
+
     listSearchInput?.addEventListener('input', () => {
       this.resetPagination();
       this.applySearchFilter();
