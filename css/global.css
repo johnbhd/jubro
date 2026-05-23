@@ -333,14 +333,30 @@ input:disabled {
   background-color: #111827 !important;
 }
 
-.dark #about h2 {
+.dark #about h2,
+.dark #about .text-gray-900 {
   color: #f9fafb !important;
 }
 
-.dark #about .space-y-5 .flex.h-12 {
-  background-color: #111827 !important;
-  border: 1px solid #374151;
-  color: #f9fafb !important;
+.dark #about .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+.dark #about .text-gray-400,
+.dark #about .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.dark #about .text-green-700 {
+  color: #86efac !important;
+}
+
+.dark #about .text-blue-700 {
+  color: #93c5fd !important;
+}
+
+.dark #about .text-yellow-700 {
+  color: #fde68a !important;
 }
 
 .dark #about .border-gray-200,
