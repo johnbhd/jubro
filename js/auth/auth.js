@@ -23,11 +23,11 @@ export class Auth {
 
   getStoredTheme() {
     const theme = localStorage.getItem(THEME_KEY);
-    return theme === 'dark' ? 'dark' : 'light';
+    return theme === 'light' ? 'light' : 'dark';
   }
 
   setStoredTheme(theme) {
-    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(THEME_KEY, theme === 'light' ? 'light' : 'dark');
   }
 
   applyTheme(theme) {

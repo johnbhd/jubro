@@ -51,6 +51,7 @@ function setupMobileMenu() {
 }
 
 function syncGuestThemeButton(theme) {
+  theme = theme === 'light' ? 'light' : 'dark';
   const isDark = theme === 'dark';
   const themeButton = document.getElementById('btnGuestTheme');
   const themeIcon = themeButton?.querySelector('i');
@@ -65,7 +66,7 @@ function syncGuestThemeButton(theme) {
 }
 
 function setupFallbackThemeToggle() {
-  const savedTheme = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+  const savedTheme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
 
   syncGuestThemeButton(savedTheme);
 
@@ -266,7 +267,7 @@ async function initHomepage() {
 
   setupMobileMenu();
   setupActiveNavigation();
-  syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light');
+  syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
   setupAuth();
 }
 
@@ -282,7 +283,7 @@ const componentsReady = new Promise((resolve) => {
       return;
     }
 
-    const theme = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    const theme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
     localStorage.setItem(THEME_KEY, theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
     resolve();

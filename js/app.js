@@ -9,7 +9,9 @@ const THEME_KEY = 'jubro_theme';
 console.log("Firestore instance:", db);
 
 function applySavedTheme() {
-  const theme = localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+  const storedTheme = localStorage.getItem(THEME_KEY);
+  const theme = storedTheme === 'light' ? 'light' : 'dark';
+
   localStorage.setItem(THEME_KEY, theme);
   document.documentElement.classList.toggle('dark', theme === 'dark');
 }
