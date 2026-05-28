@@ -60,6 +60,8 @@ export function showMenu(e, rowIndex, colIndex, type) {
   e.preventDefault();
 
   const menu = document.getElementById('contextMenu');
+  const tableBody = document.getElementById('tableBody');
+  const rowCount = tableBody ? tableBody.querySelectorAll('tr').length : 0;
 
   setActiveTarget(rowIndex, colIndex, type);
   
@@ -98,6 +100,9 @@ export function showMenu(e, rowIndex, colIndex, type) {
   }
   
   if (type === 'col') {
+    if (rowCount === 0) {
+      btnAddRow.classList.remove('hidden');
+    }
     btnAddCol.classList.remove('hidden');
     btnDelCol.classList.remove('hidden');
     btnCopyCol.classList.remove('hidden');
