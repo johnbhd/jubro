@@ -289,13 +289,15 @@ export const Table = {
         display.className = 'cursor-pointer inline-flex items-center justify-center gap-2 px-2 rounded';
         
         if (current) {
+          display.classList.remove('select-placeholder-display');
           display.style.backgroundColor = current.color;
           display.style.color = getContrastColor(current.color);
           display.style.border = 'none';
         } else {
-          display.style.backgroundColor = 'transparent';
-          display.style.color = '#000';
-          display.style.border = '1px solid #e5e7eb';
+          display.classList.add('select-placeholder-display');
+          display.style.backgroundColor = '';
+          display.style.color = '';
+          display.style.border = '';
         }
           const dropdown = document.createElement('div');
           dropdown.className = 'fixed bg-white border rounded shadow z-[9999] hidden min-w-[160px]';
@@ -344,8 +346,10 @@ export const Table = {
                 };
         
                 renderDisplayContent(opt.label);
+                display.classList.remove('select-placeholder-display');
                 display.style.backgroundColor = opt.color;
                 display.style.color = getContrastColor(opt.color);
+                display.style.border = 'none';
         
                 document.dispatchEvent(new Event('table:update'));
                 closeDropdown();

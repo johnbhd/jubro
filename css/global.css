@@ -91,6 +91,12 @@ input:disabled {
   background: rgb(255 255 255 / 0.75);
 }
 
+.select-placeholder-display {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
 @media (max-width: 1023px) {
   #searchWrapper {
     max-width: 100%;
@@ -527,6 +533,12 @@ input:disabled {
 
 .dark .favicon-holder {
   background: rgb(17 24 39 / 0.85);
+}
+
+.dark .select-placeholder-display {
+  background-color: #ffffff !important;
+  border-color: #ffffff !important;
+  color: #111827 !important;
 }
 
 .dark .list-filter-chip.is-active .list-filter-count,
