@@ -1,70 +1,13 @@
-Add 3 mini feature cards below the video demo card inside the About section.
+Fix the dark mode flash (FOUC) on the Jubro landing page without adding a loading screen.
 
-Layout:
-- Place the cards directly below the video preview description.
-- Use a responsive grid:
-  - Desktop: 3 columns
-  - Tablet: 3 columns if space allows
-  - Mobile: stacked vertically
-- Add proper spacing with gap-4 or gap-5.
+Requirements:
 
-Card Design:
-- Match the dark premium dashboard style from the screenshot.
-- Rounded 2xl cards
-- Subtle border
-- Soft shadow
-- Slight hover lift effect
-- Keep cards minimal and compact
-- Use the same styling language as the current About/video card
-
-Card Style Requirements:
-Light Mode:
-- White/light card background
-- Gray border
-- Dark text/icons
-
-Dark Mode:
-- Use existing global.css dark theme variables/classes
-- Dark navy/slate background
-- White text/icons
-- Border subtle white/10
-
-Each card should contain:
-- Left aligned icon
-- Title text only
-- Horizontal flex layout
-- Vertically centered content
-
-Cards:
-1.
-Icon: fa-table-cells-large
-Title: Table View
-
-2.
-Icon: fa-list-ul
-Title: List View
-
-3.
-Icon: fa-chart-simple
-Title: Analytics
-
-Structure Example:
-- icon container
-- title text
-- no description text
-
-Spacing:
-- Add margin-top below the video demo section before the cards
-- Keep consistent internal padding around 20px–24px
-
-Interactions:
-- Smooth transition
-- Slight translateY hover
-- Slight border glow on hover
-- Cursor pointer
-
-Important:
-- Only add these below the video demo card
-- Do not move the About text content
-- Preserve responsiveness
-- Do not affect other sections
+* Dark mode is the default theme.
+* Apply the theme before the page renders to prevent the white/light flash during initial load.
+* Move the theme initialization script to the top of the `<head>` before CSS files load.
+* Add/remove the `dark` class on `document.documentElement` based on the saved theme in `localStorage`.
+* If no theme is saved, default to dark mode.
+* Ensure all theme transitions continue working after page load.
+* Do not use a loader, splash screen, or artificial delay.
+* Optimize for the fastest first paint and smooth user experience.
+* Verify there is no visible theme switching or flashing when refreshing the page.
