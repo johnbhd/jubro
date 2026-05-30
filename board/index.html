@@ -2,14 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (() => {
+      const themeKey = 'jubro_theme';
+      let theme = 'dark';
+
+      try {
+        const savedTheme = localStorage.getItem(themeKey);
+        theme = savedTheme === 'light' ? 'light' : 'dark';
+
+        if (!savedTheme) {
+          localStorage.setItem(themeKey, theme);
+        }
+      } catch (error) {
+        theme = 'dark';
+      }
+
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jubro || Your simple Job Tracker</title>
+  <title>Jubro Board - Job Application Workspace</title>
+  <meta
+    name="description"
+    content="Jubro board workspace for managing a selected job application tracker."
+  />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://jubro.vercel.app/board" />
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="icon" type="image/png" href="/img/jubro.png" />
 </head>
 <body id="appBody" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
+  <h1 class="sr-only">Jubro Job Application Board</h1>
   <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
     <header id="appNavbar" class="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3 bg-white shadow-sm sticky top-0 z-10 rounded-md sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)_minmax(0,1fr)] lg:gap-4">
       <div class="flex min-w-0 items-center gap-2">

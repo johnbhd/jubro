@@ -144,6 +144,9 @@ input:disabled {
   background-color: #1f2937 !important;
 }
 
+.dark .title-head {
+  color: #e5e7eb;
+}
 
 
 .dark .bg-gray-200 {
@@ -299,13 +302,15 @@ input:disabled {
   color: #f9fafb !important;
 }
 
-.dark footer a[aria-label] {
+.dark footer a[aria-label],
+.dark footer span[aria-label] {
   background-color: #111827 !important;
   border-color: #374151 !important;
   color: #f9fafb !important;
 }
 
-.dark footer a[aria-label]:hover {
+.dark footer a[aria-label]:hover,
+.dark footer span[aria-label]:hover {
   background-color: #f9fafb !important;
   color: #111827 !important;
 }

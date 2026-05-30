@@ -2,8 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (() => {
+      const themeKey = 'jubro_theme';
+      let theme = 'dark';
+
+      try {
+        const savedTheme = localStorage.getItem(themeKey);
+        theme = savedTheme === 'light' ? 'light' : 'dark';
+
+        if (!savedTheme) {
+          localStorage.setItem(themeKey, theme);
+        }
+      } catch (error) {
+        theme = 'dark';
+      }
+
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jubro || Your simple Job Tracker</title>
+  <title>Track Job Applications - Jubro Tracker Dashboard</title>
+  <meta
+    name="description"
+    content="Create job application trackers in Jubro to organize companies, roles, statuses, dates, links, interviews, and job search progress in one dashboard."
+  />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://jubro.vercel.app/trackers" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Jubro" />
+  <meta property="og:title" content="Track Job Applications - Jubro Tracker Dashboard" />
+  <meta
+    property="og:description"
+    content="Build simple job trackers for applications, interviews, statuses, and job links with Jubro."
+  />
+  <meta property="og:url" content="https://jubro.vercel.app/trackers" />
+  <meta property="og:image" content="https://jubro.vercel.app/img/jubro.png" />
+  <meta property="og:image:alt" content="Jubro job tracker dashboard logo" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Track Job Applications - Jubro Tracker Dashboard" />
+  <meta
+    name="twitter:description"
+    content="Create clean trackers for your job applications, statuses, dates, and links."
+  />
+  <meta name="twitter:image" content="https://jubro.vercel.app/img/jubro.png" />
+  <meta name="twitter:image:alt" content="Jubro job tracker dashboard logo" />
 
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -27,6 +72,16 @@
   <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
 
     <div id="navbar"></div>
+
+    <header class="mb-8">
+      <h1 class="text-3xl font-black text-gray-900 sm:text-4xl">
+        Job Application Trackers
+      </h1>
+
+      <p class="mt-3 max-w-2xl text-gray-600">
+        Create and open trackers for applications, interviews, status, dates, and job links.
+      </p>
+    </header>
  
     <div id="trackerGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
 
