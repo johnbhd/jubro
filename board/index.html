@@ -271,18 +271,22 @@
   <div id="dashboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
     <div class="mx-auto my-4 max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:my-8 sm:max-h-[calc(100vh-4rem)] sm:p-6">
       <div class="mb-4 flex items-start justify-between gap-3 sm:items-center">
-        <div class="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
-          <select
-            id="dashboardSelectColumn"
-            class="h-8 w-full max-w-56 rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200 sm:w-56"
-            aria-label="Dashboard select column"
-          ></select>
-        </div>
-        <button id="btnCloseDashboard" type="button" class="text-gray-500 text-xl hover:text-black">
+      <!-- Left side -->
+      <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
+
+      <!-- Right side: select + X -->
+      <div class="flex min-w-0 flex-1 items-center justify-end gap-3">
+        <select
+          id="dashboardSelectColumn"
+          class="h-8 min-w-0 w-full max-w-xs rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
+          aria-label="Dashboard select column"
+        ></select>
+
+        <button id="btnCloseDashboard" type="button" class="shrink-0 text-gray-500 text-xl hover:text-black">
           &times;
         </button>
       </div>
+    </div>
 
       <div id="dashboardCards" class="grid grid-cols-1 gap-3 lg:grid-cols-3"></div>
       <div id="dashboardCharts"></div>
