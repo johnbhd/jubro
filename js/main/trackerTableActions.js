@@ -58,7 +58,37 @@ moveArrayItem(items, fromIndex, toIndex) {
     return targetIndex;
   },
 
-persistTableMove() {
+swapArrayItems(items, firstIndex, secondIndex) {
+    if (!Array.isArray(items)) return false;
+    if (!Number.isInteger(firstIndex) || !Number.isInteger(secondIndex)) return false;
+    if (firstIndex < 0 || secondIndex < 0) return false;
+    if (firstIndex >= items.length || secondIndex >= items.length) return false;
+    if (firstIndex === secondIndex) return false;
+
+    [items[firstIndex], items[secondIndex]] = [items[secondIndex], items[firstIndex]];
+
+    return secondIndex;
+  },
+
+getVisibleTableRowIndexes() {
+    return Array.from(document.querySelectorAll('#tableBody tr[data-row-index]'))
+      .filter((rowElement) => !rowElement.classList.contains('hidden'))
+      .map((rowElement) => Number(rowElement.dataset.rowIndex))
+      .filter((rowIndex) => Number.isInteger(rowIndex) && rowIndex >= 0);
+  },
+
+getVisibleMoveTargetRowIndex(rowIndex, direction) {
+    const visibleRowIndexes = this.getVisibleTableRowIndexes();
+    const visibleIndex = visibleRowIndexes.indexOf(rowIndex);
+
+    if (visibleIndex === -1) {
+      return rowIndex + direction;
+    }
+
+    return visibleRowIndexes[visibleIndex + direction] ?? null;
+  },
+
+  persistTableMove() {
     this.clearTableSortControls();
     this.save();
     this.refresh({ persist: false });
@@ -71,6 +101,22 @@ reorderRow(fromIndex, toIndex) {
     if (!tracker || !Array.isArray(tracker.rows)) return;
 
     const movedToIndex = this.moveArrayItem(tracker.rows, fromIndex, toIndex);
+
+    if (movedToIndex === false) return;
+
+    UIState.activeRow = movedToIndex;
+    UIState.activeCol = null;
+    UIState.activeType = 'row';
+
+    this.persistTableMove();
+  },
+
+swapRows(firstIndex, secondIndex) {
+    const tracker = this.getTracker();
+
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+
+    const movedToIndex = this.swapArrayItems(tracker.rows, firstIndex, secondIndex);
 
     if (movedToIndex === false) return;
 
@@ -254,18 +300,36 @@ addCol() {
 moveUp() {
     const { activeRow, activeType } = UIState;
 
-    if (activeType !== 'row' || activeRow === null || activeRow === 0) return;
+    if (activeType !== 'row' || activeRow === null) return;
 
-    this.reorderRow(activeRow, activeRow - 1);
+    if (this.viewSelect?.value === 'list' && typeof this.moveListRow === 'function') {
+      this.moveListRow(activeRow, -1);
+      return;
+    }
+
+    const targetRow = this.getVisibleMoveTargetRowIndex(activeRow, -1);
+
+    if (targetRow === null || targetRow < 0) return;
+
+    this.swapRows(activeRow, targetRow);
   },
 
 moveDown() {
     const tracker = this.getTracker();
     const { activeRow, activeType } = UIState;
 
-    if (activeType !== 'row' || activeRow === null || activeRow === tracker.rows.length - 1) return;
+    if (activeType !== 'row' || activeRow === null) return;
 
-    this.reorderRow(activeRow, activeRow + 1);
+    if (this.viewSelect?.value === 'list' && typeof this.moveListRow === 'function') {
+      this.moveListRow(activeRow, 1);
+      return;
+    }
+
+    const targetRow = this.getVisibleMoveTargetRowIndex(activeRow, 1);
+
+    if (targetRow === null || targetRow >= tracker.rows.length) return;
+
+    this.swapRows(activeRow, targetRow);
   },
 
 moveLeft() {

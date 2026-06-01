@@ -1,4 +1,4 @@
-import { closeMenu } from './ui.js';
+import { clearActiveTarget, closeMenu, setActiveTarget, showMenu } from './ui.js';
 import { getLinkFavicon, getPlatformFavicon } from './favicon.js';
 import { BOARD_PAGE_SIZE, BOARD_VIEW_KEY } from './constants.js';
 
@@ -575,8 +575,14 @@ renderListFilterSections(tracker) {
 
 getSortedListRows(tracker) {
     const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const directionValue = this.listSortSelect?.value || 'date-desc';
+
+    if (directionValue === 'manual') {
+      return rows.map((row, rowIndex) => ({ row, rowIndex }));
+    }
+
     const dateIndex = this.getDateColumnIndex(tracker);
-    const direction = this.listSortSelect?.value === 'date-asc' ? 1 : -1;
+    const direction = directionValue === 'date-asc' ? 1 : -1;
 
     return rows
       .map((row, rowIndex) => ({ row, rowIndex }))
@@ -585,6 +591,73 @@ getSortedListRows(tracker) {
 
         return (this.getDateSortValue(a.row, dateIndex) - this.getDateSortValue(b.row, dateIndex)) * direction;
       });
+  },
+
+setListManualSort() {
+    if (this.listSortSelect) {
+      this.listSortSelect.value = 'manual';
+    }
+  },
+
+reorderListRow(fromIndex, toIndex) {
+    this.setListManualSort();
+    this.reorderRow(fromIndex, toIndex);
+  },
+
+moveListRow(rowIndex, direction) {
+    const orderedRows = this.getSortedListRows(this.getTracker());
+    const currentDisplayIndex = orderedRows.findIndex((item) => item.rowIndex === rowIndex);
+    const target = orderedRows[currentDisplayIndex + direction];
+
+    if (!target) return;
+
+    this.reorderListRow(rowIndex, target.rowIndex);
+  },
+
+wireListRowDrag(article, rowIndex) {
+    article.draggable = true;
+
+    article.addEventListener('dragstart', (event) => {
+      const interactiveTarget = event.target.closest('a, button, input, select, textarea');
+
+      if (interactiveTarget && !interactiveTarget.classList.contains('btn-list-drag')) {
+        event.preventDefault();
+        return;
+      }
+
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(rowIndex));
+      article.classList.add('opacity-50');
+    });
+
+    article.addEventListener('dragend', () => {
+      article.classList.remove('opacity-50');
+      this.listCards?.querySelectorAll('.list-view-row').forEach((rowElement) => {
+        rowElement.classList.remove('border-t-2', 'border-black');
+      });
+    });
+
+    article.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      article.classList.add('border-t-2', 'border-black');
+    });
+
+    article.addEventListener('dragleave', () => {
+      article.classList.remove('border-t-2', 'border-black');
+    });
+
+    article.addEventListener('drop', (event) => {
+      event.preventDefault();
+      article.classList.remove('border-t-2', 'border-black');
+
+      const fromIndex = Number(event.dataTransfer.getData('text/plain'));
+      const toIndex = Number(article.dataset.rowIndex);
+
+      if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return;
+
+      this.reorderListRow(fromIndex, toIndex);
+    });
   },
 
 renderListView(tracker) {
@@ -611,6 +684,11 @@ renderListView(tracker) {
       const article = document.createElement('article');
       article.className = 'list-view-row rounded-md border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow';
       article.dataset.rowIndex = String(rowIndex);
+      article.addEventListener('pointerenter', () => setActiveTarget(rowIndex, null, 'row'));
+      article.addEventListener('click', () => setActiveTarget(rowIndex, null, 'row'));
+      article.addEventListener('pointerleave', () => clearActiveTarget(rowIndex, null, 'row'));
+      article.addEventListener('contextmenu', (event) => showMenu(event, rowIndex, null, 'row'));
+      this.wireListRowDrag(article, rowIndex);
 
       const dateApplied = this.getCellDisplay(row[indexes.date]);
       const position = this.getCellDisplay(row[indexes.position]);
@@ -651,6 +729,13 @@ renderListView(tracker) {
             </a>` : ''}
             ${otherBadges}
             ${statusBadge}
+            <button type="button" class="btn-list-move-up inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Move job up">
+              <i class="fa-solid fa-arrow-up text-xs"></i>
+            </button>
+            <button type="button" class="btn-list-move-down inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Move job down">
+              <i class="fa-solid fa-arrow-down text-xs"></i>
+            </button>
+
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
@@ -660,6 +745,25 @@ renderListView(tracker) {
           </div>
         </div>
       `;
+
+      const orderedRows = this.getSortedListRows(tracker);
+      const currentDisplayIndex = orderedRows.findIndex((item) => item.rowIndex === rowIndex);
+      const moveUpButton = article.querySelector('.btn-list-move-up');
+      const moveDownButton = article.querySelector('.btn-list-move-down');
+
+      if (moveUpButton) {
+        moveUpButton.disabled = currentDisplayIndex <= 0;
+        moveUpButton.addEventListener('click', () => {
+          this.moveListRow(rowIndex, -1);
+        });
+      }
+
+      if (moveDownButton) {
+        moveDownButton.disabled = currentDisplayIndex === -1 || currentDisplayIndex >= orderedRows.length - 1;
+        moveDownButton.addEventListener('click', () => {
+          this.moveListRow(rowIndex, 1);
+        });
+      }
 
       article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
         this.openListEditModal(rowIndex);
