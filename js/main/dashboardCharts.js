@@ -1,4 +1,5 @@
 const SVG_NS = 'http://www.w3.org/2000/svg';
+let chartInstance = 0;
 
 function getTotal(counts) {
   return [...counts.values()].reduce((sum, count) => sum + count, 0);
@@ -172,9 +173,45 @@ function getApplicationsOverTime(tracker) {
     .map(([date, count]) => ({ date, count }));
 }
 
+function createSmoothPath(points) {
+  if (points.length === 0) return '';
+
+  if (points.length === 1) {
+    const point = points[0];
+    return `M ${point.x} ${point.y}`;
+  }
+
+  return points.reduce((path, point, index) => {
+    if (index === 0) return `M ${point.x} ${point.y}`;
+
+    const previous = points[index - 1];
+    const beforePrevious = points[index - 2] || previous;
+    const next = points[index + 1] || point;
+    const controlOneX = previous.x + (point.x - beforePrevious.x) / 6;
+    const controlOneY = previous.y + (point.y - beforePrevious.y) / 6;
+    const controlTwoX = point.x - (next.x - previous.x) / 6;
+    const controlTwoY = point.y - (next.y - previous.y) / 6;
+
+    return `${path} C ${controlOneX} ${controlOneY}, ${controlTwoX} ${controlTwoY}, ${point.x} ${point.y}`;
+  }, '');
+}
+
+function getVisualLinePoints(points, chartWidth) {
+  if (points.length !== 1) return points;
+
+  const point = points[0];
+  const singlePointSpread = Math.min(chartWidth * 0.26, 56);
+
+  return [
+    { ...point, x: point.x - singlePointSpread },
+    point,
+    { ...point, x: point.x + singlePointSpread }
+  ];
+}
+
 function createLineChart(data) {
   const card = document.createElement('div');
-  card.className = 'min-w-0 rounded-xl border p-4';
+  card.className = 'dashboard-area-card min-w-0 rounded-xl border p-4';
 
   const title = document.createElement('div');
   title.className = 'mb-3 flex items-center justify-between gap-3';
@@ -193,7 +230,7 @@ function createLineChart(data) {
 
   if (data.length === 0) {
     const empty = document.createElement('div');
-    empty.className = 'flex h-48 min-w-[360px] items-center justify-center rounded-lg bg-gray-50 text-sm text-gray-400';
+    empty.className = 'dashboard-area-empty flex h-48 min-w-[360px] items-center justify-center rounded-lg text-sm';
     empty.textContent = 'No dates found.';
     const emptyScroller = document.createElement('div');
     emptyScroller.className = 'overflow-x-auto';
@@ -204,7 +241,7 @@ function createLineChart(data) {
 
   const width = 420;
   const height = 180;
-  const padding = { top: 16, right: 16, bottom: 38, left: 28 };
+  const padding = { top: 16, right: 18, bottom: 34, left: 30 };
   const chartWidth = width - padding.left - padding.right;
   const chartHeight = height - padding.top - padding.bottom;
   const maxCount = Math.max(...data.map((point) => point.count), 1);
@@ -216,13 +253,48 @@ function createLineChart(data) {
 
     return { ...point, x, y };
   });
+  const visualLinePoints = getVisualLinePoints(points, chartWidth);
+  const baseY = padding.top + chartHeight;
+  const linePath = createSmoothPath(visualLinePoints);
+  const areaPath = [
+    linePath,
+    `L ${visualLinePoints[visualLinePoints.length - 1].x} ${baseY}`,
+    `L ${visualLinePoints[0].x} ${baseY}`,
+    'Z'
+  ].join(' ');
+  const gradientId = `applicationsAreaGradient-${chartInstance++}`;
 
   const svg = createSvgElement('svg', {
-    class: 'h-48 w-full min-w-[420px]',
+    class: 'dashboard-area-chart h-48 w-full min-w-[420px]',
     viewBox: `0 0 ${width} ${height}`,
     role: 'img',
-    'aria-label': 'Applications over time line chart'
+    'aria-label': 'Applications over time area chart'
   });
+
+  const defs = createSvgElement('defs');
+  const gradient = createSvgElement('linearGradient', {
+    id: gradientId,
+    x1: 0,
+    y1: padding.top,
+    x2: 0,
+    y2: baseY,
+    gradientUnits: 'userSpaceOnUse'
+  });
+
+  [
+    { offset: '0%', opacity: 0.26 },
+    { offset: '48%', opacity: 0.11 },
+    { offset: '100%', opacity: 0 }
+  ].forEach((stop) => {
+    gradient.appendChild(createSvgElement('stop', {
+      offset: stop.offset,
+      'stop-color': 'var(--dashboard-accent)',
+      'stop-opacity': stop.opacity
+    }));
+  });
+
+  defs.appendChild(gradient);
+  svg.appendChild(defs);
 
   [0, 0.5, 1].forEach((ratio) => {
     const y = padding.top + chartHeight * ratio;
@@ -232,64 +304,121 @@ function createLineChart(data) {
       y1: y,
       x2: width - padding.right,
       y2: y,
-      stroke: '#f3f4f6',
+      stroke: 'var(--dashboard-grid)',
       'stroke-width': 1
     }));
   });
 
-  points.forEach((point) => {
-    svg.appendChild(createSvgElement('line', {
-      x1: point.x,
-      y1: padding.top + chartHeight,
-      x2: point.x,
-      y2: point.y,
-      stroke: '#e5e7eb',
-      'stroke-width': 8,
-      'stroke-linecap': 'round'
-    }));
+  const area = createSvgElement('path', {
+    class: 'dashboard-area-fill',
+    d: areaPath,
+    fill: `url(#${gradientId})`
   });
+  svg.appendChild(area);
 
-  const polyline = points.map((point) => `${point.x},${point.y}`).join(' ');
-  svg.appendChild(createSvgElement('polyline', {
-    points: polyline,
+  const line = createSvgElement('path', {
+    class: 'dashboard-area-line',
+    d: linePath,
     fill: 'none',
-    stroke: '#111827',
+    stroke: 'var(--dashboard-accent)',
     'stroke-width': 3,
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round'
-  }));
+  });
+  svg.appendChild(line);
+
+  const tooltip = createSvgElement('g', {
+    class: 'dashboard-area-tooltip',
+    opacity: 0
+  });
+  const tooltipBox = createSvgElement('rect', {
+    width: 74,
+    height: 38,
+    rx: 8,
+    fill: 'var(--dashboard-tooltip-bg)'
+  });
+  const tooltipDate = createSvgElement('text', {
+    x: 37,
+    y: 15,
+    fill: 'var(--dashboard-tooltip-muted)',
+    'font-size': 9,
+    'font-weight': 500,
+    'text-anchor': 'middle'
+  });
+  const tooltipCount = createSvgElement('text', {
+    x: 37,
+    y: 29,
+    fill: 'var(--dashboard-tooltip-text)',
+    'font-size': 11,
+    'font-weight': 700,
+    'text-anchor': 'middle'
+  });
+  tooltip.appendChild(tooltipBox);
+  tooltip.appendChild(tooltipDate);
+  tooltip.appendChild(tooltipCount);
 
   points.forEach((point) => {
-    svg.appendChild(createSvgElement('circle', {
+    const marker = createSvgElement('circle', {
+      class: 'dashboard-area-point',
       cx: point.x,
       cy: point.y,
       r: 4,
-      fill: '#ffffff',
-      stroke: '#111827',
+      fill: 'var(--dashboard-card-bg)',
+      stroke: 'var(--dashboard-accent)',
       'stroke-width': 2
-    }));
-
-    const countLabel = createSvgElement('text', {
-      x: point.x,
-      y: Math.max(point.y - 10, 10),
-      fill: '#374151',
-      'font-size': 10,
-      'font-weight': 600,
-      'text-anchor': 'middle'
     });
-    countLabel.textContent = point.count;
-    svg.appendChild(countLabel);
+    svg.appendChild(marker);
+
+    const hitArea = createSvgElement('circle', {
+      class: 'dashboard-area-hit',
+      cx: point.x,
+      cy: point.y,
+      r: 14,
+      fill: 'transparent'
+    });
+
+    const showTooltip = () => {
+      const tooltipWidth = 74;
+      const tooltipHeight = 38;
+      const tooltipX = Math.min(
+        Math.max(point.x - tooltipWidth / 2, 4),
+        width - tooltipWidth - 4
+      );
+      const tooltipY = Math.max(point.y - tooltipHeight - 12, 4);
+
+      marker.setAttribute('r', '6');
+      tooltip.setAttribute('transform', `translate(${tooltipX} ${tooltipY})`);
+      tooltip.setAttribute('opacity', '1');
+      tooltipDate.textContent = formatDateLabel(point.date);
+      tooltipCount.textContent = `${point.count} application${point.count === 1 ? '' : 's'}`;
+    };
+
+    const hideTooltip = () => {
+      marker.setAttribute('r', '4');
+      tooltip.setAttribute('opacity', '0');
+    };
+
+    hitArea.addEventListener('mouseenter', showTooltip);
+    hitArea.addEventListener('focus', showTooltip);
+    hitArea.addEventListener('mouseleave', hideTooltip);
+    hitArea.addEventListener('blur', hideTooltip);
+    hitArea.setAttribute('tabindex', '0');
+    hitArea.setAttribute('aria-label', `${point.count} application${point.count === 1 ? '' : 's'} on ${formatDateLabel(point.date)}`);
+    svg.appendChild(hitArea);
 
     const dateLabel = createSvgElement('text', {
       x: point.x,
       y: height - 12,
-      fill: '#6b7280',
+      fill: 'var(--dashboard-axis)',
       'font-size': 10,
+      'font-weight': 500,
       'text-anchor': 'middle'
     });
     dateLabel.textContent = formatDateLabel(point.date);
     svg.appendChild(dateLabel);
   });
+
+  svg.appendChild(tooltip);
 
   const scroller = document.createElement('div');
   scroller.className = 'overflow-x-auto pb-1';

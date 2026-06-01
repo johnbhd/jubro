@@ -3,14 +3,6 @@ import { getLinkFavicon, getPlatformFavicon } from './favicon.js';
 import { BOARD_PAGE_SIZE, BOARD_VIEW_KEY } from './constants.js';
 
 const LIST_VIEW_SETTINGS_KEY = 'jubro_list_view_settings';
-const LIST_FIELD_SETTINGS = [
-  { key: 'website', label: 'Website' },
-  { key: 'status', label: 'Status' },
-  { key: 'date', label: 'Date' },
-  { key: 'email', label: 'Email' },
-  { key: 'location', label: 'Location' },
-  { key: 'platform', label: 'Platform' }
-];
 const DEFAULT_HIDDEN_LIST_FIELDS = ['email'];
 
 export const trackerListViewMethods = {
@@ -48,10 +40,13 @@ loadListViewSettings() {
       const hiddenFields = Array.isArray(parsed.hiddenFields)
         ? parsed.hiddenFields
         : DEFAULT_HIDDEN_LIST_FIELDS;
+      const hiddenColumns = Array.isArray(parsed.hiddenColumns)
+        ? parsed.hiddenColumns.map(Number).filter(Number.isInteger)
+        : [];
 
-      return { hiddenFields };
+      return { hiddenFields, hiddenColumns };
     } catch (err) {
-      return { hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS] };
+      return { hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS], hiddenColumns: [] };
     }
   },
 
@@ -59,26 +54,51 @@ saveListViewSettings(settings) {
     localStorage.setItem(LIST_VIEW_SETTINGS_KEY, JSON.stringify(settings));
   },
 
-isListFieldVisible(fieldKey) {
-    return !this.loadListViewSettings().hiddenFields.includes(fieldKey);
+getListColumnFieldKey(tracker, columnIndex) {
+    const indexes = this.getListColumnIndexes(tracker);
+    const columnName = this.normalizeText(this.getColumnName(tracker?.columns?.[columnIndex]));
+
+    if (columnIndex === indexes.company || columnName === 'company') return 'company';
+    if (columnIndex === indexes.position || ['position', 'role', 'job title'].includes(columnName)) return 'position';
+    if (columnIndex === indexes.platform || ['platform', 'source'].includes(columnName)) return 'platform';
+    if (columnIndex === indexes.status || columnName === 'status') return 'status';
+    if (columnIndex === indexes.date || ['date', 'date applied'].includes(columnName)) return 'date';
+    if (columnIndex === indexes.link || ['website', 'link', 'url', 'job link'].includes(columnName)) return 'website';
+    if (columnIndex === indexes.email || columnName === 'email') return 'email';
+    if (columnIndex === indexes.location || columnName === 'location') return 'location';
+
+    return `column-${columnIndex}`;
   },
 
-setListFieldVisibility(fieldKey, isVisible) {
-    const settings = this.loadListViewSettings();
+isListColumnVisible(tracker, columnIndex) {
+    if (!tracker || columnIndex < 0) return false;
 
+    const settings = this.loadListViewSettings();
+    const fieldKey = this.getListColumnFieldKey(tracker, columnIndex);
+
+    return !settings.hiddenColumns.includes(columnIndex)
+      && !settings.hiddenFields.includes(fieldKey);
+  },
+
+setListColumnVisibility(columnIndex, isVisible) {
+    const tracker = this.getTracker();
+    const settings = this.loadListViewSettings();
+    const fieldKey = this.getListColumnFieldKey(tracker, columnIndex);
+
+    settings.hiddenColumns = settings.hiddenColumns.filter((index) => index !== columnIndex);
     settings.hiddenFields = settings.hiddenFields.filter((key) => key !== fieldKey);
 
     if (!isVisible) {
-      settings.hiddenFields.push(fieldKey);
+      settings.hiddenColumns.push(columnIndex);
     }
 
     this.saveListViewSettings(settings);
-    this.renderListView(this.getTracker());
+    this.renderListView(tracker);
     this.applySearchFilter();
   },
 
 resetListViewSettings() {
-    this.saveListViewSettings({ hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS] });
+    this.saveListViewSettings({ hiddenFields: [...DEFAULT_HIDDEN_LIST_FIELDS], hiddenColumns: [] });
     this.renderListSettingsToggles();
     this.renderListView(this.getTracker());
     this.applySearchFilter();
@@ -162,13 +182,14 @@ renderListBadgesForCard(tracker, row, statusIndex) {
     const statusColumn = selectColumns.find(({ index }) => index === statusIndex);
     const otherBadges = selectColumns
       .filter(({ index }) => index !== statusIndex)
-      .filter(({ column }) => {
+      .filter(({ column, index }) => {
         const name = this.normalizeText(this.getColumnName(column));
-        return !['platform', 'source'].includes(name) || this.isListFieldVisible('platform');
+        return !['platform', 'source'].includes(name) || this.isListColumnVisible(tracker, index);
       })
+      .filter(({ index }) => this.isListColumnVisible(tracker, index))
       .map(({ column, index }) => this.getListBadgeHtml(column, this.getCellDisplay(row[index])))
       .join('');
-    const statusBadge = statusColumn && this.isListFieldVisible('status')
+    const statusBadge = statusColumn && this.isListColumnVisible(tracker, statusColumn.index)
       ? this.getListBadgeHtml(statusColumn.column, this.getCellDisplay(row[statusColumn.index]))
       : '';
 
@@ -243,7 +264,7 @@ ensureListSettingsPopup() {
             <i class="fa-solid fa-xmark text-xs"></i>
           </button>
         </div>
-        <div id="listSettingsToggles" class="space-y-2"></div>
+        <div id="listSettingsToggles" class="max-h-72 space-y-2 overflow-y-auto pr-1"></div>
         <button id="btnResetListSettings" type="button" class="mt-4 w-full rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 hover:bg-gray-800">
           Reset to Default
         </button>
@@ -267,22 +288,32 @@ renderListSettingsToggles() {
     const container = document.getElementById('listSettingsToggles');
     if (!container) return;
 
+    const tracker = this.getTracker();
     const settings = this.loadListViewSettings();
 
-    container.innerHTML = LIST_FIELD_SETTINGS.map((field) => {
-      const checked = !settings.hiddenFields.includes(field.key) ? 'checked' : '';
+    if (!tracker || !Array.isArray(tracker.columns) || tracker.columns.length === 0) {
+      container.innerHTML = '<p class="text-sm text-gray-400">No columns yet.</p>';
+      return;
+    }
+
+    container.innerHTML = tracker.columns.map((column, index) => {
+      const fieldKey = this.getListColumnFieldKey(tracker, index);
+      const checked = !settings.hiddenColumns.includes(index) && !settings.hiddenFields.includes(fieldKey)
+        ? 'checked'
+        : '';
+      const label = this.getColumnName(column) || `Column ${index + 1}`;
 
       return `
         <label class="flex items-center justify-between gap-4 rounded-lg border border-gray-800 bg-gray-950/40 px-3 py-3">
-          <span class="text-sm text-gray-100">${this.escapeHtml(field.label)}</span>
-          <input type="checkbox" class="list-settings-toggle h-5 w-5" data-field-key="${this.escapeHtml(field.key)}" ${checked} />
+          <span class="text-sm text-gray-100">${this.escapeHtml(label)}</span>
+          <input type="checkbox" class="list-settings-toggle h-5 w-5" data-column-index="${index}" ${checked} />
         </label>
       `;
     }).join('');
 
     container.querySelectorAll('.list-settings-toggle').forEach((toggle) => {
       toggle.addEventListener('change', () => {
-        this.setListFieldVisibility(toggle.dataset.fieldKey, toggle.checked);
+        this.setListColumnVisibility(Number(toggle.dataset.columnIndex), toggle.checked);
       });
     });
   },
@@ -593,6 +624,38 @@ getSortedListRows(tracker) {
       });
   },
 
+renderListAdditionalDetails(tracker, row, indexes) {
+    const selectColumnIndexes = new Set(this.getListSelectColumns().map(({ index }) => index));
+    const reservedIndexes = new Set([
+      indexes.company,
+      indexes.position,
+      indexes.date,
+      indexes.link,
+      indexes.email,
+      indexes.location,
+      ...selectColumnIndexes
+    ].filter((index) => index >= 0));
+
+    return tracker.columns
+      .map((column, index) => {
+        if (reservedIndexes.has(index) || !this.isListColumnVisible(tracker, index)) return '';
+
+        const value = this.getCellDisplay(row[index]);
+        if (!this.isUsefulListValue(value)) return '';
+
+        const label = this.getColumnName(column) || `Column ${index + 1}`;
+
+        return `
+          <span class="text-xs text-gray-500">
+            <span class="font-medium text-gray-400">${this.escapeHtml(label)}:</span>
+            ${this.escapeHtml(value)}
+          </span>
+        `;
+      })
+      .filter(Boolean)
+      .join('');
+  },
+
 setListManualSort() {
     if (this.listSortSelect) {
       this.listSortSelect.value = 'manual';
@@ -612,52 +675,6 @@ moveListRow(rowIndex, direction) {
     if (!target) return;
 
     this.reorderListRow(rowIndex, target.rowIndex);
-  },
-
-wireListRowDrag(article, rowIndex) {
-    article.draggable = true;
-
-    article.addEventListener('dragstart', (event) => {
-      const interactiveTarget = event.target.closest('a, button, input, select, textarea');
-
-      if (interactiveTarget && !interactiveTarget.classList.contains('btn-list-drag')) {
-        event.preventDefault();
-        return;
-      }
-
-      event.dataTransfer.effectAllowed = 'move';
-      event.dataTransfer.setData('text/plain', String(rowIndex));
-      article.classList.add('opacity-50');
-    });
-
-    article.addEventListener('dragend', () => {
-      article.classList.remove('opacity-50');
-      this.listCards?.querySelectorAll('.list-view-row').forEach((rowElement) => {
-        rowElement.classList.remove('border-t-2', 'border-black');
-      });
-    });
-
-    article.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'move';
-      article.classList.add('border-t-2', 'border-black');
-    });
-
-    article.addEventListener('dragleave', () => {
-      article.classList.remove('border-t-2', 'border-black');
-    });
-
-    article.addEventListener('drop', (event) => {
-      event.preventDefault();
-      article.classList.remove('border-t-2', 'border-black');
-
-      const fromIndex = Number(event.dataTransfer.getData('text/plain'));
-      const toIndex = Number(article.dataset.rowIndex);
-
-      if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return;
-
-      this.reorderListRow(fromIndex, toIndex);
-    });
   },
 
 renderListView(tracker) {
@@ -688,7 +705,6 @@ renderListView(tracker) {
       article.addEventListener('click', () => setActiveTarget(rowIndex, null, 'row'));
       article.addEventListener('pointerleave', () => clearActiveTarget(rowIndex, null, 'row'));
       article.addEventListener('contextmenu', (event) => showMenu(event, rowIndex, null, 'row'));
-      this.wireListRowDrag(article, rowIndex);
 
       const dateApplied = this.getCellDisplay(row[indexes.date]);
       const position = this.getCellDisplay(row[indexes.position]);
@@ -703,23 +719,31 @@ renderListView(tracker) {
       const linkFavicon = getLinkFavicon(link);
       const safeHostname = this.escapeHtml(linkFavicon.hostname);
       const { otherBadges, statusBadge } = this.renderListBadgesForCard(tracker, row, indexes.status);
-      const shouldShowDate = this.isListFieldVisible('date') && this.isUsefulListValue(dateApplied);
-      const shouldShowWebsite = this.isListFieldVisible('website') && this.isUsefulListValue(link);
+      const shouldShowPosition = this.isListColumnVisible(tracker, indexes.position) && this.isUsefulListValue(position);
+      const shouldShowCompany = this.isListColumnVisible(tracker, indexes.company) && this.isUsefulListValue(company);
+      const titleText = shouldShowPosition
+        ? safePosition
+        : shouldShowCompany
+          ? safeCompany
+          : 'Job Application';
+      const shouldShowDate = this.isListColumnVisible(tracker, indexes.date) && this.isUsefulListValue(dateApplied);
+      const shouldShowWebsite = this.isListColumnVisible(tracker, indexes.link) && this.isUsefulListValue(link);
       const extraDetails = [
-        this.isListFieldVisible('email') && this.isUsefulListValue(email)
+        this.isListColumnVisible(tracker, indexes.email) && this.isUsefulListValue(email)
           ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-envelope mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(email)}</span>`
           : '',
-        this.isListFieldVisible('location') && this.isUsefulListValue(location)
+        this.isListColumnVisible(tracker, indexes.location) && this.isUsefulListValue(location)
           ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-location-dot mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(location)}</span>`
-          : ''
+          : '',
+        this.renderListAdditionalDetails(tracker, row, indexes)
       ].filter(Boolean).join('');
 
       article.innerHTML = `
         <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div class="min-w-0 flex-1">
             ${shouldShowDate ? `<p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>` : ''}
-            <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${safePosition}</h3>
-            <p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>
+            <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${titleText}</h3>
+            ${shouldShowCompany && titleText !== safeCompany ? `<p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>` : ''}
             ${extraDetails ? `<div class="mt-2 flex flex-wrap gap-3">${extraDetails}</div>` : ''}
           </div>
           <div class="flex flex-wrap items-center gap-3">

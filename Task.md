@@ -1,60 +1,42 @@
-Plan this feature first. Do not edit or create code yet.
+Dashboard UI Improvement: Applications Over Time Chart
 
-Feature to plan: Fix row reordering bug in the table.
-
-Problem:
-The table has move up/down buttons and drag-and-drop row sorting, but reordering only works correctly when moving the first row. When rows are in the middle, moving up/down is buggy. Example: if rows are 1, 2, 3, 4, 5 and I drag row 1 to position 4, it does not reorder correctly.
+Goal:
+Redesign the "Applications Over Time" chart to look like a modern analytics dashboard chart instead of the current bordered line chart.
 
 Requirements:
-- Fix move up button for any row except the first row.
-- Fix move down button for any row except the last row.
-- Fix drag-and-drop so any row can be moved to any position.
-- Preserve all row data exactly after reordering.
-- Update localStorage after every reorder.
-- If Firebase sync exists, sync the new row order after reorder.
-- Do not change the UI design.
-- Do not break table view, list view, edit popup, search, filters, or custom fields.
-- Use array index-based swapping/splicing carefully.
-- Make sure reorder works with filtered/search results if the table is currently filtered.
+- Convert the current line chart into an area chart.
+- Keep the line visible on top.
+- Add a smooth gradient-filled background under the line.
+- Use the existing theme colors and support both dark mode and light mode.
+- Remove the boxed chart appearance and unnecessary borders inside the chart area.
+- Make the chart feel similar to modern SaaS dashboards (Stripe, Linear, Vercel, Notion Analytics).
+- Use a soft transparent gradient fill below the line.
+- Add smooth curves instead of sharp line segments.
+- Keep data points visible with small circular markers.
+- Highlight the hovered point with a larger marker and tooltip.
+- Reduce visual clutter by making grid lines subtle.
+- Keep the chart responsive.
+- Preserve existing data and filtering logic.
 
-Expected behavior:
-- Moving row 3 up should swap it with row 2.
-- Moving row 3 down should swap it with row 4.
-- Dragging row 1 to position 4 should result in the correct new order.
-- Dragging middle rows should also work correctly.
+Design:
+- Background fill starts stronger near the line and fades toward the bottom.
+- Chart line should be clean and modern.
+- No heavy borders around the chart canvas.
+- Rounded chart container.
+- Show total applications in the top-right corner.
+- Add smooth animation when data changes.
+- Ensure the chart looks good even with only a few data points.
 
-Before coding:
-- Find the current row reorder functions.
-- Identify whether the bug is caused by using filtered indexes instead of original row indexes.
-- Plan the fix first, then apply the minimal code changes.
+Reference Style:
+- Modern blue gradient area chart.
+- Similar to analytics cards found in SaaS dashboards.
+- Minimalist and professional.
+- Focus on readability and visual appeal.
 
-Analyze:
-1. what the feature should do
-2. user flow from start to finish
-3. frontend pages/components needed
-4. backend API routes needed
-5. database/model fields needed
-6. validation needed
-7. security concerns
-8. localStorage/state handling if needed
-9. loading/error/success states
-10. edge cases
-11. safest MVP scope
-12. files likely involved
-13. best order to build it
+Do not change:
+- Dashboard layout.
+- Existing analytics calculations.
+- Card sizing.
+- Status counters.
 
-Then tell me:
-- recommended implementation approach
-- what files need to be changed
-- what new files may be needed
-- what should not be touched
-- possible problems before coding
-- simplest stable solution
-
-Important:
-- Do not overengineer
-- Do not change unrelated features
-- Do not start coding yet
-- Explain the plan first
-- Wait for my approval before editing
-- Use my current MERN / Next.js / Express / MongoDB setup
+Only improve the visual appearance of the Applications Over Time chart.
