@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+@source "../*.html";
+@source "../trackers/**/*.html";
+@source "../board/**/*.html";
+@source "../pages/**/*.html";
+@source "../components/**/*.html";
+@source "../js/**/*.js";
