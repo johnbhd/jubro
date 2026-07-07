@@ -2,7 +2,7 @@ import { clearActiveTarget, setActiveTarget, showMenu } from '../ui.js';
 import { getLinkFavicon } from '../favicon.js';
 
 export const listRenderMethods = {
-  renderListAdditionalDetails(tracker, row, indexes) {
+  getListAdditionalDetails(tracker, row, indexes) {
     const selectColumnIndexes = new Set(this.getListSelectColumns().map(({ index }) => index));
     const reservedIndexes = new Set([
       indexes.company,
@@ -16,22 +16,92 @@ export const listRenderMethods = {
 
     return tracker.columns
       .map((column, index) => {
-        if (reservedIndexes.has(index) || !this.isListColumnVisible(tracker, index)) return '';
+        if (reservedIndexes.has(index) || !this.isListColumnVisible(tracker, index)) return null;
 
         const value = this.getCellDisplay(row[index]);
-        if (!this.isUsefulListValue(value)) return '';
+        if (!this.isUsefulListValue(value)) return null;
 
         const label = this.getColumnName(column) || `Column ${index + 1}`;
 
-        return `
-          <span class="text-xs text-gray-500">
-            <span class="font-medium text-gray-400">${this.escapeHtml(label)}:</span>
-            ${this.escapeHtml(value)}
-          </span>
-        `;
+        return { label, value };
       })
       .filter(Boolean)
+  },
+
+  renderListAdditionalDetails(tracker, row, indexes) {
+    return this.getListAdditionalDetails(tracker, row, indexes)
+      .map(({ label, value }) => `
+        <span class="text-xs text-gray-500">
+          <span class="font-medium text-gray-400">${this.escapeHtml(label)}:</span>
+          ${this.escapeHtml(value)}
+        </span>
+      `)
       .join('');
+  },
+
+  ensureListInfoModal() {
+    if (document.getElementById('listInfoModal')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="listInfoModal" class="hidden fixed inset-0 z-[70] overflow-y-auto bg-black/60 p-4">
+        <div class="mx-auto my-6 w-full max-w-xl rounded-2xl border border-gray-700 bg-gray-900 p-5 text-gray-100 shadow-xl">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <h2 class="text-lg font-semibold">Extra Info</h2>
+            <button id="btnCloseListInfoModal" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white" aria-label="Close info modal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div id="listInfoFields" class="max-h-[60vh] space-y-4 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    `);
+
+    document.getElementById('btnCloseListInfoModal')?.addEventListener('click', () => this.closeListInfoModal());
+    document.getElementById('listInfoModal')?.addEventListener('click', (event) => {
+      if (event.target.id === 'listInfoModal') this.closeListInfoModal();
+    });
+  },
+
+  renderListInfoValue(value) {
+    if (this.isHttpLink(value)) {
+      const safeValue = this.escapeHtml(value);
+
+      return `
+        <a href="${safeValue}" target="_blank" rel="noopener" class="break-words text-blue-300 hover:text-blue-200">
+          ${safeValue}
+        </a>
+      `;
+    }
+
+    return `<span class="break-words text-gray-100">${this.escapeHtml(value)}</span>`;
+  },
+
+  openListInfoModal(rowIndex) {
+    const tracker = this.getTracker();
+    const row = tracker?.rows?.[rowIndex];
+
+    if (!tracker || !row) return;
+
+    this.ensureListInfoModal();
+
+    const fields = document.getElementById('listInfoFields');
+    const indexes = this.getListColumnIndexes(tracker);
+    const details = this.getListAdditionalDetails(tracker, row, indexes);
+
+    if (!fields || details.length === 0) return;
+
+    fields.innerHTML = details.map(({ label, value }) => `
+      <div class="rounded-lg border border-gray-800 bg-gray-950/40 p-3">
+        <p class="text-xs font-medium uppercase text-gray-400">${this.escapeHtml(label)}</p>
+        <div class="mt-2 text-sm leading-6">${this.renderListInfoValue(value)}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('listInfoModal')?.classList.remove('hidden');
+  },
+
+  closeListInfoModal() {
+    document.getElementById('listInfoModal')?.classList.add('hidden');
   },
 
   renderListView(tracker) {
@@ -40,6 +110,7 @@ export const listRenderMethods = {
     this.ensureListViewSettingsButton();
     this.ensureListSettingsPopup();
     this.ensureListEditModal();
+    this.ensureListInfoModal();
     this.listCards.innerHTML = '';
     this.updateListStats(tracker);
     this.renderListFilterSections(tracker);
@@ -85,25 +156,27 @@ export const listRenderMethods = {
           : 'Job Application';
       const shouldShowDate = this.isListColumnVisible(tracker, indexes.date) && this.isUsefulListValue(dateApplied);
       const shouldShowWebsite = this.isListColumnVisible(tracker, indexes.link) && this.isUsefulListValue(link);
+      const additionalDetails = this.getListAdditionalDetails(tracker, row, indexes);
       const extraDetails = [
         this.isListColumnVisible(tracker, indexes.email) && this.isUsefulListValue(email)
           ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-envelope mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(email)}</span>`
           : '',
         this.isListColumnVisible(tracker, indexes.location) && this.isUsefulListValue(location)
           ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-location-dot mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(location)}</span>`
-          : '',
-        this.renderListAdditionalDetails(tracker, row, indexes)
+          : ''
       ].filter(Boolean).join('');
 
       article.innerHTML = `
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div class="min-w-0 flex-1">
             ${shouldShowDate ? `<p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>` : ''}
             <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${titleText}</h3>
-            ${shouldShowCompany && titleText !== safeCompany ? `<p class="mt-1 truncate text-sm text-gray-500">${safeCompany}</p>` : ''}
-            ${extraDetails ? `<div class="mt-2 flex flex-wrap gap-3">${extraDetails}</div>` : ''}
+            <div class="flex gap-5 mt-2 items-center">
+              ${shouldShowCompany && titleText !== safeCompany ? `<p class="truncate text-sm text-gray-500">${safeCompany}</p>` : ''}
+              ${extraDetails ? `<div class="flex flex-wrap items-center gap-3">${extraDetails}</div>` : ''}  
+            </div>
           </div>
-          <div class="flex flex-wrap items-center gap-3">
+          <div class="flex flex-wrap items-center gap-3 xl:justify-end">
             ${shouldShowWebsite ? `<a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
               ${this.getFaviconHtml(linkFavicon)}
               <span class="truncate">${safeHostname || 'Open link'}</span>
@@ -120,6 +193,9 @@ export const listRenderMethods = {
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
+            ${additionalDetails.length ? `<button type="button" class="btn-list-info inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="View extra info">
+              <i class="fa-solid fa-circle-info text-xs"></i>
+            </button>` : ''}
             <button type="button" class="btn-list-delete inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-red-500 hover:bg-red-50" aria-label="Delete job">
               <i class="fa-solid fa-trash text-xs"></i>
             </button>
@@ -148,6 +224,10 @@ export const listRenderMethods = {
 
       article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
         this.openListEditModal(rowIndex);
+      });
+
+      article.querySelector('.btn-list-info')?.addEventListener('click', () => {
+        this.openListInfoModal(rowIndex);
       });
 
       article.querySelector('.btn-list-delete')?.addEventListener('click', () => {
