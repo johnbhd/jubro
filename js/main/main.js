@@ -54,6 +54,7 @@ export class TrackerApp {
     }
     this.initEvents();
     this.restoreBoardViewPreference();
+    this.restoreListSortPreference();
     this.refresh({ persist: false });
   }
 }

@@ -1,4 +1,22 @@
+import { LIST_SORT_KEY } from './constants.js';
+
 export const listSortMethods = {
+  saveListSortPreference() {
+    if (!this.listSortSelect) return;
+
+    localStorage.setItem(LIST_SORT_KEY, this.listSortSelect.value);
+  },
+
+  restoreListSortPreference() {
+    if (!this.listSortSelect) return;
+
+    const savedSort = localStorage.getItem(LIST_SORT_KEY);
+
+    if (['date-desc', 'date-asc', 'manual'].includes(savedSort)) {
+      this.listSortSelect.value = savedSort;
+    }
+  },
+
   getSortedListRows(tracker) {
     const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
     const directionValue = this.listSortSelect?.value || 'date-desc';
@@ -22,6 +40,7 @@ export const listSortMethods = {
   setListManualSort() {
     if (this.listSortSelect) {
       this.listSortSelect.value = 'manual';
+      this.saveListSortPreference();
     }
   },
 

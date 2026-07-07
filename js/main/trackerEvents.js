@@ -214,6 +214,7 @@ initEvents() {
     });
 
     listSortSelect?.addEventListener('change', () => {
+      this.saveListSortPreference();
       this.resetPagination();
       this.renderListView(this.getTracker());
       this.applySearchFilter();
