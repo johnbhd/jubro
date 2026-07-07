@@ -1,4 +1,6 @@
 export function createDefaultTracker(id, title = 'Job Applications') {
+  const today = new Date().toISOString().slice(0, 10);
+
   return {
     id,
     title,
@@ -33,7 +35,7 @@ export function createDefaultTracker(id, title = 'Job Applications') {
         { value: 'Frontend Intern', type: 'text' },
         { value: 'LinkedIn', type: 'select' },
         { value: 'Applied', type: 'select' },
-        { value: '2026-04-10', type: 'date' },
+        { value: today, type: 'date' },
         { value: 'https://careers.google.com', type: 'text' }
       ],
       [
@@ -41,7 +43,7 @@ export function createDefaultTracker(id, title = 'Job Applications') {
         { value: 'Software Engineer', type: 'text' },
         { value: 'Indeed', type: 'select' },
         { value: 'Interview', type: 'select' },
-        { value: '2026-04-12', type: 'date' },
+        { value: today, type: 'date' },
         { value: 'https://careers.microsoft.com', type: 'text' }
       ],
       [
@@ -49,7 +51,7 @@ export function createDefaultTracker(id, title = 'Job Applications') {
         { value: 'Web Developer', type: 'text' },
         { value: 'JobStreet', type: 'select' },
         { value: 'Rejected', type: 'select' },
-        { value: '2026-04-08', type: 'date' },
+        { value: today, type: 'date' },
         { value: 'https://www.metacareers.com', type: 'text' }
       ]
     ]
