@@ -50,12 +50,15 @@ export const listSortMethods = {
   },
 
   moveListRow(rowIndex, direction) {
-    const orderedRows = this.getSortedListRows(this.getTracker());
+    const tracker = this.getTracker();
+    const orderedRows = this.getSortedListRows(tracker);
     const currentDisplayIndex = orderedRows.findIndex((item) => item.rowIndex === rowIndex);
     const target = orderedRows[currentDisplayIndex + direction];
 
-    if (!target) return;
+    if (!tracker || !Array.isArray(tracker.rows)) return;
+    if (currentDisplayIndex === -1 || !target) return;
 
-    this.reorderListRow(rowIndex, target.rowIndex);
+    this.setListManualSort();
+    this.swapRows(rowIndex, target.rowIndex);
   }
 };

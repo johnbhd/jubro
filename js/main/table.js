@@ -82,10 +82,18 @@ function placeDropdown(dropdown, anchor) {
 }
 
 export const Table = {
-  render: (columns, data) => {
+  render: (columns, data, sourceRows = null) => {
     const headerRow = document.getElementById('headerRow');
     const tbody = document.getElementById('tableBody');
     const canUseNativeDrag = window.matchMedia('(pointer: fine)').matches;
+    const renderedRows = data.map((item, displayIndex) => (
+      Array.isArray(item)
+        ? { row: item, rowIndex: displayIndex }
+        : { row: item.row, rowIndex: Number.isInteger(item.rowIndex) ? item.rowIndex : displayIndex }
+    ));
+    const allRows = Array.isArray(sourceRows)
+      ? sourceRows
+      : renderedRows.map(({ row }) => row);
     headerRow.innerHTML = '';
     tbody.innerHTML = '';
 
@@ -172,7 +180,7 @@ export const Table = {
       headerRow.appendChild(th);
     });
 
-    data.forEach((row, rowIndex) => {
+    renderedRows.forEach(({ row, rowIndex }) => {
       const tr = document.createElement('tr');
       tr.className = `border-t hover:bg-gray-50 ${canUseNativeDrag ? 'cursor-grab active:cursor-grabbing' : ''}`;
       tr.draggable = canUseNativeDrag;
@@ -340,7 +348,7 @@ export const Table = {
               label.addEventListener('click', (e) => {
                 e.stopPropagation();
         
-                data[rowIndex][colIndex] = {
+                row[colIndex] = {
                   value: opt.label,
                   type: 'select'
                 };
@@ -371,7 +379,7 @@ export const Table = {
         
                 column.options.splice(optIndex, 1);
         
-                data.forEach(row => {
+                allRows.forEach(row => {
                   if (row[colIndex]?.value === opt.label) {
                     row[colIndex].value = '';
                   }
@@ -460,7 +468,7 @@ export const Table = {
           }
           
             input.addEventListener('change', (e) => {
-              data[rowIndex][colIndex] = {
+              row[colIndex] = {
                 value: e.target.value,
                 type: 'text'
               };
@@ -491,7 +499,7 @@ export const Table = {
           blurOnEnter(input);
 
           input.addEventListener('change', (e) => {
-            data[rowIndex][colIndex] = cellData.type === 'checkbox'
+            row[colIndex] = cellData.type === 'checkbox'
               ? { value: e.target.checked, type: 'checkbox' }
               : { value: e.target.value, type: cellData.type };
 

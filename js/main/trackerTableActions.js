@@ -10,8 +10,8 @@ refresh({ persist = true } = {}) {
     this.renderSelectTextSortOptions();
     this.renderSelectValueFilterOptions();
     this.updateSelectTextSortVisibility();
-    this.applyCurrentSort();
-    Table.render(tracker.columns, tracker.rows);
+    const tableRows = this.getTableRowsForRender(tracker);
+    Table.render(tracker.columns, tableRows, tracker.rows);
     this.renderListView(tracker);
     this.updateListFilterChipStyles();
     this.updateBoardView();
@@ -88,11 +88,16 @@ getVisibleMoveTargetRowIndex(rowIndex, direction) {
     return visibleRowIndexes[visibleIndex + direction] ?? null;
   },
 
-  persistTableMove() {
+  persistTableMove({ manualRows = false } = {}) {
     this.clearTableSortControls();
-    this.save();
+    if (manualRows && typeof this.setListManualSort === 'function') {
+      this.setListManualSort();
+    }
+    const sync = this.save();
     this.refresh({ persist: false });
     closeMenu();
+
+    return sync;
   },
 
 reorderRow(fromIndex, toIndex) {
@@ -108,7 +113,7 @@ reorderRow(fromIndex, toIndex) {
     UIState.activeCol = null;
     UIState.activeType = 'row';
 
-    this.persistTableMove();
+    this.persistTableMove({ manualRows: true });
   },
 
 swapRows(firstIndex, secondIndex) {
@@ -124,7 +129,7 @@ swapRows(firstIndex, secondIndex) {
     UIState.activeCol = null;
     UIState.activeType = 'row';
 
-    this.persistTableMove();
+    this.persistTableMove({ manualRows: true });
   },
 
 reorderColumn(fromIndex, toIndex) {

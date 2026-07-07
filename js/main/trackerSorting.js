@@ -29,35 +29,39 @@ getCellSortText(row, columnIndex) {
     return String(value || '').trim().toLowerCase();
   },
 
-applyCurrentSort() {
-    const tracker = this.getTracker();
+getTableRowsForRender(tracker = this.getTracker()) {
+    const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const rowItems = rows.map((row, rowIndex) => ({ row, rowIndex }));
     const sortValue = this.sortSelect?.value || '';
 
-    if (!tracker || !Array.isArray(tracker.rows)) return;
+    if (!tracker || !Array.isArray(tracker.rows)) return rowItems;
 
     if (sortValue === 'select-text') {
       const columnIndex = Number(this.selectTextSortSelect?.value);
-      if (!Number.isInteger(columnIndex) || columnIndex < 0) return;
+      if (!Number.isInteger(columnIndex) || columnIndex < 0) return rowItems;
 
-      tracker.rows.sort((a, b) => (
-        this.getCellSortText(a, columnIndex).localeCompare(this.getCellSortText(b, columnIndex))
+      return rowItems.sort((a, b) => (
+        this.getCellSortText(a.row, columnIndex).localeCompare(this.getCellSortText(b.row, columnIndex))
       ));
-      return;
     }
 
-    if (!['date-asc', 'date-desc'].includes(sortValue)) return;
+    if (!['date-asc', 'date-desc'].includes(sortValue)) return rowItems;
 
     const dateIndex = this.getDateColumnIndex(tracker);
-    if (dateIndex === -1) return;
+    if (dateIndex === -1) return rowItems;
 
     const direction = sortValue === 'date-desc' ? -1 : 1;
 
-    tracker.rows.sort((a, b) => {
-      const aTime = this.getDateSortValue(a, dateIndex);
-      const bTime = this.getDateSortValue(b, dateIndex);
+    return rowItems.sort((a, b) => {
+      const aTime = this.getDateSortValue(a.row, dateIndex);
+      const bTime = this.getDateSortValue(b.row, dateIndex);
 
       return (aTime - bTime) * direction;
     });
+  },
+
+applyCurrentSort() {
+    return this.getTableRowsForRender();
   },
 
 renderSelectTextSortOptions() {
@@ -129,7 +133,7 @@ updateSelectTextSortVisibility() {
 
 clearSelectFilter() {
     if (this.sortSelect) {
-      this.sortSelect.value = 'date-desc';
+      this.sortSelect.value = '';
     }
 
     if (this.selectValueFilterSelect) {
@@ -137,7 +141,7 @@ clearSelectFilter() {
     }
 
     this.updateSelectTextSortVisibility();
-    this.refresh();
+    this.refresh({ persist: false });
   },
 
 getSelectColumns() {

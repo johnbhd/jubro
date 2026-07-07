@@ -247,7 +247,7 @@ initEvents() {
     tableSortSelect?.addEventListener('change', () => {
       this.resetPagination();
       this.updateSelectTextSortVisibility();
-      this.refresh();
+      this.refresh({ persist: false });
     });
 
     selectTextSortSelect?.addEventListener('change', () => {
@@ -256,12 +256,12 @@ initEvents() {
       }
       this.renderSelectValueFilterOptions();
       this.resetPagination();
-      this.refresh();
+      this.refresh({ persist: false });
     });
 
     selectValueFilterSelect?.addEventListener('change', () => {
       this.resetPagination();
-      this.refresh();
+      this.refresh({ persist: false });
     });
 
     btnPaginationPrev?.addEventListener('click', () => {

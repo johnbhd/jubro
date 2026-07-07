@@ -109,13 +109,13 @@ reloadStateFromStorage() {
 
 save() {
     Storage.save(this.state);
-    this.syncLocalStateToFirebase();
+    return this.syncLocalStateToFirebase();
   },
 
 syncLocalStateToFirebase() {
     const user = authService.getCurrentUser();
 
-    if (!user) return;
+    if (!user) return Promise.resolve();
 
     return firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
       console.error("Tracker Firebase sync error:", err);
