@@ -131,10 +131,7 @@ export class TrackerHome {
   
     const id = this.getNextId();
   
-    this.state.data[id] = {
-      ...createDefaultTracker(id, title),
-      rows: []
-    };
+    this.state.data[id] = createDefaultTracker(id, title);
   
     this.state.active = id;
   
