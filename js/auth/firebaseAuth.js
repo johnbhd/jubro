@@ -4,6 +4,7 @@ import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -74,6 +75,10 @@ class FirebaseAuthService {
     await this.syncTrackerData(result.user);
 
     return result.user;
+  }
+
+  resetPassword(email) {
+    return sendPasswordResetEmail(this.auth, email);
   }
 
   async logout() {

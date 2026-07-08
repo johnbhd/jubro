@@ -746,17 +746,21 @@ input:disabled {
 
 .dark #authModal h2,
 .dark #authModal p,
+.dark #forgotPasswordModal h2,
+.dark #forgotPasswordModal p,
 .dark #syncConflictModal h2,
 .dark #syncConflictModal p {
   color: #f9fafb !important;
 }
 
 .dark #authModal button:not(.theme-create-button),
+.dark #forgotPasswordModal button:not(.theme-create-button),
 .dark #syncConflictModal button:not(.theme-create-button) {
   color: #f9fafb !important;
 }
 
 .dark #authModal .bg-gray-200,
+.dark #forgotPasswordModal .bg-gray-200,
 .dark #syncConflictModal .bg-gray-200 {
   background-color: #374151 !important;
 }

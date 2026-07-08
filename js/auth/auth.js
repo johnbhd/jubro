@@ -14,6 +14,7 @@ export class Auth {
   init() {
     this.applySavedTheme();
     this.createModal();
+    this.createForgotPasswordModal();
     this.createSyncConflictModal();
     this.createDropdown();
     authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
@@ -202,6 +203,8 @@ export class Auth {
       if (id === 'btnCloseAuth') this.close();
       if (id === 'btnSwitchMode') this.toggleMode();
       if (id === 'btnGoogle') this.googleLogin();
+      if (id === 'btnForgotPassword') this.openForgotPassword();
+      if (id === 'btnCloseForgotPassword') this.closeForgotPassword();
       if (id === 'btnTheme') this.toggleTheme();
       if (id === 'btnGuestTheme') this.toggleTheme();
       if (id === 'btnLogout') this.logout();
@@ -209,6 +212,7 @@ export class Auth {
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
 
       if (e.target === this.modal) this.close();
+      if (e.target === this.forgotPasswordModal) this.closeForgotPassword();
 
       if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
         this.dropdown.classList.add('hidden');
@@ -220,6 +224,13 @@ export class Auth {
 
       e.preventDefault();
       this.submit();
+    });
+
+    this.forgotPasswordModal.addEventListener('submit', (e) => {
+      if (e.target.id !== 'forgotPasswordForm') return;
+
+      e.preventDefault();
+      this.submitForgotPassword();
     });
   }
 
@@ -234,6 +245,42 @@ export class Auth {
 
   close() {
     this.modal.classList.add('hidden');
+  }
+
+  openForgotPassword() {
+    const email = document.getElementById('authEmail')?.value.trim() || '';
+    const resetEmail = document.getElementById('forgotPasswordEmail');
+
+    if (resetEmail) resetEmail.value = email;
+    document.getElementById('forgotPasswordMessage').textContent = '';
+    this.modal.classList.add('hidden');
+    this.forgotPasswordModal.classList.remove('hidden');
+    resetEmail?.focus();
+  }
+
+  closeForgotPassword() {
+    this.forgotPasswordModal.classList.add('hidden');
+  }
+
+  async submitForgotPassword() {
+    const email = document.getElementById('forgotPasswordEmail').value.trim();
+    const message = document.getElementById('forgotPasswordMessage');
+
+    message.textContent = '';
+    message.className = 'mt-3 min-h-5 text-sm text-red-500';
+
+    if (!email) {
+      message.textContent = 'Enter your email address.';
+      return;
+    }
+
+    try {
+      await authService.resetPassword(email);
+      message.className = 'mt-3 min-h-5 text-sm text-green-600';
+      message.textContent = 'Password reset link sent. Check your email.';
+    } catch (err) {
+      message.textContent = err.message;
+    }
   }
 
   createSyncConflictModal() {
@@ -316,12 +363,14 @@ export class Auth {
       text.textContent = "Don't have an account?";
       switchBtn.textContent = 'Register';
       confirm.classList.add('hidden');
+      document.getElementById('forgotPasswordWrapper')?.classList.remove('hidden');
     } else {
       title.textContent = 'Register';
       btn.textContent = 'Create Account';
       text.textContent = "Already have an account?";
       switchBtn.textContent = 'Sign In';
       confirm.classList.remove('hidden');
+      document.getElementById('forgotPasswordWrapper')?.classList.add('hidden');
     }
   }
 
@@ -383,6 +432,47 @@ export class Auth {
       this.message.show(err.message);
     }
   }
+
+  createForgotPasswordModal() {
+    const div = document.createElement('div');
+
+    div.id = 'forgotPasswordModal';
+    div.className = 'hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+    div.style.zIndex = '60';
+
+    div.innerHTML = `
+      <div class="bg-white p-6 rounded-2xl w-full max-w-md relative">
+        <button id="btnCloseForgotPassword" type="button"
+          class="absolute top-3 right-3 text-gray-500 text-xl">
+          &times;
+        </button>
+
+        <h2 class="text-xl font-semibold mb-2 text-center">
+          Reset Password
+        </h2>
+
+        <p class="mb-4 text-center text-sm text-gray-500">
+          Enter your email and we'll send a password reset link.
+        </p>
+
+        <form id="forgotPasswordForm">
+          <input id="forgotPasswordEmail" type="email" placeholder="Email"
+            class="w-full border p-3 rounded-xl outline-none" />
+
+          <p id="forgotPasswordMessage" class="mt-3 min-h-5 text-sm text-red-500"></p>
+
+          <button type="submit"
+            class="theme-create-button mt-3 w-full py-2 bg-black text-white rounded-xl">
+            Send Reset Link
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(div);
+    this.forgotPasswordModal = div;
+  }
+
   createModal() {
     const div = document.createElement('div');
 
@@ -423,6 +513,12 @@ export class Auth {
             <button id="btnTogglePassword" type="button" aria-label="Show password"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black">
               <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+
+          <div id="forgotPasswordWrapper" class="-mt-1 mb-3 flex justify-end">
+            <button id="btnForgotPassword" type="button" class="text-sm font-medium text-black hover:underline">
+              Forgot password?
             </button>
           </div>
 
