@@ -398,6 +398,9 @@ input:disabled {
 .dark #listSearchInput,
 .dark #trackerTitleInput,
 .dark #dashboardSelectColumn,
+.dark #dashboardRangeSelect,
+.dark #dashboardDateFrom,
+.dark #dashboardDateTo,
 .dark #boardViewSelect,
 .dark #listSortSelect,
 .dark #tableSortSelect,
@@ -411,6 +414,7 @@ input:disabled {
 .dark #tableSortSelect option,
 .dark #boardViewSelect option,
 .dark #listSortSelect option,
+.dark #dashboardRangeSelect option,
 .dark #selectTextSortSelect option,
 .dark #selectValueFilterSelect option {
   background-color: #111827;

@@ -270,23 +270,58 @@
 
   <div id="dashboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
     <div class="mx-auto my-4 max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:my-8 sm:max-h-[calc(100vh-4rem)] sm:p-6">
-      <div class="mb-4 flex items-start justify-between gap-3 sm:items-center">
-      <!-- Left side -->
-      <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
+      <div class="mb-4">
+        <div class="flex items-start justify-between gap-5 sm:items-center">
+          <!-- Left side -->
+          <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
 
-      <!-- Right side: select + X -->
-      <div class="flex min-w-0 flex-1 items-center justify-end gap-3">
-        <select
-          id="dashboardSelectColumn"
-          class="h-8 min-w-0 w-full max-w-xs rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
-          aria-label="Dashboard select column"
-        ></select>
+          <!-- Right side: filters + X -->
+          <div class="flex min-w-0 flex-1 items-center justify-end gap-3">
+            <select
+              id="dashboardSelectColumn"
+              class="h-8 min-w-0 w-full max-w-[11rem] rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none"
+              aria-label="Group by"
+            ></select>
+            <select
+              id="dashboardRangeSelect"
+              class="h-8 min-w-0 w-full max-w-[11rem] rounded-lg border border-gray-200 bg-white px-3 text-sm outline-none"
+              aria-label="Range"
+            >
+              <option value="this-week">This Week</option>
+              <option value="this-month" selected>This Month</option>
+              <option value="last-month">Last Month</option>
+              <option value="this-year">This Year</option>
+              <option value="all-time">All Time</option>
+              <option value="custom">Custom</option>
+            </select>
 
-        <button id="btnCloseDashboard" type="button" class="shrink-0 text-gray-500 text-xl hover:text-black">
-          &times;
-        </button>
+            <button id="btnCloseDashboard" type="button" class="shrink-0 text-gray-500 text-xl hover:text-black">
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <div id="dashboardCustomRange" class="mt-3 hidden flex w-full flex-col gap-3 sm:flex-row ">
+          <label class="flex items-center gap-2 text-sm text-gray-500 w-full">
+            <span>From:</span>
+            <input
+              id="dashboardDateFrom"
+              type="date"
+              value="2026-07-01"
+              class="h-8 rounded-lg w-full border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
+            />
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-500 w-full">
+            <span>To:</span>
+            <input
+              id="dashboardDateTo"
+              type="date"
+              value="2026-07-31"
+              class="h-8 rounded-lg w-full border border-gray-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-gray-200"
+            />
+          </label>
+        </div>
       </div>
-    </div>
 
       <div id="dashboardCards" class="grid grid-cols-1 gap-3 lg:grid-cols-3"></div>
       <div id="dashboardCharts"></div>

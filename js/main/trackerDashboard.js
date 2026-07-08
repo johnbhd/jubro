@@ -1,8 +1,81 @@
 import { renderDashboardCharts } from './dashboardCharts.js';
 
 export const trackerDashboardMethods = {
-countDashboardOptions(columnIndex, options) {
-    const tracker = this.getTracker();
+getDashboardDateRange() {
+    const range = this.dashboardRangeSelect?.value || 'this-month';
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    if (range === 'all-time') return null;
+
+    if (range === 'this-week') {
+      const day = today.getDay();
+      const mondayOffset = day === 0 ? -6 : 1 - day;
+      const from = new Date(year, month, today.getDate() + mondayOffset);
+      const to = new Date(from.getFullYear(), from.getMonth(), from.getDate() + 6);
+
+      return { from, to };
+    }
+
+    if (range === 'last-month') {
+      return {
+        from: new Date(year, month - 1, 1),
+        to: new Date(year, month, 0)
+      };
+    }
+
+    if (range === 'this-year') {
+      return {
+        from: new Date(year, 0, 1),
+        to: new Date(year, 11, 31)
+      };
+    }
+
+    if (range === 'custom') {
+      const from = new Date(`${this.dashboardDateFrom?.value || ''}T00:00:00`);
+      const to = new Date(`${this.dashboardDateTo?.value || ''}T00:00:00`);
+
+      if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null;
+
+      return { from, to };
+    }
+
+    return {
+      from: new Date(year, month, 1),
+      to: new Date(year, month + 1, 0)
+    };
+  },
+
+getDashboardFilteredRows(tracker) {
+    const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
+    const dateRange = this.getDashboardDateRange();
+    const dateIndex = this.getDateColumnIndex(tracker);
+
+    if (!dateRange || dateIndex === -1) return rows;
+
+    const fromTime = dateRange.from.getTime();
+    const toTime = dateRange.to.getTime();
+
+    return rows.filter((row) => {
+      const cell = row?.[dateIndex];
+      const value = typeof cell === 'object' ? cell.value : cell;
+      const time = new Date(`${value || ''}T00:00:00`).getTime();
+
+      return !Number.isNaN(time) && time >= fromTime && time <= toTime;
+    });
+  },
+
+getDashboardFilteredTracker(tracker) {
+    if (!tracker) return tracker;
+
+    return {
+      ...tracker,
+      rows: this.getDashboardFilteredRows(tracker)
+    };
+  },
+
+countDashboardOptions(columnIndex, options, tracker = this.getDashboardFilteredTracker(this.getTracker())) {
     const counts = new Map(options.map((option) => [option.label, 0]));
 
     if (!tracker || !Array.isArray(tracker.rows)) return counts;
@@ -21,6 +94,7 @@ countDashboardOptions(columnIndex, options) {
 
 renderDashboardCards(columnIndex) {
     const tracker = this.getTracker();
+    const filteredTracker = this.getDashboardFilteredTracker(tracker);
     const column = tracker?.columns?.[columnIndex];
     const options = this.getDashboardOptions(column);
 
@@ -33,11 +107,11 @@ renderDashboardCards(columnIndex) {
       empty.className = 'rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-400 lg:col-span-3';
       empty.textContent = 'No options found.';
       this.dashboardCards.appendChild(empty);
-      renderDashboardCharts(this.dashboardCharts, [], new Map(), tracker);
+      renderDashboardCharts(this.dashboardCharts, [], new Map(), filteredTracker);
       return;
     }
 
-    const counts = this.countDashboardOptions(columnIndex, options);
+    const counts = this.countDashboardOptions(columnIndex, options, filteredTracker);
 
     options.forEach((option) => {
       const card = document.createElement('div');
@@ -59,11 +133,13 @@ renderDashboardCards(columnIndex) {
       this.dashboardCards.appendChild(card);
     });
 
-    renderDashboardCharts(this.dashboardCharts, options, counts, tracker);
+    renderDashboardCharts(this.dashboardCharts, options, counts, filteredTracker);
   },
 
 renderDashboard() {
     if (!this.dashboardSelectColumn) return;
+
+    this.updateDashboardRangeVisibility();
 
     const selectColumns = this.getSelectColumns();
     const currentValue = this.dashboardSelectColumn.value;
@@ -85,7 +161,7 @@ renderDashboard() {
     selectColumns.forEach(({ column, index }) => {
       const option = document.createElement('option');
       option.value = String(index);
-      option.textContent = this.getColumnName(column) || `Column ${index + 1}`;
+      option.textContent = `${this.getColumnName(column) || `Column ${index + 1}`}`;
       this.dashboardSelectColumn.appendChild(option);
     });
 
@@ -106,5 +182,14 @@ openDashboard() {
 
 closeDashboard() {
     this.dashboardModal?.classList.add('hidden');
+  },
+
+updateDashboardRangeVisibility() {
+    if (!this.dashboardRangeSelect || !this.dashboardCustomRange) return;
+
+    this.dashboardCustomRange.classList.toggle(
+      'hidden',
+      this.dashboardRangeSelect.value !== 'custom'
+    );
   }
 };

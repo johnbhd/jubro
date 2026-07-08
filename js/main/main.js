@@ -39,6 +39,10 @@ export class TrackerApp {
     this.btnPaginationNext = document.getElementById('btnPaginationNext');
     this.dashboardModal = document.getElementById('dashboardModal');
     this.dashboardSelectColumn = document.getElementById('dashboardSelectColumn');
+    this.dashboardRangeSelect = document.getElementById('dashboardRangeSelect');
+    this.dashboardCustomRange = document.getElementById('dashboardCustomRange');
+    this.dashboardDateFrom = document.getElementById('dashboardDateFrom');
+    this.dashboardDateTo = document.getElementById('dashboardDateTo');
     this.dashboardCards = document.getElementById('dashboardCards');
     this.dashboardCharts = document.getElementById('dashboardCharts');
     this.state = this.initializeState();

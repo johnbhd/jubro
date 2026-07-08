@@ -124,6 +124,19 @@ initEvents() {
       this.renderDashboardCards(Number(e.target.value));
     });
 
+    this.dashboardRangeSelect?.addEventListener('change', () => {
+      this.updateDashboardRangeVisibility();
+      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+    });
+
+    this.dashboardDateFrom?.addEventListener('change', () => {
+      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+    });
+
+    this.dashboardDateTo?.addEventListener('change', () => {
+      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+    });
+
     btnCloseDashboard?.addEventListener('click', () => {
       this.closeDashboard();
     });
