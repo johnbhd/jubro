@@ -31,7 +31,7 @@ export const boardViewMethods = {
     if (!this.viewSelect) return;
 
     const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const savedView = localStorage.getItem(BOARD_VIEW_KEY);
+    const savedView = localStorage.getItem(BOARD_VIEW_KEY) || 'list';
 
     if (isMobile) {
       this.viewSelect.value = 'list';
