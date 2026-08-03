@@ -1,53 +1,67 @@
-# Jubro 
+# Jubro — Job Application Tracker
 
-## 🎯 Purpose
-Jubro is a lightweight job application tracker designed to simplify the job-hunting process.
+Jubro is a free, simple, and customizable job application tracker for students, fresh graduates, freelancers, and job seekers. Keep opportunities, application progress, notes, and links together—without relying on a spreadsheet or creating an account.
 
-It helps you log and manage your job applications in one place without the need for spreadsheets like Excel or external tools like Notion.
+## Highlights
 
-Built for speed and simplicity, FlexTracker lets you focus on applying—not organizing.
+- Create separate trackers for internships, full-time roles, freelance work, or different career paths.
+- Add and update applications with company, role, status, date, salary, source, links, contacts, notes, and custom fields.
+- Switch between a desktop-friendly **Table View** and a mobile-friendly **List View**.
+- Search, sort, and manually arrange applications.
+- Customize tracker fields: add, rename, remove, reorder, or control their List View visibility.
+- Review activity and status summaries in the Analytics dashboard.
+- Start as a guest with browser storage, then optionally sign in to synchronize data with Firebase.
+- Responsive layout for desktop, tablet, and mobile.
 
----
+## Application statuses
 
-## 🧱 Core Idea
+Track applications through stages such as Open, Pending, Applied, Interview, Rejected, Offer, and Accepted.
 
-Each row = one job application.
+## How it works
 
----
+1. Create or open a tracker.
+2. Add a job application and its details.
+3. Choose the view that fits your device and workflow.
+4. Search, sort, organize, and update records as the application progresses.
+5. Use Analytics to review your application activity and status distribution.
 
-## ✅ MVP Features (ONLY THESE)
+## Data and privacy
 
-* Add Row (job entry)
-* Display Table
-* Store in localStorage
+Jubro is browser-first: guest tracker data is saved automatically in local browser storage. No account is needed for core use.
 
----
+Clearing browser data, resetting the browser, changing devices, or using a different browser can remove access to guest data. Sign in to synchronize important data, and avoid storing sensitive information such as passwords, government IDs, bank details, or confidential documents.
 
-## 📊 Table Columns
+## Technology
 
-* Company
-* Position
-* Status
-* Link
-* Date Applied
-## 🚫 NOT INCLUDED (FOR NOW)
+- HTML, CSS, and vanilla JavaScript
+- Tailwind CSS
+- Local Storage
+- Firebase Authentication and cloud synchronization
+- Vercel deployment configuration
 
-* Multiple trackers
-* Monthly grouping
-* Analytics / charts
-* Authentication
-* Firebase/backend
-* Inline editing
+## Run locally
 
----
+Install the development dependencies and generate the compiled assets:
 
-## 🧠 Rule While Building
+```bash
+npm install
+npm run build
+```
 
-If a feature is not listed above → DON'T build it.
+Then serve this directory with any static web server, or open `index.html` through your preferred local development environment.
 
----
+## Project scope
 
-## 🎯 Goal
+Jubro is for personal job-application organization. It complements—not replaces—job boards, company recruitment portals, recruiter applicant-tracking systems, or official employment records.
 
-Finish a working version in 1–2 days.
-Ugly but usable > perfect but unfinished.
+## Target users
+
+- Students applying for internships
+- Fresh graduates looking for their first role
+- Freelancers tracking opportunities
+- Remote-job applicants
+- Professionals managing a career search
+
+## License
+
+No license has been specified for this project.
