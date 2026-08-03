@@ -193,6 +193,9 @@ export const listRenderMethods = {
             <button type="button" class="btn-list-edit inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Edit job">
               <i class="fa-solid fa-pen text-xs"></i>
             </button>
+            <button type="button" class="btn-list-duplicate inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Duplicate job">
+              <i class="fa-solid fa-copy text-xs"></i>
+            </button>
             ${additionalDetails.length ? `<button type="button" class="btn-list-info inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="View extra info">
               <i class="fa-solid fa-circle-info text-xs"></i>
             </button>` : ''}
@@ -224,6 +227,15 @@ export const listRenderMethods = {
 
       article.querySelector('.btn-list-edit')?.addEventListener('click', () => {
         this.openListEditModal(rowIndex);
+      });
+
+      article.querySelector('.btn-list-duplicate')?.addEventListener('click', () => {
+        const sourceRow = tracker.rows[rowIndex];
+
+        if (!sourceRow) return;
+
+        tracker.rows.splice(rowIndex + 1, 0, sourceRow.map((cell) => ({ ...cell })));
+        this.refresh();
       });
 
       article.querySelector('.btn-list-info')?.addEventListener('click', () => {
