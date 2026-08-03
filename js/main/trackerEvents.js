@@ -234,7 +234,7 @@ initEvents() {
     });
 
     btnListAddJob?.addEventListener('click', () => {
-      this.addRow();
+      this.addRow({ useJobDefaults: true, insertAtStart: true });
     });
 
     listFilterSections?.addEventListener('click', (e) => {

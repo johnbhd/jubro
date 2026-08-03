@@ -260,7 +260,7 @@ setColumnType(type) {
     closeMenu();
   },
 
-addRow() {
+addRow({ useJobDefaults = false, insertAtStart = false } = {}) {
     const tracker = this.getTracker();
     const { activeRow } = UIState;
   
@@ -268,8 +268,36 @@ addRow() {
       value: '',
       type: 'text'
     }));
+
+    if (useJobDefaults) {
+      const companyIndex = this.getColumnIndexByNames(tracker, ['company']);
+      const positionIndex = this.getColumnIndexByNames(tracker, ['position', 'role', 'job title']);
+      const dateIndex = this.getDateColumnIndex(tracker);
+      const now = new Date();
+      const today = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, '0'),
+        String(now.getDate()).padStart(2, '0')
+      ].join('-');
+
+      if (companyIndex >= 0) {
+        newRow[companyIndex] = { value: 'Company Name', type: 'text' };
+      }
+
+      if (positionIndex >= 0) {
+        newRow[positionIndex] = { value: 'Position Role', type: 'text' };
+      }
+
+      if (dateIndex >= 0) {
+        newRow[dateIndex] = { value: today, type: 'date' };
+      }
+    }
   
-    const insertIndex = activeRow !== null ? activeRow + 1 : tracker.rows.length;
+    const insertIndex = insertAtStart
+      ? 0
+      : activeRow !== null
+        ? activeRow + 1
+        : tracker.rows.length;
   
     tracker.rows.splice(insertIndex, 0, newRow);
   
