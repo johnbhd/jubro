@@ -569,7 +569,7 @@ input:disabled {
 }
 
 .dark .list-settings-dialog {
-  border-color: #374151;
+  background-color: #111827 !important;
   background-color: #111827;
   color: #f9fafb;
 }
@@ -624,8 +624,7 @@ input:disabled {
 
 /* List view edit modal */
 .dark .list-edit-dialog {
-  background-color: #1e293b;
-  background-color: #111827;
+  background-color: #111827 !important;
   color: #f9fafb;
 }
 
@@ -660,7 +659,7 @@ input:disabled {
 /* List view extra-info modal */
 .dark .list-info-dialog {
   border-color: #374151;
-  background-color: #111827;
+  background-color: #111827 !important;
   color: #f9fafb;
 }
 
