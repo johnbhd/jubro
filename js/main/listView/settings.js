@@ -70,7 +70,7 @@ export const listSettingsMethods = {
     const button = document.createElement('button');
     button.id = 'btnListViewSettings';
     button.type = 'button';
-    button.className = 'inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-600 hover:bg-white';
+    button.className = 'list-settings-trigger inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-white';
     button.setAttribute('aria-label', 'View settings');
     button.innerHTML = '<i class="fa-solid fa-sliders text-xs"></i>';
     button.addEventListener('click', (event) => {
@@ -86,23 +86,23 @@ export const listSettingsMethods = {
 
     document.body.insertAdjacentHTML('beforeend', `
       <div id="listSettingsPopup" class="hidden fixed inset-0 z-[65] items-center justify-center bg-black/50 p-4">
-        <div class="w-full max-w-md rounded-2xl border border-gray-700 bg-gray-900 p-4 text-gray-100 shadow-xl sm:p-5">
+        <div class="list-settings-dialog w-full max-w-md rounded-2xl border border-gray-200 bg-white p-4 text-gray-900 shadow-xl sm:p-5">
           <div class="mb-3 flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h2 class="text-base font-semibold">Customize Fields</h2>
-              <p class="mt-1 text-xs text-gray-400">These fields are shown across the whole list view.</p>
+              <p class="mt-1 text-xs text-gray-500">These fields are shown across the whole list view.</p>
             </div>
             <div class="flex shrink-0 items-center gap-1">
-              <button id="btnListSettingsAdd" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-blue-500/15 hover:text-blue-300" aria-label="Add field">
+              <button id="btnListSettingsAdd" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-blue-500/15 hover:text-blue-700" aria-label="Add field">
                 <i class="fa-solid fa-plus text-xs"></i>
               </button>
-              <button id="btnListSettingsEdit" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-blue-500/15 hover:text-blue-300" aria-label="Edit field labels">
+              <button id="btnListSettingsEdit" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-blue-500/15 hover:text-blue-700" aria-label="Edit field labels">
                 <i class="fa-solid fa-pencil text-xs"></i>
               </button>
-              <button id="btnListSettingsDelete" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-500/15 hover:text-red-300" aria-label="Delete fields">
+              <button id="btnListSettingsDelete" type="button" class="list-settings-action inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-red-500/15 hover:text-red-700" aria-label="Delete fields">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
-              <button id="btnCloseListSettings" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white" aria-label="Close view settings">
+              <button id="btnCloseListSettings" type="button" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900" aria-label="Close view settings">
                 <i class="fa-solid fa-xmark text-xs"></i>
               </button>
             </div>
@@ -110,9 +110,9 @@ export const listSettingsMethods = {
           <div id="listSettingsToggles" class="max-h-72 space-y-2 overflow-y-auto pr-1"></div>
           <form id="listInlineAddFieldForm" class="mt-4 hidden gap-2">
             <label for="listInlineAddFieldName" class="sr-only">Add field</label>
-            <input id="listInlineAddFieldName" type="text" class="min-w-0 flex-1 rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20" placeholder="Add field" />
+            <input id="listInlineAddFieldName" type="text" class="list-settings-control min-w-0 flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20" placeholder="Add field" />
             <label for="listInlineAddFieldType" class="sr-only">Field type</label>
-            <select id="listInlineAddFieldType" class="rounded-lg border border-gray-700 bg-gray-950 px-2 py-2 text-sm text-white outline-none focus:border-blue-400">
+            <select id="listInlineAddFieldType" class="list-settings-control rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-900 outline-none focus:border-blue-400">
               <option value="text">Text</option>
               <option value="checkbox">Checkbox</option>
               <option value="date">Date</option>
@@ -123,11 +123,11 @@ export const listSettingsMethods = {
             </button>
           </form>
           <div class="mt-4 grid grid-cols-2 gap-2">
-            <button id="btnListSettingsAddBottom" type="button" class="rounded-lg border border-blue-500/40 px-3 py-2 text-sm text-blue-200 hover:bg-blue-500/15">
+            <button id="btnListSettingsAddBottom" type="button" class="rounded-lg border border-blue-500/40 px-3 py-2 text-sm text-blue-700 hover:bg-blue-500/15">
               <i class="fa-solid fa-plus mr-1 text-xs"></i>
               Add Field
             </button>
-            <button id="btnResetListSettings" type="button" class="rounded-lg border border-gray-700 px-3 py-2 text-sm text-gray-100 hover:bg-gray-800">
+            <button id="btnResetListSettings" type="button" class="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
               Reset to Default
             </button>
           </div>
@@ -178,14 +178,14 @@ export const listSettingsMethods = {
     this.updateListSettingsModeButtons();
 
     if (!tracker || !Array.isArray(tracker.columns) || tracker.columns.length === 0) {
-      container.innerHTML = '<p class="text-sm text-gray-400">No columns yet.</p>';
+      container.innerHTML = '<p class="text-sm text-gray-500">No columns yet.</p>';
       return;
     }
 
     const note = mode === 'edit'
-      ? '<p class="rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-100">You\'re editing field labels. Changes will be reflected across the list.</p>'
+      ? '<p class="list-settings-note-edit rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-800">You\'re editing field labels. Changes will be reflected across the list.</p>'
       : mode === 'delete'
-        ? '<p class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-100">Delete mode is active. Deleting a field removes it from all jobs in this tracker.</p>'
+        ? '<p class="list-settings-note-delete rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-800">Delete mode is active. Deleting a field removes it from all jobs in this tracker.</p>'
         : '';
 
     container.innerHTML = note + tracker.columns.map((column, index) => {
@@ -197,18 +197,18 @@ export const listSettingsMethods = {
       const type = typeof column === 'object' && column.type ? column.type : 'text';
 
       return `
-        <div class="list-settings-field-row flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-950/40 px-3 py-3" draggable="true" data-column-index="${index}">
-          <button type="button" class="list-settings-drag-handle cursor-grab text-gray-500 hover:text-gray-200" aria-label="Drag field">
+        <div class="list-settings-field-row flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3" draggable="true" data-column-index="${index}">
+          <button type="button" class="list-settings-drag-handle cursor-grab text-gray-400 hover:text-gray-700" aria-label="Drag field">
             <i class="fa-solid fa-grip-vertical text-xs"></i>
           </button>
           <div class="min-w-0 flex-1">
             ${mode === 'edit'
-              ? `<input type="text" class="list-settings-label-input h-8 w-full rounded-lg border border-gray-700 bg-gray-950 px-2 text-sm text-white outline-none focus:border-blue-400" data-column-index="${index}" value="${this.escapeHtml(label)}" />`
-              : `<span class="block truncate text-sm text-gray-100">${this.escapeHtml(label)}</span>`
+              ? `<input type="text" class="list-settings-control list-settings-label-input h-8 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm text-gray-900 outline-none focus:border-blue-400" data-column-index="${index}" value="${this.escapeHtml(label)}" />`
+              : `<span class="block truncate text-sm text-gray-900">${this.escapeHtml(label)}</span>`
             }
           </div>
           <label class="sr-only" for="list-settings-field-type-${index}">Field type for ${this.escapeHtml(label)}</label>
-          <select id="list-settings-field-type-${index}" class="list-settings-type h-8 shrink-0 rounded-lg border border-gray-700 bg-gray-950 px-2 text-xs text-white outline-none focus:border-blue-400" data-column-index="${index}" aria-label="Field type for ${this.escapeHtml(label)}">
+          <select id="list-settings-field-type-${index}" class="list-settings-control list-settings-type h-8 shrink-0 rounded-lg border border-gray-300 bg-white px-2 text-xs text-gray-900 outline-none focus:border-blue-400" data-column-index="${index}" aria-label="Field type for ${this.escapeHtml(label)}">
             <option value="text" ${type === 'text' ? 'selected' : ''}>Text</option>
             <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
             <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>

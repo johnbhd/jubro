@@ -44,10 +44,10 @@ export const listRenderMethods = {
 
     document.body.insertAdjacentHTML('beforeend', `
       <div id="listInfoModal" class="hidden fixed inset-0 z-[70] overflow-y-auto bg-black/60 p-4">
-        <div class="mx-auto my-6 w-full max-w-xl rounded-2xl border border-gray-700 bg-gray-900 p-5 text-gray-100 shadow-xl">
+        <div class="list-info-dialog mx-auto my-6 w-full max-w-xl rounded-2xl border border-gray-200 bg-white p-5 text-gray-900 shadow-xl">
           <div class="mb-4 flex items-center justify-between gap-3">
             <h2 class="text-lg font-semibold">Extra Info</h2>
-            <button id="btnCloseListInfoModal" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white" aria-label="Close info modal">
+            <button id="btnCloseListInfoModal" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900" aria-label="Close info modal">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -67,13 +67,13 @@ export const listRenderMethods = {
       const safeValue = this.escapeHtml(value);
 
       return `
-        <a href="${safeValue}" target="_blank" rel="noopener" class="break-words text-blue-300 hover:text-blue-200">
+        <a href="${safeValue}" target="_blank" rel="noopener" class="break-words text-blue-600 hover:text-blue-700">
           ${safeValue}
         </a>
       `;
     }
 
-    return `<span class="break-words text-gray-100">${this.escapeHtml(value)}</span>`;
+    return `<span class="break-words text-gray-900">${this.escapeHtml(value)}</span>`;
   },
 
   openListInfoModal(rowIndex) {
@@ -91,8 +91,8 @@ export const listRenderMethods = {
     if (!fields || details.length === 0) return;
 
     fields.innerHTML = details.map(({ label, value }) => `
-      <div class="rounded-lg border border-gray-800 bg-gray-950/40 p-3">
-        <p class="text-xs font-medium uppercase text-gray-400">${this.escapeHtml(label)}</p>
+      <div class="list-info-field rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <p class="text-xs font-medium uppercase text-gray-500">${this.escapeHtml(label)}</p>
         <div class="mt-2 text-sm leading-6">${this.renderListInfoValue(value)}</div>
       </div>
     `).join('');
