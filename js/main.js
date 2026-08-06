@@ -50,6 +50,72 @@ function setupMobileMenu() {
   });
 }
 
+function setupScrollAwareNavbar() {
+  const navbar = document.getElementById('siteNavbar');
+  const mobileMenuButton = document.getElementById('btnMobileMenu');
+
+  if (!navbar) return;
+
+  const scrollThreshold = 50;
+  const directionThreshold = 6;
+  let lastScrollY = Math.max(0, window.scrollY);
+  let isScrolled = lastScrollY > scrollThreshold;
+  let isNavbarVisible = true;
+  let frameRequested = false;
+
+  const applyState = (nextScrolled, nextVisible) => {
+    if (nextScrolled !== isScrolled) {
+      isScrolled = nextScrolled;
+      navbar.classList.toggle('is-scrolled', isScrolled);
+    }
+
+    if (nextVisible !== isNavbarVisible) {
+      isNavbarVisible = nextVisible;
+      navbar.classList.toggle('is-hidden', !isNavbarVisible);
+    }
+  };
+
+  const updateNavbar = () => {
+    frameRequested = false;
+
+    const currentScrollY = Math.max(0, window.scrollY);
+    const scrollDifference = currentScrollY - lastScrollY;
+    const isMobileMenuOpen = mobileMenuButton?.getAttribute('aria-expanded') === 'true';
+    const nextScrolled = currentScrollY > scrollThreshold;
+    let nextVisible = isNavbarVisible;
+
+    if (!nextScrolled || isMobileMenuOpen) {
+      nextVisible = true;
+    } else if (scrollDifference >= directionThreshold) {
+      nextVisible = false;
+    } else if (scrollDifference <= -directionThreshold) {
+      nextVisible = true;
+    }
+
+    applyState(nextScrolled, nextVisible);
+
+    if (Math.abs(scrollDifference) >= directionThreshold || !nextScrolled) {
+      lastScrollY = currentScrollY;
+    }
+  };
+
+  const requestNavbarUpdate = () => {
+    if (frameRequested) return;
+
+    frameRequested = true;
+    window.requestAnimationFrame(updateNavbar);
+  };
+
+  navbar.classList.toggle('is-scrolled', isScrolled);
+  window.addEventListener('scroll', requestNavbarUpdate, { passive: true });
+
+  mobileMenuButton?.addEventListener('click', () => {
+    isNavbarVisible = true;
+    navbar.classList.remove('is-hidden');
+    lastScrollY = Math.max(0, window.scrollY);
+  });
+}
+
 function syncGuestThemeButton(theme) {
   theme = theme === 'light' ? 'light' : 'dark';
   const isDark = theme === 'dark';
@@ -266,6 +332,7 @@ async function initHomepage() {
   ]);
 
   setupMobileMenu();
+  setupScrollAwareNavbar();
   setupActiveNavigation();
   syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
   setupAuth();
