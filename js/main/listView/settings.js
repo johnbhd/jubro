@@ -111,6 +111,13 @@ export const listSettingsMethods = {
           <form id="listInlineAddFieldForm" class="mt-4 hidden gap-2">
             <label for="listInlineAddFieldName" class="sr-only">Add field</label>
             <input id="listInlineAddFieldName" type="text" class="min-w-0 flex-1 rounded-lg border border-gray-700 bg-gray-950 px-3 py-2 text-sm text-white outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20" placeholder="Add field" />
+            <label for="listInlineAddFieldType" class="sr-only">Field type</label>
+            <select id="listInlineAddFieldType" class="rounded-lg border border-gray-700 bg-gray-950 px-2 py-2 text-sm text-white outline-none focus:border-blue-400">
+              <option value="text">Text</option>
+              <option value="checkbox">Checkbox</option>
+              <option value="date">Date</option>
+              <option value="select">Select</option>
+            </select>
             <button type="submit" class="shrink-0 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500">
               Add
             </button>
@@ -187,6 +194,7 @@ export const listSettingsMethods = {
         ? 'checked'
         : '';
       const label = this.getColumnName(column) || `Column ${index + 1}`;
+      const type = typeof column === 'object' && column.type ? column.type : 'text';
 
       return `
         <div class="list-settings-field-row flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-950/40 px-3 py-3" draggable="true" data-column-index="${index}">
@@ -199,6 +207,13 @@ export const listSettingsMethods = {
               : `<span class="block truncate text-sm text-gray-100">${this.escapeHtml(label)}</span>`
             }
           </div>
+          <label class="sr-only" for="list-settings-field-type-${index}">Field type for ${this.escapeHtml(label)}</label>
+          <select id="list-settings-field-type-${index}" class="list-settings-type h-8 shrink-0 rounded-lg border border-gray-700 bg-gray-950 px-2 text-xs text-white outline-none focus:border-blue-400" data-column-index="${index}" aria-label="Field type for ${this.escapeHtml(label)}">
+            <option value="text" ${type === 'text' ? 'selected' : ''}>Text</option>
+            <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+            <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
+            <option value="select" ${type === 'select' ? 'selected' : ''}>Select</option>
+          </select>
           <input type="checkbox" class="list-settings-toggle h-5 w-5 shrink-0" data-column-index="${index}" ${checked} aria-label="Show ${this.escapeHtml(label)}" />
           <button type="button" class="${mode === 'delete' ? 'inline-flex' : 'hidden'} list-settings-delete-field h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-300 hover:bg-red-500/15 hover:text-red-200" data-column-index="${index}" aria-label="Delete ${this.escapeHtml(label)}">
             <i class="fa-solid fa-trash text-xs"></i>
@@ -210,6 +225,12 @@ export const listSettingsMethods = {
     container.querySelectorAll('.list-settings-toggle').forEach((toggle) => {
       toggle.addEventListener('change', () => {
         this.setListColumnVisibility(Number(toggle.dataset.columnIndex), toggle.checked);
+      });
+    });
+
+    container.querySelectorAll('.list-settings-type').forEach((select) => {
+      select.addEventListener('change', () => {
+        this.setListFieldType(Number(select.dataset.columnIndex), select.value);
       });
     });
 
@@ -280,6 +301,43 @@ export const listSettingsMethods = {
     };
   },
 
+  setListFieldType(columnIndex, type) {
+    const tracker = this.getTracker();
+    const allowedTypes = ['text', 'checkbox', 'date', 'select'];
+
+    if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) return;
+    if (!Number.isInteger(columnIndex) || !allowedTypes.includes(type)) return;
+
+    const currentColumn = tracker.columns[columnIndex];
+    const name = this.getColumnName(currentColumn) || `Column ${columnIndex + 1}`;
+    const existingOptions = Array.isArray(currentColumn?.options) ? currentColumn.options : [];
+
+    tracker.columns[columnIndex] = {
+      name,
+      type,
+      ...(type === 'select'
+        ? {
+            options: existingOptions.length
+              ? existingOptions
+              : [{ label: 'Option 1', color: '#cccccc' }]
+          }
+        : {})
+    };
+
+    tracker.rows.forEach((row) => {
+      if (!Array.isArray(row)) return;
+
+      const oldCell = row[columnIndex];
+      const value = type === 'checkbox'
+        ? false
+        : (typeof oldCell === 'object' ? oldCell.value : oldCell) || '';
+
+      row[columnIndex] = { value, type };
+    });
+
+    this.refreshListSettingsAfterSchemaChange();
+  },
+
   showInlineAddField() {
     const form = document.getElementById('listInlineAddFieldForm');
     const nameInput = document.getElementById('listInlineAddFieldName');
@@ -299,8 +357,11 @@ export const listSettingsMethods = {
   addListFieldFromInlineForm() {
     const tracker = this.getTracker();
     const input = document.getElementById('listInlineAddFieldName');
+    const typeInput = document.getElementById('listInlineAddFieldType');
     const name = input?.value.trim();
-    const type = 'text';
+    const type = ['text', 'checkbox', 'date', 'select'].includes(typeInput?.value)
+      ? typeInput.value
+      : 'text';
 
     if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows) || !name) return;
 
@@ -314,6 +375,7 @@ export const listSettingsMethods = {
     });
 
     if (input) input.value = '';
+    if (typeInput) typeInput.value = 'text';
     this.hideInlineAddField();
     this.refreshListSettingsAfterSchemaChange();
   },
