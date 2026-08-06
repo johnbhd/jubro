@@ -656,6 +656,49 @@ input:disabled {
   color-scheme: dark;
 }
 
+.list-edit-select-dropdown {
+  position: fixed;
+  z-index: 90;
+  pointer-events: auto;
+  color: #111827;
+}
+
+.dark .list-edit-select-dropdown {
+  border-color: #374151;
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-add {
+  border-color: #374151;
+}
+
+.dark .list-edit-select-add-input {
+  border-color: #4b5563;
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-add-input::placeholder {
+  color: #9ca3af;
+}
+
+.dark .list-edit-select-option {
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-option:hover {
+  background-color: #1f2937;
+}
+
+.dark .list-edit-select-option .text-gray-900 {
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-option .hover\:bg-red-50:hover {
+  background-color: rgb(127 29 29 / 0.35);
+}
+
 /* List view extra-info modal */
 .dark .list-info-dialog {
   border-color: #374151;
