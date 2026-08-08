@@ -76,8 +76,6 @@ export const listEditMethods = {
       const column = this.getListEditColumn(tracker, field);
       const options = this.getDashboardOptions(column);
       const selected = options.find((option) => option.label === value);
-      const selectedColor = selected?.color || '';
-      const selectedTextColor = selectedColor ? this.getContrastColor(selectedColor) : '';
 
       return `
         <div class="block">
@@ -87,7 +85,6 @@ export const listEditMethods = {
             type="button"
             class="list-edit-select-trigger list-edit-control mt-1 flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400"
             data-column-index="${field.index}"
-            ${selectedColor ? `style="background-color: ${selectedColor}; color: ${selectedTextColor}; border-color: ${selectedColor};"` : ''}
           >
             <span class="truncate">${this.escapeHtml(selected?.label || 'Select')}</span>
             <i class="fa-solid fa-chevron-down ml-3 text-xs"></i>
@@ -206,9 +203,9 @@ export const listEditMethods = {
         const text = trigger.querySelector('span');
 
         if (text) text.textContent = selected?.label || 'Select';
-        trigger.style.backgroundColor = selected?.color || '';
-        trigger.style.color = selected ? this.getContrastColor(selected.color) : '';
-        trigger.style.borderColor = selected?.color || '';
+        trigger.style.backgroundColor = '';
+        trigger.style.color = '';
+        trigger.style.borderColor = '';
       };
 
       const renderOptions = () => {
