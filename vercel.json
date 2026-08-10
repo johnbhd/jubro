@@ -1,3 +1,13 @@
 {
-  "outputDirectory": "."
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/terms",
+      "destination": "/pages/terms/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/pages/privacy/index.html"
+    }
+  ]
 }

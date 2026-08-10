@@ -4,7 +4,5 @@
 @source "../trackers/**/*.html";
 @source "../board/**/*.html";
 @source "../pages/**/*.html";
-@source "../terms/**/*.html";
-@source "../privacy/**/*.html";
 @source "../components/**/*.html";
 @source "../js/**/*.js";
