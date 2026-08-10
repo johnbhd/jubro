@@ -285,6 +285,10 @@ initEvents() {
       this.changePage(1);
     });
 
+    window.matchMedia('(max-width: 639px)').addEventListener('change', () => {
+      this.applySearchFilter();
+    });
+
     btnClearSelectFilter?.addEventListener('click', () => {
       this.clearSelectFilter();
     });

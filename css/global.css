@@ -493,8 +493,10 @@ input:disabled {
   border-color: #374151 !important;
 }
 
-.dark #paginationLabel {
-  color: #d1d5db !important;
+.dark #boardPagination .pagination-page-active {
+  background-color: #f9fafb !important;
+  border-color: #f9fafb !important;
+  color: #111827 !important;
 }
 
 .dark table {

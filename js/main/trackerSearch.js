@@ -93,11 +93,11 @@ applyPagination(matchedElements) {
   },
 
 updatePaginationControls(totalItems, totalPages) {
-    if (!this.boardPagination || !this.paginationLabel) return;
+    if (!this.boardPagination || !this.paginationPages) return;
 
     this.boardPagination.classList.toggle('hidden', totalItems === 0);
     this.boardPagination.classList.toggle('flex', totalItems > 0);
-    this.paginationLabel.textContent = `Page ${this.currentPage} of ${totalPages}`;
+    this.renderPaginationPages(totalPages);
 
     if (this.btnPaginationPrev) {
       this.btnPaginationPrev.disabled = this.currentPage <= 1;
@@ -108,12 +108,77 @@ updatePaginationControls(totalItems, totalPages) {
     }
   },
 
+  getPaginationItems(totalPages) {
+    const isMobile = window.matchMedia('(max-width: 639px)').matches;
+
+    if (totalPages <= (isMobile ? 5 : 7)) {
+      return Array.from({ length: totalPages }, (_, index) => index + 1);
+    }
+
+    const pageNumbers = isMobile
+      ? [1, this.currentPage - 1, this.currentPage, this.currentPage + 1, totalPages]
+      : [1, 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, totalPages - 1, totalPages];
+    const uniquePages = [...new Set(pageNumbers.filter((page) => page >= 1 && page <= totalPages))]
+      .sort((firstPage, secondPage) => firstPage - secondPage);
+    const items = [];
+
+    uniquePages.forEach((page, index) => {
+      const previousPage = uniquePages[index - 1];
+
+      if (index > 0 && page - previousPage > 1) {
+        items.push('ellipsis');
+      }
+
+      items.push(page);
+    });
+
+    return items;
+  },
+
+  renderPaginationPages(totalPages) {
+    this.paginationPages.replaceChildren();
+
+    this.getPaginationItems(totalPages).forEach((item) => {
+      if (item === 'ellipsis') {
+        const ellipsis = document.createElement('span');
+        ellipsis.className = 'inline-flex h-9 w-5 items-center justify-center text-sm text-gray-500 sm:w-7';
+        ellipsis.setAttribute('aria-hidden', 'true');
+        ellipsis.textContent = '...';
+        this.paginationPages.appendChild(ellipsis);
+        return;
+      }
+
+      const pageButton = document.createElement('button');
+      const isCurrentPage = item === this.currentPage;
+
+      pageButton.type = 'button';
+      pageButton.className = `inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 ${
+        isCurrentPage
+          ? 'pagination-page-active border-black bg-black text-white'
+          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+      }`;
+      pageButton.setAttribute('aria-label', `Go to page ${item}`);
+      pageButton.textContent = String(item);
+
+      if (isCurrentPage) {
+        pageButton.setAttribute('aria-current', 'page');
+      }
+
+      pageButton.addEventListener('click', () => this.goToPage(item));
+      this.paginationPages.appendChild(pageButton);
+    });
+  },
+
 resetPagination() {
     this.currentPage = 1;
   },
 
 changePage(direction) {
-    this.currentPage += direction;
+    this.goToPage(this.currentPage + direction);
+  },
+
+  goToPage(page) {
+    this.currentPage = page;
     this.applySearchFilter();
   }
 };

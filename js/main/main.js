@@ -34,7 +34,7 @@ export class TrackerApp {
     this.btnCloseSearch = document.getElementById('btnCloseSearch');
     this.noSearchResults = document.getElementById('noSearchResults');
     this.boardPagination = document.getElementById('boardPagination');
-    this.paginationLabel = document.getElementById('paginationLabel');
+    this.paginationPages = document.getElementById('paginationPages');
     this.btnPaginationPrev = document.getElementById('btnPaginationPrev');
     this.btnPaginationNext = document.getElementById('btnPaginationNext');
     this.dashboardModal = document.getElementById('dashboardModal');
