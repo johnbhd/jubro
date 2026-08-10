@@ -3,6 +3,13 @@ import { createFaviconElement, getLinkFavicon, getPlatformFavicon } from './favi
 
 let activeDropdown = null;
 
+function closeActiveDropdown() {
+  if (!activeDropdown) return;
+
+  activeDropdown.classList.add('hidden');
+  activeDropdown = null;
+}
+
 function getContrastColor(hex) {
   if (!hex) return '#000000';
   const c = hex.replace('#', '');
@@ -82,6 +89,7 @@ function placeDropdown(dropdown, anchor) {
 }
 
 export const Table = {
+  closeSelectDropdown: closeActiveDropdown,
   render: (columns, data, sourceRows = null) => {
     const headerRow = document.getElementById('headerRow');
     const tbody = document.getElementById('tableBody');
@@ -97,12 +105,7 @@ export const Table = {
     headerRow.innerHTML = '';
     tbody.innerHTML = '';
 
-    const closeDropdown = () => {
-      if (activeDropdown) {
-        activeDropdown.classList.add('hidden');
-        activeDropdown = null;
-      }
-    };
+    const closeDropdown = closeActiveDropdown;
 
     document.addEventListener('click', () => closeDropdown(), { once: true });
 

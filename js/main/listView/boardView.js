@@ -1,9 +1,14 @@
 import { BOARD_PAGE_SIZE, BOARD_VIEW_KEY } from '../constants.js';
 import { closeMenu } from '../ui.js';
+import { Table } from '../table.js';
 
 export const boardViewMethods = {
   updateBoardView() {
     const isListView = this.viewSelect?.value === 'list';
+
+    if (isListView) {
+      Table.closeSelectDropdown();
+    }
 
     this.tableView?.classList.toggle('hidden', isListView);
     this.listView?.classList.toggle('hidden', !isListView);
