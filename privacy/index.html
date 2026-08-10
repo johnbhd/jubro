@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (() => {
+      const themeKey = 'jubro_theme';
+      let theme = 'dark';
+      try {
+        const savedTheme = localStorage.getItem(themeKey);
+        theme = savedTheme === 'light' ? 'light' : 'dark';
+        if (!savedTheme) localStorage.setItem(themeKey, theme);
+      } catch (error) {}
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy | Jubro</title>
+  <meta name="description" content="Learn how Jubro handles account information, job tracker data, local storage, and cloud synchronization." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://jubro.vercel.app/privacy" />
+  <link rel="stylesheet" href="/css/tailwind.css" />
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="icon" type="image/png" href="/img/jubro.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .dark .legal-content .text-gray-900 { color: #f9fafb !important; }
+    .dark .legal-content .text-gray-600 { color: #d1d5db !important; }
+    .dark .legal-content .text-gray-500 { color: #9ca3af !important; }
+    .dark .legal-content .border-gray-200 { border-color: #374151 !important; }
+    .dark .legal-content .bg-white { background-color: #1f2937 !important; }
+    @media (min-width: 1024px) { #mobileTrackerMenu.hidden { display: contents !important; } }
+  </style>
+</head>
+<body id="homeBody" data-page="legal" class="min-h-screen bg-gray-100">
+  <div class="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
+    <div id="navbar"></div>
+    <main class="legal-content mx-auto max-w-4xl py-12 sm:py-16 lg:py-20">
+      <article class="rounded-3xl border border-gray-200 bg-white px-6 py-10 shadow-sm sm:px-10 sm:py-12">
+        <header class="border-b border-gray-200 pb-8">
+          <h1 class="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">Privacy Policy</h1>
+          <p class="mt-5 max-w-3xl text-base leading-7 text-gray-600 sm:text-lg">Jubro respects your privacy.</p>
+          <p class="mt-3 max-w-3xl text-base leading-7 text-gray-600 sm:text-lg">This Privacy Policy explains what information Jubro may process, why the information is used, how it may be stored and protected, and the choices available to users.</p>
+        </header>
+        <div class="mt-10 space-y-10 text-base leading-7 text-gray-600 sm:text-lg">
+          <section><h2 class="text-2xl font-bold text-gray-900">1. Information We Process</h2><p class="mt-4">The information Jubro processes depends on how users interact with the service.</p><h3 class="mt-6 text-xl font-bold text-gray-900">Account Information</h3><p class="mt-3">When a user chooses to create or use an account, Jubro may process information such as:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Email address.</li><li>Account identifier.</li><li>Authentication-related information.</li><li>Basic account information provided through the authentication method used.</li></ul><p class="mt-4">Certain Jubro features may remain available without creating an account.</p><h3 class="mt-6 text-xl font-bold text-gray-900">Job Tracker Information</h3><p class="mt-3">Jubro processes information users voluntarily enter into their trackers. This may include:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Company name.</li><li>Job position.</li><li>Application status.</li><li>Date applied.</li><li>Job platform or source.</li><li>Location.</li><li>Salary information.</li><li>Job posting links.</li><li>Recruiter or contact details.</li><li>Interview schedules.</li><li>Notes.</li><li>Custom fields.</li><li>Tracker configurations.</li><li>Other information entered by users.</li></ul><p class="mt-4">Users control the information they place inside their trackers. Because Jubro allows customizable fields, users should avoid entering unnecessary sensitive personal information.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">2. How Jubro Uses Information</h2><p class="mt-4">Jubro may process information to:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Provide the job application tracking service.</li><li>Create and maintain user accounts.</li><li>Save trackers and application information.</li><li>Synchronize information across supported devices.</li><li>Display tracker data, statistics, and dashboards.</li><li>Maintain and improve Jubro.</li><li>Protect Jubro against unauthorized access, abuse, fraud, or security threats.</li><li>Troubleshoot technical problems.</li><li>Respond to support or privacy requests.</li><li>Comply with applicable legal obligations.</li></ul><p class="mt-4">Jubro should process only information reasonably necessary for these purposes.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">3. Local Device Storage</h2><p class="mt-4">Jubro may store certain information locally in the user's browser or device. Local storage may be used for functionality such as:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Maintaining job trackers.</li><li>Remembering tracker information.</li><li>Saving preferences.</li><li>Allowing some Jubro features to work without requiring an account.</li></ul><p class="mt-4">Locally stored information may remain until:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>The user deletes it through Jubro.</li><li>The user clears browser or application data.</li><li>The application is uninstalled or reset.</li><li>The browser or operating system removes the stored information.</li></ul><p class="mt-4">Deleting browser or application data may permanently remove locally stored Jubro information.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">4. Cloud Storage and Synchronization</h2><p class="mt-4">When users create an account or use cloud synchronization features, certain account and tracker information may also be stored in cloud-based systems used by Jubro.</p><p class="mt-4">Cloud storage may allow information to remain available when users sign in again or access Jubro from another supported device.</p><p class="mt-4">Information may therefore exist:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>On the user's local device.</li><li>In Jubro's cloud systems.</li><li>In both locations.</li></ul><p class="mt-4">The exact storage method depends on how the user uses Jubro and which features are enabled.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">5. Authentication</h2><p class="mt-4">If users use an account, authentication services may process information necessary to identify the account and securely sign users in.</p><p class="mt-4">Jubro should not store account passwords in plain text. When authentication is handled through a third-party authentication provider, the provider may process information according to its own terms and privacy policies.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">6. Third-Party Service Providers</h2><p class="mt-4">Jubro may use trusted third-party service providers for functions such as:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Authentication.</li><li>Cloud databases.</li><li>Application hosting.</li><li>Data storage.</li><li>Security.</li><li>Infrastructure.</li><li>Technical operations.</li></ul><p class="mt-4">Firebase may be used as part of Jubro's cloud and authentication infrastructure.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">7. Sharing of Information</h2><p class="mt-4">Jubro does not sell users' personal information.</p><p class="mt-4">Information may be shared only when reasonably necessary:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>With service providers that help operate Jubro.</li><li>When required by applicable law, regulation, court order, or lawful government request.</li><li>To protect the security, rights, or safety of Jubro, its users, or others.</li><li>In connection with a future merger, acquisition, restructuring, or transfer of the Jubro service, subject to applicable privacy requirements.</li><li>When users specifically direct or consent to sharing.</li></ul></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">8. Data Retention</h2><p class="mt-4">Jubro retains personal information only for as long as reasonably necessary to:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Provide the service.</li><li>Maintain an account.</li><li>Fulfill purposes described in the Privacy Policy.</li><li>Protect service security and integrity.</li><li>Meet applicable legal requirements.</li></ul><p class="mt-4">Locally stored information generally remains on the user's device until it is deleted by the user, browser, application, or operating system. Cloud-stored information may remain while the account or associated cloud data remains active.</p><p class="mt-4">Where available, users may request deletion of information associated with their account. Certain information may need to be retained for limited periods where required for legal, security, fraud prevention, or dispute-resolution purposes.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">9. Data Security</h2><p class="mt-4">Jubro takes reasonable technical and organizational measures designed to protect information against:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Unauthorized access.</li><li>Alteration.</li><li>Disclosure.</li><li>Loss.</li><li>Destruction.</li></ul><p class="mt-4">No website, application, database, device, or internet transmission method can be guaranteed to be completely secure. Users should protect their accounts and devices and keep login credentials secure.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">10. User Privacy Rights</h2><p class="mt-4">Depending on applicable law and circumstances, users may have rights related to their personal information, including:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>The right to be informed.</li><li>The right to access personal information.</li><li>The right to request correction of inaccurate or incomplete information.</li><li>The right to object to certain processing where applicable.</li><li>The right to request deletion, erasure, or blocking where applicable.</li><li>The right to data portability where applicable.</li><li>The right to withdraw consent where processing relies on consent.</li><li>The right to submit a complaint regarding the handling of personal information.</li></ul><p class="mt-4">Some rights may be subject to limitations or exceptions under applicable law.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">11. Account and Data Deletion</h2><p class="mt-4">Users who want to request deletion of personal information associated with their account may contact Jubro through its official contact information.</p><p class="mt-4">Deleting cloud or account information may not automatically remove locally stored information from every device. Locally stored information may need to be separately removed by clearing browser storage or application data.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">12. Children's Privacy</h2><p class="mt-4">Jubro is designed as a job application and productivity tool and is not specifically directed toward children.</p><p class="mt-4">Users who are not legally able to consent to processing of their personal information should use Jubro only with appropriate authorization from a parent or legal guardian where required.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">13. International Processing</h2><p class="mt-4">Some cloud or technology service providers used by Jubro may operate infrastructure in different countries. As a result, information may potentially be processed or stored outside the user's country.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">14. External Links</h2><p class="mt-4">Jubro allows users to save or access links such as:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Job listings.</li><li>Employer websites.</li><li>Recruitment platforms.</li><li>Other external websites.</li></ul><p class="mt-4">Jubro is not responsible for the privacy practices or content of external websites. Users should review a third-party site's own privacy policy before providing personal information.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">15. Changes to This Privacy Policy</h2><p class="mt-4">Jubro may update the Privacy Policy when:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Features change.</li><li>Data-processing practices change.</li><li>New service providers are introduced.</li><li>Legal or regulatory requirements change.</li></ul></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">16. Contact Jubro</h2><p class="mt-4">For privacy questions, requests, or concerns, please contact Jubro through the official contact information provided on the website.</p></section>
+        </div>
+        <aside class="mt-12 border-t border-gray-200 pt-8 text-base text-gray-600"><a class="font-semibold text-gray-900 underline decoration-gray-400 underline-offset-4 transition hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900" href="/terms">Read our Terms and Conditions</a></aside>
+      </article>
+    </main>
+  </div>
+  <div id="footer"></div>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

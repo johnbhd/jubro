@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (() => {
+      const themeKey = 'jubro_theme';
+      let theme = 'dark';
+      try {
+        const savedTheme = localStorage.getItem(themeKey);
+        theme = savedTheme === 'light' ? 'light' : 'dark';
+        if (!savedTheme) localStorage.setItem(themeKey, theme);
+      } catch (error) {}
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms and Conditions | Jubro</title>
+  <meta name="description" content="Read the Terms and Conditions for using Jubro, the simple job application tracker." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://jubro.vercel.app/terms" />
+  <link rel="stylesheet" href="/css/tailwind.css" />
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="icon" type="image/png" href="/img/jubro.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .dark .legal-content .text-gray-900 { color: #f9fafb !important; }
+    .dark .legal-content .text-gray-600 { color: #d1d5db !important; }
+    .dark .legal-content .text-gray-500 { color: #9ca3af !important; }
+    .dark .legal-content .border-gray-200 { border-color: #374151 !important; }
+    .dark .legal-content .bg-white { background-color: #1f2937 !important; }
+    @media (min-width: 1024px) { #mobileTrackerMenu.hidden { display: contents !important; } }
+  </style>
+</head>
+<body id="homeBody" data-page="legal" class="min-h-screen bg-gray-100">
+  <div class="mx-auto w-full max-w-[1600px] px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
+    <div id="navbar"></div>
+    <main class="legal-content mx-auto max-w-4xl py-12 sm:py-16 lg:py-20">
+      <article class="rounded-3xl border border-gray-200 bg-white px-6 py-10 shadow-sm sm:px-10 sm:py-12">
+        <header class="border-b border-gray-200 pb-8">
+          <h1 class="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">Terms and Conditions</h1>
+          <p class="mt-5 max-w-3xl text-base leading-7 text-gray-600 sm:text-lg">These Terms and Conditions explain the rules for using Jubro, a simple tool for organizing your job search.</p>
+        </header>
+        <div class="mt-10 space-y-10 text-base leading-7 text-gray-600 sm:text-lg">
+          <section><h2 class="text-2xl font-bold text-gray-900">1. About Jubro</h2><p class="mt-4">Jubro is a job application tracking tool designed to help users organize and manage their job search.</p><p class="mt-4">Jubro may allow users to:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Create and manage job application trackers.</li><li>Record and organize job application information.</li><li>Update application statuses.</li><li>Store notes, dates, links, and other job-related information.</li><li>Customize tracker fields and views.</li><li>View summaries or dashboards of their job-search activity.</li><li>Use Jubro with or without an account, depending on the features available.</li><li>Sync certain information across devices when signed in.</li></ul><p class="mt-4">Features may be added, changed, removed, or updated over time.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">2. Using Jubro</h2><p class="mt-4">Users agree to use Jubro only for lawful purposes.</p><p class="mt-4">Users must not:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Use Jubro to violate applicable laws or regulations.</li><li>Attempt to gain unauthorized access to Jubro, its servers, accounts, or systems.</li><li>Interfere with or disrupt Jubro's operation or security.</li><li>Upload malicious code, viruses, or harmful content.</li><li>Abuse, overload, scrape, reverse engineer, or misuse the service in a way that may harm Jubro or its users.</li><li>Use Jubro to store or distribute unlawful, harmful, fraudulent, or abusive content.</li></ul><p class="mt-4">Jubro may restrict or terminate access when the service is being misused.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">3. Accounts</h2><p class="mt-4">Some Jubro features may be available without creating an account. Other features, including cloud synchronization, may require an account.</p><p class="mt-4">If users create an account, they are responsible for:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Providing accurate account information.</li><li>Maintaining the security of their account.</li><li>Keeping login credentials confidential.</li><li>Activities performed through their account.</li></ul><p class="mt-4">Users should contact Jubro if they believe their account has been accessed without authorization.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">4. User Data and Content</h2><p class="mt-4">Users retain ownership of the information they enter into Jubro. This may include:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Job application records.</li><li>Notes.</li><li>Dates.</li><li>Links.</li><li>Tracker configurations.</li><li>Custom fields.</li><li>Other information entered by the user.</li></ul><p class="mt-4">Users allow Jubro to process and store this information only as reasonably necessary to operate, maintain, synchronize, secure, and improve the service.</p><p class="mt-4">Users are responsible for the information they choose to enter into Jubro. Users should avoid storing unnecessary highly sensitive information.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">5. Local and Cloud Storage</h2><p class="mt-4">Depending on how Jubro is used, information may be stored:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Locally in the user's browser or device.</li><li>In Jubro's cloud-based systems.</li><li>In both local and cloud storage when synchronization features are used.</li></ul><p class="mt-4">Locally stored information may be lost if users clear browser data, uninstall the application, reset the device, or otherwise remove local application data. Jubro is not responsible for data loss caused by actions outside Jubro's reasonable control.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">6. Job Search Disclaimer</h2><p class="mt-4">Jubro is an organizational and productivity tool.</p><p class="mt-4">Jubro:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Is not a recruitment agency.</li><li>Does not employ users.</li><li>Does not make hiring decisions.</li><li>Does not guarantee interviews, job offers, employment, or employer responses.</li><li>Is not responsible for the accuracy, availability, or legitimacy of external job postings.</li></ul><p class="mt-4">Users are responsible for verifying employers, recruiters, job listings, websites, and opportunities before providing personal information or taking action.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">7. Third-Party Services and Links</h2><p class="mt-4">Jubro may use third-party services for functionality such as:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Authentication.</li><li>Hosting.</li><li>Cloud storage.</li><li>Databases.</li><li>Security.</li><li>Infrastructure.</li></ul><p class="mt-4">Jubro may also allow users to save links to external websites such as job boards, employer websites, and recruitment platforms. External services are controlled by their respective operators and may have their own terms and privacy policies. Jubro is not responsible for the content, security, availability, or practices of third-party websites or services.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">8. Intellectual Property</h2><p class="mt-4">The Jubro name, branding, logo, user interface, design, software, and other original materials associated with Jubro belong to Jubro or their respective rights holders unless otherwise stated.</p><p class="mt-4">Users may use Jubro for its intended personal or professional purposes. Users may not copy, reproduce, sell, redistribute, or commercially exploit Jubro's software or branding without permission.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">9. Service Availability</h2><p class="mt-4">Jubro aims to provide a reliable service but does not guarantee uninterrupted availability.</p><p class="mt-4">Jubro may occasionally become unavailable because of:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Maintenance.</li><li>Updates.</li><li>Technical problems.</li><li>Hosting or internet outages.</li><li>Third-party service failures.</li><li>Security incidents.</li><li>Circumstances outside Jubro's reasonable control.</li></ul><p class="mt-4">Features may be modified or discontinued when necessary.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">10. No Warranty</h2><p class="mt-4">Jubro is provided on an "as is" and "as available" basis to the extent permitted by applicable law.</p><p class="mt-4">Jubro does not guarantee that the service will always be:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Error-free.</li><li>Uninterrupted.</li><li>Completely secure.</li><li>Suitable for every user's specific requirements.</li></ul><p class="mt-4">Users are responsible for reviewing important information stored in Jubro and maintaining additional copies where appropriate.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">11. Limitation of Liability</h2><p class="mt-4">To the maximum extent permitted by applicable law, Jubro and its developers will not be liable for indirect, incidental, special, consequential, or similar damages resulting from:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Use or inability to use Jubro.</li><li>Loss of locally stored information.</li><li>Loss of account access.</li><li>Third-party service interruptions.</li><li>External job postings or websites.</li><li>User-entered information.</li><li>Decisions made based on information stored in Jubro.</li></ul><p class="mt-4">Nothing in these Terms excludes liability that cannot legally be excluded.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">12. Suspension or Termination</h2><p class="mt-4">Jubro may suspend or terminate access if a user:</p><ul class="mt-4 list-disc space-y-2 pl-6"><li>Seriously or repeatedly violates these Terms.</li><li>Attempts to compromise Jubro's security.</li><li>Uses Jubro for unlawful or abusive purposes.</li><li>Creates significant risks for Jubro or other users.</li></ul><p class="mt-4">Users may stop using Jubro at any time.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">13. Privacy</h2><p class="mt-4">Use of Jubro is also subject to the <a class="font-semibold text-gray-900 underline decoration-gray-400 underline-offset-4 transition hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900" href="/privacy">Jubro Privacy Policy</a>.</p><p class="mt-4">The Privacy Policy explains how account information, tracker information, and other personal information may be collected, processed, stored, and protected.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">14. Changes to These Terms</h2><p class="mt-4">Jubro may update these Terms when the service, legal requirements, or business practices change. Continued use of Jubro after updated Terms become available may constitute acceptance of the revised Terms where permitted by applicable law.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">15. Governing Law</h2><p class="mt-4">These Terms are governed by applicable laws of the Republic of the Philippines, subject to mandatory rights or protections that may apply under other applicable laws.</p></section>
+          <section><h2 class="text-2xl font-bold text-gray-900">16. Contact</h2><p class="mt-4">Jubro</p><p class="mt-4">For questions regarding these Terms and Conditions, please contact Jubro through the official contact information provided on the website.</p></section>
+        </div>
+        <aside class="mt-12 border-t border-gray-200 pt-8 text-base text-gray-600"><a class="font-semibold text-gray-900 underline decoration-gray-400 underline-offset-4 transition hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gray-900" href="/privacy">Read our Privacy Policy</a></aside>
+      </article>
+    </main>
+  </div>
+  <div id="footer"></div>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
