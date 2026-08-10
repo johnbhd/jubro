@@ -19,6 +19,7 @@ export async function loadComponent(selector, componentPath) {
 function setupMobileMenu() {
   const btnMobileMenu = document.getElementById('btnMobileMenu');
   const mobileTrackerMenu = document.getElementById('mobileTrackerMenu');
+  const btnOpenModal = document.getElementById('btnOpenModal');
 
   const closeMobileMenu = () => {
     const icon = btnMobileMenu?.querySelector('i');
@@ -37,6 +38,12 @@ function setupMobileMenu() {
     mobileTrackerMenu?.classList.toggle('hidden', isOpen);
     icon?.classList.toggle('fa-bars', isOpen);
     icon?.classList.toggle('fa-xmark', !isOpen);
+  });
+
+  btnOpenModal?.addEventListener('click', () => {
+    if (!window.matchMedia('(max-width: 1023px)').matches) return;
+
+    closeMobileMenu();
   });
 
   document.addEventListener('click', (event) => {
