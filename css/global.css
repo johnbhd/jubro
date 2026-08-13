@@ -249,8 +249,8 @@ input:disabled {
 
 .dark #mobileTrackerMenu a:not([aria-current="page"]):hover,
 .dark #mobileTrackerMenu a:not([aria-current="page"]):focus-visible {
-  background-color: #374151 !important;
-  color: #f9fafb !important;
+  background-color: #d8dbe0 !important;
+  color: #080808 !important;
 }
 
 .dark #mobileTrackerMenu [aria-current="page"] {
