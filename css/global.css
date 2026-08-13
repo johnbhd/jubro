@@ -1014,17 +1014,19 @@ input:disabled {
 }
 
 .dark #authModal h2,
-.dark #authModal p,
 .dark #forgotPasswordModal h2,
 .dark #forgotPasswordModal p,
 .dark #syncConflictModal h2,
-.dark #syncConflictModal p {
+.dark #syncConflictModal p,
+.dark #settingsModal h2,
+.dark #settingsModal p {
   color: #f9fafb !important;
 }
 
 .dark #authModal button:not(.theme-create-button),
 .dark #forgotPasswordModal button:not(.theme-create-button),
-.dark #syncConflictModal button:not(.theme-create-button) {
+.dark #syncConflictModal button:not(.theme-create-button),
+.dark #settingsModal button:not(.theme-create-button) {
   color: #f9fafb !important;
 }
 

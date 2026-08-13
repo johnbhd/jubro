@@ -15,6 +15,7 @@ export class Auth {
     this.applySavedTheme();
     this.createModal();
     this.createForgotPasswordModal();
+    this.createSettingsModal();
     this.createSyncConflictModal();
     this.createDropdown();
     authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
@@ -207,12 +208,15 @@ export class Auth {
       if (id === 'btnCloseForgotPassword') this.closeForgotPassword();
       if (id === 'btnTheme') this.toggleTheme();
       if (id === 'btnGuestTheme') this.toggleTheme();
+      if (id === 'btnSettings') this.openSettingsModal();
+      if (id === 'btnCloseSettings') this.closeSettingsModal();
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
 
       if (e.target === this.modal) this.close();
       if (e.target === this.forgotPasswordModal) this.closeForgotPassword();
+      if (e.target === this.settingsModal) this.closeSettingsModal();
 
       if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
         this.dropdown.classList.add('hidden');
@@ -237,6 +241,41 @@ export class Auth {
   async logout() {
     await authService.logout();
     this.dropdown.classList.add('hidden');
+  }
+
+  createSettingsModal() {
+    const div = document.createElement('div');
+
+    div.id = 'settingsModal';
+    div.className = 'hidden fixed inset-0 z-[60] items-center justify-center bg-black/50 p-4';
+    div.innerHTML = `
+      <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+        <button id="btnCloseSettings" type="button" aria-label="Close settings"
+          class="absolute right-3 top-3 text-xl text-gray-500 hover:text-gray-900">
+          &times;
+        </button>
+
+        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+          <i class="fa-solid fa-screwdriver-wrench text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900">Settings</h2>
+        <p class="mt-2 text-sm text-gray-500">This feature is under development.</p>
+      </div>
+    `;
+
+    document.body.appendChild(div);
+    this.settingsModal = div;
+  }
+
+  openSettingsModal() {
+    this.dropdown.classList.add('hidden');
+    this.settingsModal.classList.remove('hidden');
+    this.settingsModal.classList.add('flex');
+  }
+
+  closeSettingsModal() {
+    this.settingsModal.classList.add('hidden');
+    this.settingsModal.classList.remove('flex');
   }
 
   open() {
@@ -415,7 +454,7 @@ export class Auth {
       setTimeout(() => this.close(), 1000);
   
     } catch (err) {
-      this.message.show(err.message);
+      this.message.show(this.getFriendlyAuthError(err.code));
     }
   }
   
@@ -429,8 +468,23 @@ export class Auth {
       setTimeout(() => this.close(), 1000);
   
     } catch (err) {
-      this.message.show(err.message);
+      this.message.show(this.getFriendlyAuthError(err.code));
     }
+  }
+
+  getFriendlyAuthError(code) {
+    const messages = {
+      'auth/invalid-credential': 'Incorrect email or password.',
+      'auth/user-not-found': 'No account was found with that email address.',
+      'auth/wrong-password': 'Incorrect email or password.',
+      'auth/email-already-in-use': 'An account already exists with this email address.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/weak-password': 'Your password must be at least 6 characters long.',
+      'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
+      'auth/network-request-failed': 'Network error. Please check your connection and try again.'
+    };
+
+    return messages[code] || 'Unable to sign in right now. Please try again.';
   }
 
   createForgotPasswordModal() {
