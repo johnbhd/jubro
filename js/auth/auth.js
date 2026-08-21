@@ -464,14 +464,14 @@ export class Auth {
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
-                  <a href="/privacy" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                  <a href="/pages/privacy" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                     <span class="flex items-center justify-between gap-3">
                       <span><span class="block text-sm font-semibold text-gray-900">Privacy Policy</span><span class="mt-1 block text-xs text-gray-500">How Jubro handles information</span></span>
                       <i class="fa-solid fa-arrow-up-right-from-square text-sm text-blue-600" aria-hidden="true"></i>
                     </span>
                   </a>
 
-                  <a href="/terms" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                  <a href="/pages/terms" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
                     <span class="flex items-center justify-between gap-3">
                       <span><span class="block text-sm font-semibold text-gray-900">Terms of Service</span><span class="mt-1 block text-xs text-gray-500">Rules for using Jubro</span></span>
                       <i class="fa-solid fa-arrow-up-right-from-square text-sm text-blue-600" aria-hidden="true"></i>
