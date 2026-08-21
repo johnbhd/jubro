@@ -1054,3 +1054,121 @@ input:disabled {
 .dark #btnLogout:hover {
   background-color: rgb(127 29 29 / 0.25) !important;
 }
+
+/* Settings modal */
+.dark #settingsModal .settings-modal-panel,
+.dark #settingsModal .settings-modal-navigation {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark #settingsModal .settings-card {
+  border-color: #374151 !important;
+  background-color: #111827 !important;
+}
+
+.dark #settingsModal .settings-action-row,
+.dark #settingsModal .settings-link-card {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark #settingsModal .settings-input {
+  border-color: #4b5563 !important;
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+  color-scheme: dark;
+}
+
+.dark #settingsModal .settings-nav-button {
+  color: #d1d5db !important;
+}
+
+.dark #settingsModal .settings-nav-button:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark #settingsModal .settings-nav-button[aria-current="page"] {
+  background-color: #1d4ed8 !important;
+  color: #dbeafe !important;
+}
+
+.dark #settingsModal .settings-close-button:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark #settingsModal .settings-action-row button:not(.settings-danger-button) {
+  border-color: #4b5563 !important;
+  background-color: #111827 !important;
+  color: #e5e7eb !important;
+}
+
+.dark #settingsModal .settings-action-row button:not(.settings-danger-button):hover {
+  background-color: #374151 !important;
+}
+
+.dark #settingsModal .settings-action-row .settings-danger-button {
+  border-color: #b91c1c !important;
+  background-color: #1f2937 !important;
+  color: #fca5a5 !important;
+}
+
+.dark #settingsModal .settings-action-row .settings-danger-button:hover {
+  background-color: rgb(127 29 29 / 0.35) !important;
+}
+
+.dark #settingsModal .settings-danger-panel {
+  border-color: #991b1b !important;
+  background-color: rgb(127 29 29 / 0.25) !important;
+}
+
+.dark #settingsModal .settings-danger-panel .settings-danger-button {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.dark #settingsModal .settings-danger-panel .settings-danger-button:hover {
+  background-color: #ef4444 !important;
+}
+
+.dark #settingsModal .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark #settingsModal .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+.dark #settingsModal .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+.dark #settingsModal .text-red-800 {
+  color: #fecaca !important;
+}
+
+.dark #settingsModal .text-red-700 {
+  color: #fca5a5 !important;
+}
+
+.dark #settingsModal .bg-red-50\/60 {
+  background-color: rgb(127 29 29 / 0.25) !important;
+}
+
+.dark #settingsModal .bg-red-50 {
+  background-color: rgb(127 29 29 / 0.25) !important;
+}
+
+.dark #settingsModal .bg-red-100 {
+  background-color: rgb(127 29 29 / 0.45) !important;
+}
+
+.dark #settingsModal .bg-green-100 {
+  background-color: rgb(20 83 45 / 0.45) !important;
+}
+
+.dark #settingsModal .text-green-700 {
+  color: #86efac !important;
+}

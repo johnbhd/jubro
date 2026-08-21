@@ -8,6 +8,9 @@ export class Auth {
     this.modal = null;
     this.mode = 'login';
     this.message = new Message();
+    this.settingsSection = 'account';
+    this.settingsReturnFocus = null;
+    this.settingsBodyWasLocked = false;
     this.init();
   }
 
@@ -200,6 +203,7 @@ export class Auth {
     document.addEventListener('click', (e) => {
       const button = e.target.closest('button');
       const id = button?.id || e.target.id;
+      const sectionButton = e.target.closest('[data-settings-section]');
 
       if (id === 'btnCloseAuth') this.close();
       if (id === 'btnSwitchMode') this.toggleMode();
@@ -214,12 +218,22 @@ export class Auth {
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
 
+      if (sectionButton && this.settingsModal.contains(sectionButton)) {
+        this.setSettingsSection(sectionButton.dataset.settingsSection);
+      }
+
       if (e.target === this.modal) this.close();
       if (e.target === this.forgotPasswordModal) this.closeForgotPassword();
       if (e.target === this.settingsModal) this.closeSettingsModal();
 
       if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
         this.dropdown.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.settingsModal.classList.contains('hidden')) {
+        this.closeSettingsModal();
       }
     });
 
@@ -236,6 +250,12 @@ export class Auth {
       e.preventDefault();
       this.submitForgotPassword();
     });
+
+    this.settingsModal.addEventListener('submit', (e) => {
+      if (e.target.id !== 'settingsPasswordForm') return;
+
+      e.preventDefault();
+    });
   }
 
   async logout() {
@@ -247,35 +267,276 @@ export class Auth {
     const div = document.createElement('div');
 
     div.id = 'settingsModal';
-    div.className = 'hidden fixed inset-0 z-[60] items-center justify-center bg-black/50 p-4';
+    div.className = 'hidden fixed inset-0 z-[60] items-center justify-center bg-black/50 p-3 backdrop-blur-[2px] sm:p-6';
+    div.setAttribute('role', 'dialog');
+    div.setAttribute('aria-modal', 'true');
+    div.setAttribute('aria-labelledby', 'settings-title');
+    div.setAttribute('aria-hidden', 'true');
     div.innerHTML = `
-      <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
-        <button id="btnCloseSettings" type="button" aria-label="Close settings"
-          class="absolute right-3 top-3 text-xl text-gray-500 hover:text-gray-900">
-          &times;
-        </button>
+      <div class="settings-modal-panel flex max-h-[calc(100vh-1.5rem)] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]">
+        <header class="flex shrink-0 items-start justify-between gap-4 border-b border-gray-200 px-5 py-5 sm:px-7 sm:py-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-600">Account preferences</p>
+            <h2 id="settings-title" class="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Settings</h2>
+            <p class="mt-2 max-w-xl text-sm leading-6 text-gray-500">Manage your account preferences and review how your Jubro data is handled.</p>
+          </div>
 
-        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-          <i class="fa-solid fa-screwdriver-wrench text-2xl"></i>
+          <button id="btnCloseSettings" type="button" aria-label="Close settings"
+            class="settings-close-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <div class="flex min-h-0 flex-1 flex-col md:flex-row">
+          <nav class="settings-modal-navigation shrink-0 border-b border-gray-200 p-3 md:w-60 md:border-b-0 md:border-r md:p-4" aria-label="Settings sections">
+            <div class="flex gap-2 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
+              <button id="settings-nav-account" type="button" data-settings-section="account" aria-controls="settings-panel-account" aria-current="page"
+                class="settings-nav-button min-w-max rounded-xl bg-blue-50 px-3 py-3 text-left text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:min-w-0">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-user w-4 text-center" aria-hidden="true"></i>Account</span>
+              </button>
+
+              <button id="settings-nav-sync" type="button" data-settings-section="sync" aria-controls="settings-panel-sync"
+                class="settings-nav-button min-w-max rounded-xl px-3 py-3 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:min-w-0">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-cloud-arrow-up w-4 text-center" aria-hidden="true"></i>Data &amp; Sync</span>
+              </button>
+
+              <button id="settings-nav-data" type="button" data-settings-section="data" aria-controls="settings-panel-data"
+                class="settings-nav-button min-w-max rounded-xl px-3 py-3 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:min-w-0">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-database w-4 text-center" aria-hidden="true"></i>Data Management</span>
+              </button>
+
+              <button id="settings-nav-privacy" type="button" data-settings-section="privacy" aria-controls="settings-panel-privacy"
+                class="settings-nav-button min-w-max rounded-xl px-3 py-3 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:min-w-0">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-shield-halved w-4 text-center" aria-hidden="true"></i>Privacy</span>
+              </button>
+
+              <button id="settings-nav-danger" type="button" data-settings-section="danger" aria-controls="settings-panel-danger"
+                class="settings-nav-button min-w-max rounded-xl px-3 py-3 text-left text-sm font-medium text-gray-600 transition hover:bg-gray-50 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 md:min-w-0">
+                <span class="flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation w-4 text-center" aria-hidden="true"></i>Danger Zone</span>
+              </button>
+            </div>
+          </nav>
+
+          <div id="settingsPanels" class="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
+            <section id="settings-panel-account" data-settings-panel="account" role="tabpanel" aria-labelledby="settings-nav-account">
+              <div class="max-w-2xl space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Account</h3>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Review your account details and update your password.</p>
+                </div>
+
+                <div class="settings-card rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:p-5">
+                  <label for="settingsEmail" class="block text-sm font-semibold text-gray-900">Email address</label>
+                  <input id="settingsEmail" type="email" readonly placeholder="Signed-in account"
+                    class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 outline-none" />
+                  <p class="mt-2 text-xs leading-5 text-gray-500">Your email is used to identify your Jubro account.</p>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6">
+                  <h4 class="text-base font-semibold text-gray-900">Change Password</h4>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Password updates will be connected to your account in a future release.</p>
+
+                  <form id="settingsPasswordForm" class="mt-5 space-y-4">
+                    <div>
+                      <label for="settingsCurrentPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
+                      <input id="settingsCurrentPassword" type="password" autocomplete="current-password"
+                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                    </div>
+
+                    <div>
+                      <label for="settingsNewPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+                      <input id="settingsNewPassword" type="password" autocomplete="new-password"
+                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                    </div>
+
+                    <div>
+                      <label for="settingsConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
+                      <input id="settingsConfirmPassword" type="password" autocomplete="new-password"
+                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                    </div>
+
+                    <button type="submit" class="theme-create-button inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
+                      Change Password
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <section id="settings-panel-sync" data-settings-panel="sync" role="tabpanel" aria-labelledby="settings-nav-sync" hidden>
+              <div class="max-w-2xl space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Data &amp; Sync</h3>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">See whether your Jubro data is connected to your account.</p>
+                </div>
+
+                <div class="settings-card rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                  <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900">Account sync status</h4>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Your Jubro data is synced with your account.</p>
+                    </div>
+                    <span class="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-xs font-semibold text-green-700">
+                      <span class="h-2 w-2 rounded-full bg-green-500" aria-hidden="true"></span>Synced
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="settings-panel-data" data-settings-panel="data" role="tabpanel" aria-labelledby="settings-nav-data" hidden>
+              <div class="max-w-2xl space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Data Management</h3>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Manage a copy of your tracker data or clear it from Jubro.</p>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900">Export Data</h4>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Download a copy of your saved trackers and applications.</p>
+                    </div>
+                    <button type="button" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Export Data</button>
+                  </div>
+                  <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h4 class="text-sm font-semibold text-gray-900">Import Data</h4>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Import your copy of your saved trackers and applications.</p>
+                    </div>
+                    <button type="button" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Import Data</button>
+                  </div>
+
+                  <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-red-200 bg-red-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h4 class="text-sm font-semibold text-red-800">Delete Application Data</h4>
+                      <p class="mt-1 text-sm leading-6 text-red-700">Remove saved application data from Jubro.</p>
+                    </div>
+                    <button type="button" class="settings-danger-button inline-flex shrink-0 items-center justify-center rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete Application Data</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section id="settings-panel-privacy" data-settings-panel="privacy" role="tabpanel" aria-labelledby="settings-nav-privacy" hidden>
+              <div class="max-w-2xl space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Privacy</h3>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Learn how Jubro handles your account and tracker information.</p>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <a href="/privacy" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <span class="flex items-center justify-between gap-3">
+                      <span><span class="block text-sm font-semibold text-gray-900">Privacy Policy</span><span class="mt-1 block text-xs text-gray-500">How Jubro handles information</span></span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-sm text-blue-600" aria-hidden="true"></i>
+                    </span>
+                  </a>
+
+                  <a href="/terms" class="settings-link-card rounded-2xl border border-gray-200 p-4 transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    <span class="flex items-center justify-between gap-3">
+                      <span><span class="block text-sm font-semibold text-gray-900">Terms of Service</span><span class="mt-1 block text-xs text-gray-500">Rules for using Jubro</span></span>
+                      <i class="fa-solid fa-arrow-up-right-from-square text-sm text-blue-600" aria-hidden="true"></i>
+                    </span>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            <section id="settings-panel-danger" data-settings-panel="danger" role="tabpanel" aria-labelledby="settings-nav-danger" hidden>
+              <div class="max-w-2xl space-y-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-red-800">Danger Zone</h3>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">These actions can permanently affect your Jubro account.</p>
+                </div>
+
+                <div class="settings-danger-panel rounded-2xl border border-red-200 bg-red-50 p-5">
+                  <div class="flex items-start gap-3">
+                    <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-semibold text-red-800">Delete Account</h4>
+                      <p class="mt-1 text-sm leading-6 text-red-700">Permanently delete your Jubro account and all associated data.</p>
+                    </div>
+                  </div>
+                  <button type="button" class="settings-danger-button mt-5 inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete Account</button>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
-        <h2 class="text-xl font-semibold text-gray-900">Settings</h2>
-        <p class="mt-2 text-sm text-gray-500">This feature is under development.</p>
       </div>
     `;
 
     document.body.appendChild(div);
     this.settingsModal = div;
+    this.setSettingsSection(this.settingsSection);
   }
 
   openSettingsModal() {
+    if (this.settingsModal.classList.contains('hidden')) {
+      this.settingsReturnFocus = document.activeElement;
+      this.settingsBodyWasLocked = document.body.classList.contains('overflow-hidden');
+    }
+
     this.dropdown.classList.add('hidden');
     this.settingsModal.classList.remove('hidden');
     this.settingsModal.classList.add('flex');
+    this.settingsModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('overflow-hidden');
+
+    const currentUser = authService.getCurrentUser();
+    const email = currentUser?.email || document.getElementById('userEmail')?.textContent || '';
+    const emailInput = document.getElementById('settingsEmail');
+
+    if (emailInput) emailInput.value = email;
+
+    this.setSettingsSection(this.settingsSection);
+    window.requestAnimationFrame(() => document.getElementById('btnCloseSettings')?.focus());
   }
 
   closeSettingsModal() {
     this.settingsModal.classList.add('hidden');
     this.settingsModal.classList.remove('flex');
+    this.settingsModal.setAttribute('aria-hidden', 'true');
+
+    if (!this.settingsBodyWasLocked) {
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    const returnFocus = this.settingsReturnFocus;
+    this.settingsReturnFocus = null;
+    returnFocus?.focus?.();
+  }
+
+  setSettingsSection(sectionName) {
+    const sections = ['account', 'sync', 'data', 'privacy', 'danger'];
+    const activeSection = sections.includes(sectionName) ? sectionName : 'account';
+    const activeClasses = ['bg-blue-50', 'font-semibold', 'text-blue-700', 'shadow-sm'];
+    const inactiveClasses = ['font-medium', 'text-gray-600', 'hover:bg-gray-50', 'hover:text-gray-900'];
+
+    this.settingsSection = activeSection;
+
+    this.settingsModal.querySelectorAll('[data-settings-section]').forEach((button) => {
+      const isActive = button.dataset.settingsSection === activeSection;
+
+      button.classList.remove(...activeClasses, ...inactiveClasses);
+      button.classList.add(...(isActive ? activeClasses : inactiveClasses));
+
+      if (isActive) {
+        button.setAttribute('aria-current', 'page');
+      } else {
+        button.removeAttribute('aria-current');
+      }
+    });
+
+    this.settingsModal.querySelectorAll('[data-settings-panel]').forEach((panel) => {
+      const isActive = panel.dataset.settingsPanel === activeSection;
+
+      panel.hidden = !isActive;
+      panel.setAttribute('aria-hidden', String(!isActive));
+    });
   }
 
   open() {
