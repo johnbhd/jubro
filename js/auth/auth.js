@@ -1,5 +1,7 @@
 import { authService } from "./firebaseAuth.js";
 import { Message } from "./message.js";
+import { Storage } from "../storage/storage.js";
+import { JSONService } from "../services/jsonService.js";
 
 const THEME_KEY = 'jubro_theme';
 
@@ -12,6 +14,8 @@ export class Auth {
     this.settingsReturnFocus = null;
     this.settingsBodyWasLocked = false;
     this.passwordUpdateInProgress = false;
+    this.exportInProgress = false;
+    this.jsonService = new JSONService();
     this.init();
   }
 
@@ -215,6 +219,7 @@ export class Auth {
       if (id === 'btnGuestTheme') this.toggleTheme();
       if (id === 'btnSettings') this.openSettingsModal();
       if (id === 'btnCloseSettings') this.closeSettingsModal();
+      if (id === 'btnExportJubroData') this.exportAllJubroData();
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
@@ -421,10 +426,10 @@ export class Auth {
                 <div class="space-y-3">
                   <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h4 class="text-sm font-semibold text-gray-900">Export Data</h4>
-                      <p class="mt-1 text-sm leading-6 text-gray-500">Download a copy of your saved trackers and applications.</p>
+                      <h4 class="text-sm font-semibold text-gray-900">Export your data</h4>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Download a backup of all your trackers and applications.</p>
                     </div>
-                    <button type="button" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Export Data</button>
+                    <button id="btnExportJubroData" type="button" aria-describedby="settingsDataMessage" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:opacity-60">Export Data</button>
                   </div>
                   <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -442,6 +447,7 @@ export class Auth {
                     <button type="button" class="settings-danger-button inline-flex shrink-0 items-center justify-center rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete Application Data</button>
                   </div>
                 </div>
+                <p id="settingsDataMessage" class="min-h-5 text-sm" role="status" aria-live="polite"></p>
               </div>
             </section>
 
@@ -669,6 +675,70 @@ export class Auth {
     } finally {
       this.passwordUpdateInProgress = false;
       this.setPasswordLoadingState(false);
+    }
+  }
+
+  getAllUserTrackers() {
+    const state = Storage.load();
+
+    if (!state || typeof state !== 'object' || !state.data || typeof state.data !== 'object') {
+      throw new Error('Unable to read Jubro tracker data.');
+    }
+
+    return state;
+  }
+
+  showDataMessage(text, type = 'error') {
+    const message = document.getElementById('settingsDataMessage');
+
+    if (!message) return;
+
+    message.textContent = text;
+    message.classList.remove('text-red-700', 'text-green-700');
+
+    if (text) {
+      message.classList.add(type === 'success' ? 'text-green-700' : 'text-red-700');
+    }
+  }
+
+  setExportLoadingState(isLoading) {
+    const button = document.getElementById('btnExportJubroData');
+
+    if (!button) return;
+
+    button.disabled = isLoading;
+    button.setAttribute('aria-busy', String(isLoading));
+    button.textContent = isLoading ? 'Exporting...' : 'Export Data';
+  }
+
+  async exportAllJubroData() {
+    if (this.exportInProgress) return;
+
+    this.exportInProgress = true;
+    this.showDataMessage('');
+    this.setExportLoadingState(true);
+
+    try {
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+      const state = this.getAllUserTrackers();
+      const date = new Date().toISOString().slice(0, 10);
+      const filename = `jubro-backup-${date}.json`;
+
+      this.jsonService.exportAll(state, filename);
+
+      const trackerCount = Object.keys(state.data).length;
+      const message = trackerCount
+        ? 'Your Jubro backup is ready to download.'
+        : 'No trackers were found. An empty Jubro backup was downloaded.';
+
+      this.showDataMessage(message, 'success');
+    } catch (error) {
+      console.error('Jubro data export failed:', error);
+      this.showDataMessage('Something went wrong while exporting your data. Please try again.');
+    } finally {
+      this.exportInProgress = false;
+      this.setExportLoadingState(false);
     }
   }
 
