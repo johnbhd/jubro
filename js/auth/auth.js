@@ -11,6 +11,7 @@ export class Auth {
     this.settingsSection = 'account';
     this.settingsReturnFocus = null;
     this.settingsBodyWasLocked = false;
+    this.passwordUpdateInProgress = false;
     this.init();
   }
 
@@ -217,6 +218,9 @@ export class Auth {
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
+      if (id === 'btnToggleSettingsCurrentPassword') this.togglePassword('settingsCurrentPassword', 'btnToggleSettingsCurrentPassword');
+      if (id === 'btnToggleSettingsNewPassword') this.togglePassword('settingsNewPassword', 'btnToggleSettingsNewPassword');
+      if (id === 'btnToggleSettingsConfirmPassword') this.togglePassword('settingsConfirmPassword', 'btnToggleSettingsConfirmPassword');
 
       if (sectionButton && this.settingsModal.contains(sectionButton)) {
         this.setSettingsSection(sectionButton.dataset.settingsSection);
@@ -254,7 +258,7 @@ export class Auth {
     this.settingsModal.addEventListener('submit', (e) => {
       if (e.target.id !== 'settingsPasswordForm') return;
 
-      e.preventDefault();
+      this.changeUserPassword(e);
     });
   }
 
@@ -334,28 +338,51 @@ export class Auth {
 
                 <div class="border-t border-gray-200 pt-6">
                   <h4 class="text-base font-semibold text-gray-900">Change Password</h4>
-                  <p class="mt-1 text-sm leading-6 text-gray-500">Password updates will be connected to your account in a future release.</p>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Re-enter your current password to securely set a new one.</p>
 
-                  <form id="settingsPasswordForm" class="mt-5 space-y-4">
+                  <form id="settingsPasswordForm" class="mt-5 space-y-4" novalidate>
                     <div>
                       <label for="settingsCurrentPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
-                      <input id="settingsCurrentPassword" type="password" autocomplete="current-password"
-                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                      <div class="relative mt-2">
+                        <input id="settingsCurrentPassword" type="password" autocomplete="current-password"
+                          aria-describedby="settingsPasswordMessage"
+                          class="settings-input w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-11 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                        <button id="btnToggleSettingsCurrentPassword" type="button" aria-label="Show current password"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </div>
                     </div>
 
                     <div>
                       <label for="settingsNewPassword" class="block text-sm font-medium text-gray-700">New Password</label>
-                      <input id="settingsNewPassword" type="password" autocomplete="new-password"
-                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                      <div class="relative mt-2">
+                        <input id="settingsNewPassword" type="password" autocomplete="new-password"
+                          aria-describedby="settingsPasswordMessage"
+                          class="settings-input w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-11 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                        <button id="btnToggleSettingsNewPassword" type="button" aria-label="Show new password"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </div>
                     </div>
 
                     <div>
                       <label for="settingsConfirmPassword" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                      <input id="settingsConfirmPassword" type="password" autocomplete="new-password"
-                        class="settings-input mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                      <div class="relative mt-2">
+                        <input id="settingsConfirmPassword" type="password" autocomplete="new-password"
+                          aria-describedby="settingsPasswordMessage"
+                          class="settings-input w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-11 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+                        <button id="btnToggleSettingsConfirmPassword" type="button" aria-label="Show confirmation password"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                        </button>
+                      </div>
                     </div>
 
-                    <button type="submit" class="theme-create-button inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">
+                    <p id="settingsPasswordMessage" class="min-h-5 text-sm" role="status" aria-live="polite"></p>
+
+                    <button id="btnChangePassword" type="submit" class="theme-create-button inline-flex items-center justify-center rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:opacity-60">
                       Change Password
                     </button>
                   </form>
@@ -539,6 +566,112 @@ export class Auth {
     });
   }
 
+  validatePasswordForm() {
+    const currentPassword = document.getElementById('settingsCurrentPassword')?.value || '';
+    const newPassword = document.getElementById('settingsNewPassword')?.value || '';
+    const confirmPassword = document.getElementById('settingsConfirmPassword')?.value || '';
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return { valid: false, message: 'Please fill in all password fields.' };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { valid: false, message: 'New passwords do not match.' };
+    }
+
+    if (newPassword.length < 6) {
+      return { valid: false, message: 'Your new password must be at least 6 characters.' };
+    }
+
+    if (newPassword === currentPassword) {
+      return { valid: false, message: 'Your new password must be different from your current password.' };
+    }
+
+    return {
+      valid: true,
+      currentPassword,
+      newPassword
+    };
+  }
+
+  showPasswordMessage(text, type = 'error') {
+    const message = document.getElementById('settingsPasswordMessage');
+
+    if (!message) return;
+
+    message.textContent = text;
+    message.classList.remove('text-red-700', 'text-green-700');
+
+    if (text) {
+      message.classList.add(type === 'success' ? 'text-green-700' : 'text-red-700');
+    }
+  }
+
+  setPasswordLoadingState(isLoading) {
+    const form = document.getElementById('settingsPasswordForm');
+    const button = document.getElementById('btnChangePassword');
+
+    if (!form || !button) return;
+
+    form.setAttribute('aria-busy', String(isLoading));
+    form.querySelectorAll('input, button').forEach((control) => {
+      control.disabled = isLoading;
+    });
+    button.textContent = isLoading ? 'Updating...' : 'Change Password';
+  }
+
+  getFriendlyPasswordError(error) {
+    const messages = {
+      'auth/invalid-credential': 'Your current password is incorrect.',
+      'auth/wrong-password': 'Your current password is incorrect.',
+      'auth/user-mismatch': 'Your current password is incorrect.',
+      'auth/weak-password': 'Your new password must be at least 6 characters.',
+      'auth/no-current-user': 'No signed-in account was found. Please sign in again.',
+      'auth/no-email': 'This account cannot change its password from Settings.',
+      'auth/password-provider-required': 'Password changes are available for email and password accounts.',
+      'auth/requires-recent-login': 'Please sign in again before changing your password.',
+      'auth/network-request-failed': 'Network error. Check your connection and try again.',
+      'auth/too-many-requests': 'Too many attempts. Please wait and try again.',
+      'auth/user-disabled': 'This account has been disabled.',
+      'auth/operation-not-allowed': 'Password changes are not available for this account.'
+    };
+
+    return messages[error?.code] || 'Something went wrong. Please try again.';
+  }
+
+  async changeUserPassword(event) {
+    event.preventDefault();
+
+    if (this.passwordUpdateInProgress) return;
+
+    const validation = this.validatePasswordForm();
+
+    if (!validation.valid) {
+      this.showPasswordMessage(validation.message);
+      return;
+    }
+
+    if (!authService.getCurrentUser()) {
+      this.showPasswordMessage('No signed-in account was found. Please sign in again.');
+      return;
+    }
+
+    this.passwordUpdateInProgress = true;
+    this.showPasswordMessage('');
+    this.setPasswordLoadingState(true);
+
+    try {
+      await authService.changePassword(validation.currentPassword, validation.newPassword);
+      document.getElementById('settingsPasswordForm')?.reset();
+      this.showPasswordMessage('Password updated successfully.', 'success');
+    } catch (error) {
+      this.showPasswordMessage(this.getFriendlyPasswordError(error));
+    } finally {
+      this.passwordUpdateInProgress = false;
+      this.setPasswordLoadingState(false);
+    }
+  }
+
   open() {
     this.modal.classList.remove('hidden');
   }
@@ -686,6 +819,7 @@ export class Auth {
     input.type = isHidden ? 'text' : 'password';
     icon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
     button.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+    button.setAttribute('aria-pressed', String(isHidden));
   }
 
   async submit() {

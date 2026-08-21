@@ -5,6 +5,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -79,6 +82,37 @@ class FirebaseAuthService {
 
   resetPassword(email) {
     return sendPasswordResetEmail(this.auth, email);
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      const error = new Error('No authenticated user.');
+      error.code = 'auth/no-current-user';
+      throw error;
+    }
+
+    if (!user.email) {
+      const error = new Error('The current account does not have an email address.');
+      error.code = 'auth/no-email';
+      throw error;
+    }
+
+    const hasPasswordProvider = user.providerData?.some(
+      ({ providerId }) => providerId === 'password'
+    );
+
+    if (!hasPasswordProvider) {
+      const error = new Error('Password changes require an email and password account.');
+      error.code = 'auth/password-provider-required';
+      throw error;
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
   }
 
   async logout() {
