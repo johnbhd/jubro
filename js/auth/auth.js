@@ -2,6 +2,7 @@ import { authService } from "./firebaseAuth.js";
 import { Message } from "./message.js";
 import { Storage } from "../storage/storage.js";
 import { JSONService } from "../services/jsonService.js";
+import { firebaseTrackerSync } from "../storage/firebaseTrackerSync.js";
 
 const THEME_KEY = 'jubro_theme';
 
@@ -15,6 +16,8 @@ export class Auth {
     this.settingsBodyWasLocked = false;
     this.passwordUpdateInProgress = false;
     this.exportInProgress = false;
+    this.importInProgress = false;
+    this.deleteDataInProgress = false;
     this.jsonService = new JSONService();
     this.init();
   }
@@ -220,6 +223,8 @@ export class Auth {
       if (id === 'btnSettings') this.openSettingsModal();
       if (id === 'btnCloseSettings') this.closeSettingsModal();
       if (id === 'btnExportJubroData') this.exportAllJubroData();
+      if (id === 'btnImportJubroData') this.importAllJubroData();
+      if (id === 'btnDeleteJubroData') this.deleteAllJubroData();
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
@@ -436,7 +441,7 @@ export class Auth {
                       <h4 class="text-sm font-semibold text-gray-900">Import Data</h4>
                       <p class="mt-1 text-sm leading-6 text-gray-500">Import your copy of your saved trackers and applications.</p>
                     </div>
-                    <button type="button" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Import Data</button>
+                    <button id="btnImportJubroData" type="button" aria-describedby="settingsDataMessage" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:opacity-60">Import Data</button>
                   </div>
 
                   <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-red-200 bg-red-50/60 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -444,7 +449,7 @@ export class Auth {
                       <h4 class="text-sm font-semibold text-red-800">Delete Application Data</h4>
                       <p class="mt-1 text-sm leading-6 text-red-700">Remove saved application data from Jubro.</p>
                     </div>
-                    <button type="button" class="settings-danger-button inline-flex shrink-0 items-center justify-center rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete Application Data</button>
+                    <button id="btnDeleteJubroData" type="button" aria-describedby="settingsDataMessage" class="settings-danger-button inline-flex shrink-0 items-center justify-center rounded-xl border border-red-300 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60">Delete Application Data</button>
                   </div>
                 </div>
                 <p id="settingsDataMessage" class="min-h-5 text-sm" role="status" aria-live="polite"></p>
@@ -739,6 +744,125 @@ export class Auth {
     } finally {
       this.exportInProgress = false;
       this.setExportLoadingState(false);
+    }
+  }
+
+  setImportLoadingState(isLoading) {
+    const button = document.getElementById('btnImportJubroData');
+
+    if (!button) return;
+
+    button.disabled = isLoading;
+    button.setAttribute('aria-busy', String(isLoading));
+    button.textContent = isLoading ? 'Importing...' : 'Import Data';
+  }
+
+  setDeleteDataLoadingState(isLoading) {
+    const button = document.getElementById('btnDeleteJubroData');
+
+    if (!button) return;
+
+    button.disabled = isLoading;
+    button.setAttribute('aria-busy', String(isLoading));
+    button.textContent = isLoading ? 'Deleting...' : 'Delete Application Data';
+  }
+
+  notifyTrackerDataChanged(user) {
+    document.dispatchEvent(new CustomEvent('tracker:sync-complete', {
+      detail: { userId: user?.uid || null }
+    }));
+  }
+
+  async importAllJubroData() {
+    if (this.importInProgress) return;
+
+    this.importInProgress = true;
+    this.showDataMessage('');
+    this.setImportLoadingState(true);
+
+    try {
+      const importedState = await this.jsonService.importAll();
+
+      if (!importedState) return;
+
+      const trackerCount = Object.keys(importedState.data).length;
+      const confirmed = window.confirm(
+        `Import ${trackerCount} tracker${trackerCount === 1 ? '' : 's'} and replace your current Jubro data?`
+      );
+
+      if (!confirmed) {
+        this.showDataMessage('Import cancelled.', 'success');
+        return;
+      }
+
+      const user = authService.getCurrentUser();
+      Storage.save(importedState);
+      this.notifyTrackerDataChanged(user);
+
+      if (user) {
+        try {
+          await firebaseTrackerSync.syncCurrentLocalState(user);
+        } catch (error) {
+          console.error('Imported Jubro data locally, but Firebase sync failed:', error);
+          this.showDataMessage('Data was imported locally, but syncing to your account failed. Please try again.');
+          return;
+        }
+      }
+
+      this.showDataMessage(
+        `Imported ${trackerCount} tracker${trackerCount === 1 ? '' : 's'} successfully.`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Jubro data import failed:', error);
+      this.showDataMessage('Something went wrong while importing your data. Please choose a valid Jubro backup.');
+    } finally {
+      this.importInProgress = false;
+      this.setImportLoadingState(false);
+    }
+  }
+
+  async deleteAllJubroData() {
+    if (this.deleteDataInProgress) return;
+
+    const confirmed = window.confirm(
+      'Delete all Jubro trackers and applications? This cannot be undone.'
+    );
+
+    if (!confirmed) {
+      this.showDataMessage('Delete cancelled.', 'success');
+      return;
+    }
+
+    this.deleteDataInProgress = true;
+    this.showDataMessage('');
+    this.setDeleteDataLoadingState(true);
+
+    const emptyState = { active: null, data: {} };
+    const user = authService.getCurrentUser();
+    let localDataCleared = false;
+
+    try {
+      Storage.save(emptyState);
+      localDataCleared = true;
+      this.notifyTrackerDataChanged(user);
+
+      if (user) {
+        await firebaseTrackerSync.clearTrackerData(user);
+      }
+
+      this.showDataMessage('All Jubro application data was deleted.', 'success');
+    } catch (error) {
+      console.error('Jubro application data deletion failed:', error);
+
+      if (localDataCleared && user) {
+        this.showDataMessage('Local data was deleted, but cloud data could not be deleted. Please try again.');
+      } else {
+        this.showDataMessage('Something went wrong while deleting your data. Please try again.');
+      }
+    } finally {
+      this.deleteDataInProgress = false;
+      this.setDeleteDataLoadingState(false);
     }
   }
 

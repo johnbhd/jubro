@@ -2,6 +2,8 @@ import {
   getFirestore,
   doc,
   getDoc,
+  deleteDoc,
+  deleteField,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
@@ -200,6 +202,17 @@ class FirebaseTrackerSync {
 
     const state = Storage.load();
     await this.uploadLocalState(user, state);
+  }
+
+  async clearTrackerData(user) {
+    if (!user) return;
+
+    await Promise.all([
+      deleteDoc(doc(this.db, "trackerData", user.uid)),
+      setDoc(doc(this.db, "users", user.uid), {
+        trackerData: deleteField()
+      }, { merge: true })
+    ]);
   }
 
   async deleteTracker(user, trackerId) {
