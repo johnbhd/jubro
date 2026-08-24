@@ -202,14 +202,28 @@ class FirebaseAuthService {
     this.syncedUserId = null;
   }
 
-  onAuthChange(callback) {
+  onAuthChange(callback, options = {}) {
+    const { waitForSync = true } = options;
+
     return onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        await this.syncTrackerData(user);
-      } else {
-        this.syncedUserId = null;
+      if (waitForSync) {
+        if (user) {
+          await this.syncTrackerData(user);
+        } else {
+          this.syncedUserId = null;
+        }
+
+        callback(user);
+        return;
       }
 
+      if (user) {
+        callback(user);
+        await this.syncTrackerData(user);
+        return;
+      }
+
+      this.syncedUserId = null;
       callback(user);
     });
   }

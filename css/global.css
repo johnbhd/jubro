@@ -1017,6 +1017,20 @@ input:disabled {
   background-color: #374151 !important;
 }
 
+.dark #btnAccount {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+
+.dark #btnAccount:hover {
+  background-color: #374151 !important;
+}
+
+.dark #navbarAuthLoading {
+  background-color: #1f2937 !important;
+}
+
 .dark #authModal h2,
 .dark #forgotPasswordModal h2,
 .dark #forgotPasswordModal p,

@@ -160,39 +160,72 @@ export class Auth {
   }
 
   listenAuth() {
+    this.setNavbarAuthState('loading');
+
     authService.onAuthChange((user) => {
-      const btn = document.getElementById('btnSignIn');
-
-      if (!btn) return;
-
       if (user) {
-        const guestTheme = document.getElementById('btnGuestTheme');
-        guestTheme?.classList.add('hidden');
-        guestTheme?.classList.remove('inline-flex');
+        const accountButton = document.getElementById('btnAccount');
 
-        btn.innerHTML = `
+        if (!accountButton) return;
+
+        accountButton.innerHTML = `
           <i class="fa-solid fa-user mr-2 shrink-0"></i>
           <span class="min-w-0 truncate">${user.displayName || 'Account'}</span>
         `;
 
-        btn.onclick = (e) => {
+        accountButton.onclick = (e) => {
           e.stopPropagation();
-          this.toggleDropdown(btn, user);
+          this.toggleDropdown(accountButton, user);
         };
-      } else {
-        const guestTheme = document.getElementById('btnGuestTheme');
-        guestTheme?.classList.remove('hidden');
-        guestTheme?.classList.add('inline-flex');
 
-        btn.innerHTML = `
+        this.setNavbarAuthState('authenticated');
+      } else {
+        const signInButton = document.getElementById('btnSignIn');
+
+        if (!signInButton) return;
+
+        signInButton.innerHTML = `
           <i class="fa-solid fa-user mr-2"></i>
           Sign In
         `;
 
-        btn.onclick = () => this.open();
+        signInButton.onclick = () => this.open();
         this.dropdown.classList.add('hidden');
+        this.setNavbarAuthState('guest');
       }
+    }, { waitForSync: false });
+  }
+
+  setNavbarAuthState(state) {
+    const loadingState = document.getElementById('navbarAuthLoading');
+    const guestState = document.getElementById('navbarGuest');
+    const authenticatedState = document.getElementById('navbarAuthenticated');
+    const guestTheme = document.getElementById('btnGuestTheme');
+    const states = {
+      loading: loadingState,
+      guest: guestState,
+      authenticated: authenticatedState
+    };
+
+    Object.entries(states).forEach(([stateName, element]) => {
+      if (!element) return;
+
+      const isVisible = stateName === state;
+      element.classList.toggle('hidden', !isVisible);
+      if (stateName === 'loading') {
+        element.classList.toggle('inline-flex', isVisible);
+      }
+      element.setAttribute('aria-hidden', String(!isVisible));
     });
+
+    const isGuest = state === 'guest';
+    guestTheme?.classList.toggle('hidden', !isGuest);
+    guestTheme?.classList.toggle('inline-flex', isGuest);
+    loadingState?.setAttribute('aria-busy', String(state === 'loading'));
+    if (guestTheme) {
+      guestTheme.disabled = !isGuest;
+      guestTheme.setAttribute('aria-hidden', String(!isGuest));
+    }
   }
 
   toggleDropdown(btn, user) {
@@ -252,7 +285,9 @@ export class Auth {
       if (e.target === this.settingsModal) this.closeSettingsModal();
       if (e.target === this.deleteAccountModal) this.closeDeleteAccountModal();
 
-      if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
+      const accountButton = document.getElementById('btnAccount');
+
+      if (!this.dropdown.contains(e.target) && !accountButton?.contains(e.target)) {
         this.dropdown.classList.add('hidden');
       }
     });
