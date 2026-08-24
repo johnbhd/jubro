@@ -164,6 +164,10 @@ input:disabled {
   color: #e5e7eb !important;
 }
 
+.dark .delete-account-title {
+  color: #ffffff !important;
+}
+
 .dark .border,
 .dark .border-gray-100,
 .dark .border-gray-200,

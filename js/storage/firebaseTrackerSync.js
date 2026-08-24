@@ -7,6 +7,8 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 import { app } from "../firebase/firebaseApp.js";
 import { Storage } from "./storage.js";
 
@@ -30,6 +32,7 @@ export function hasValidTrackerData(state) {
 class FirebaseTrackerSync {
   constructor() {
     this.db = getFirestore(app);
+    this.auth = getAuth(app);
   }
 
   clone(value) {
@@ -212,6 +215,25 @@ class FirebaseTrackerSync {
       setDoc(doc(this.db, "users", user.uid), {
         trackerData: deleteField()
       }, { merge: true })
+    ]);
+  }
+
+  async deleteCurrentUserData(expectedUser) {
+    const user = this.auth.currentUser;
+
+    if (!user?.uid || !expectedUser?.uid || user.uid !== expectedUser.uid) {
+      const error = new Error('No authenticated user.');
+      error.code = expectedUser?.uid
+        ? 'auth/user-changed-during-deletion'
+        : 'auth/no-current-user';
+      throw error;
+    }
+
+    const uid = user.uid;
+
+    await Promise.all([
+      deleteDoc(doc(this.db, "trackerData", uid)),
+      deleteDoc(doc(this.db, "users", uid))
     ]);
   }
 

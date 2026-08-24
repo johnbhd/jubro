@@ -18,6 +18,8 @@ export class Auth {
     this.exportInProgress = false;
     this.importInProgress = false;
     this.deleteDataInProgress = false;
+    this.deleteAccountInProgress = false;
+    this.deleteAccountSucceeded = false;
     this.jsonService = new JSONService();
     this.init();
   }
@@ -27,6 +29,7 @@ export class Auth {
     this.createModal();
     this.createForgotPasswordModal();
     this.createSettingsModal();
+    this.createDeleteAccountModal();
     this.createSyncConflictModal();
     this.createDropdown();
     authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
@@ -225,6 +228,14 @@ export class Auth {
       if (id === 'btnExportJubroData') this.exportAllJubroData();
       if (id === 'btnImportJubroData') this.importAllJubroData();
       if (id === 'btnDeleteJubroData') this.deleteAllJubroData();
+      if (id === 'btnDeleteAccount') this.openDeleteAccountModal();
+      if (id === 'btnCloseDeleteAccount' || id === 'btnCancelDeleteAccount' || id === 'btnCancelDeleteAccountConfirmation' || id === 'btnCancelDeleteAccountReauth' || id === 'btnCancelDeleteAccountGoogle' || id === 'btnCancelDeleteAccountUnsupported') {
+        this.closeDeleteAccountModal();
+      }
+      if (id === 'btnContinueDeleteAccount') this.showDeleteAccountConfirmationStep();
+      if (id === 'btnContinueDeleteAccountReauth') this.showDeleteAccountReauthStep();
+      if (id === 'btnReauthenticateDeleteGoogle') this.reauthenticateDeleteAccountWithGoogle();
+      if (id === 'btnToggleDeleteAccountPassword') this.togglePassword('deleteAccountPassword', 'btnToggleDeleteAccountPassword');
       if (id === 'btnLogout') this.logout();
       if (id === 'btnTogglePassword') this.togglePassword('authPassword', 'btnTogglePassword');
       if (id === 'btnToggleConfirmPassword') this.togglePassword('authConfirmPassword', 'btnToggleConfirmPassword');
@@ -239,6 +250,7 @@ export class Auth {
       if (e.target === this.modal) this.close();
       if (e.target === this.forgotPasswordModal) this.closeForgotPassword();
       if (e.target === this.settingsModal) this.closeSettingsModal();
+      if (e.target === this.deleteAccountModal) this.closeDeleteAccountModal();
 
       if (!this.dropdown.contains(e.target) && e.target.id !== 'btnSignIn') {
         this.dropdown.classList.add('hidden');
@@ -246,6 +258,11 @@ export class Auth {
     });
 
     document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !this.deleteAccountModal.classList.contains('hidden')) {
+        this.closeDeleteAccountModal();
+        return;
+      }
+
       if (e.key === 'Escape' && !this.settingsModal.classList.contains('hidden')) {
         this.closeSettingsModal();
       }
@@ -269,6 +286,20 @@ export class Auth {
       if (e.target.id !== 'settingsPasswordForm') return;
 
       this.changeUserPassword(e);
+    });
+
+    this.deleteAccountModal.addEventListener('submit', (e) => {
+      if (e.target.id !== 'deleteAccountReauthForm') return;
+
+      this.submitDeleteAccountReauthentication(e);
+    });
+
+    document.getElementById('deleteAccountConfirmation').addEventListener('input', () => {
+      this.updateDeleteAccountConfirmationState();
+    });
+
+    document.getElementById('deleteAccountPassword').addEventListener('input', () => {
+      this.updateDeleteAccountSubmitState();
     });
   }
 
@@ -495,10 +526,10 @@ export class Auth {
                     </div>
                     <div>
                       <h4 class="text-sm font-semibold text-red-800">Delete Account</h4>
-                      <p class="mt-1 text-sm leading-6 text-red-700">Permanently delete your Jubro account and all associated data.</p>
+                      <p id="delete-account-description" class="mt-1 text-sm leading-6 text-red-700">Permanently delete your Jubro account and all associated data.</p>
                     </div>
                   </div>
-                  <button type="button" class="settings-danger-button mt-5 inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Delete Account</button>
+                  <button id="btnDeleteAccount" type="button" aria-describedby="delete-account-description" class="settings-danger-button mt-5 inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-60">Delete Account</button>
                 </div>
               </div>
             </section>
@@ -510,6 +541,114 @@ export class Auth {
     document.body.appendChild(div);
     this.settingsModal = div;
     this.setSettingsSection(this.settingsSection);
+  }
+
+  createDeleteAccountModal() {
+    const div = document.createElement('div');
+
+    div.id = 'deleteAccountModal';
+    div.className = 'hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-3 backdrop-blur-[2px] sm:p-6';
+    div.setAttribute('role', 'dialog');
+    div.setAttribute('aria-modal', 'true');
+    div.setAttribute('aria-labelledby', 'delete-account-title');
+    div.setAttribute('aria-describedby', 'delete-account-dialog-description');
+    div.setAttribute('aria-hidden', 'true');
+    div.innerHTML = `
+      <div class="flex max-h-[calc(100vh-1.5rem)] w-full max-w-lg flex-col overflow-y-auto rounded-3xl border border-red-200 bg-white shadow-2xl sm:max-h-[calc(100vh-3rem)]">
+        <header class="flex shrink-0 items-start justify-between gap-4 border-b border-red-100 px-5 py-5 sm:px-7 sm:py-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-red-600">Danger Zone</p>
+            <h2 id="delete-account-title" class="delete-account-title mt-1 text-2xl font-bold tracking-tight text-gray-900">Delete your account?</h2>
+          </div>
+
+          <button id="btnCloseDeleteAccount" type="button" aria-label="Close delete account dialog"
+            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-xl text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
+        </header>
+
+        <div class="p-5 sm:p-7">
+          <p id="delete-account-dialog-description" class="text-sm leading-6 text-gray-600">This will permanently delete your Jubro account and all saved trackers and applications. This action cannot be undone.</p>
+
+          <section id="deleteAccountStepWarning" class="mt-6">
+            <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800">
+              Your account, synced data, and local Jubro data will be removed. Other users and their data will not be affected.
+            </div>
+
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button id="btnCancelDeleteAccount" type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Cancel</button>
+              <button id="btnContinueDeleteAccount" type="button" class="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Continue</button>
+            </div>
+          </section>
+
+          <section id="deleteAccountStepConfirmation" class="mt-6" hidden>
+            <label for="deleteAccountConfirmation" class="block text-sm font-semibold text-gray-900">Type DELETE to continue</label>
+            <input id="deleteAccountConfirmation" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="deleteAccountConfirmationMessage"
+              class="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100" />
+            <p id="deleteAccountConfirmationMessage" class="mt-2 min-h-5 text-sm text-red-700" role="status" aria-live="polite"></p>
+
+            <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button id="btnCancelDeleteAccountConfirmation" type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Cancel</button>
+              <button id="btnContinueDeleteAccountReauth" type="button" disabled class="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50">Continue</button>
+            </div>
+          </section>
+
+          <section id="deleteAccountStepReauth" class="mt-6" hidden>
+            <div id="deleteAccountPasswordPanel" hidden>
+              <h3 class="text-base font-semibold text-gray-900">Confirm your identity</h3>
+              <p class="mt-1 text-sm leading-6 text-gray-600">Enter the current password for <span id="deleteAccountReauthEmail" class="font-medium text-gray-900"></span> before continuing.</p>
+
+              <form id="deleteAccountReauthForm" class="mt-5 space-y-4" novalidate>
+                <div>
+                  <label for="deleteAccountPassword" class="block text-sm font-medium text-gray-700">Current Password</label>
+                  <div class="relative mt-2">
+                    <input id="deleteAccountPassword" type="password" autocomplete="current-password" aria-describedby="deleteAccountMessage"
+                      class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 pr-11 text-sm text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100" />
+                    <button id="btnToggleDeleteAccountPassword" type="button" aria-label="Show current password"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                      <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <p id="deleteAccountMessage" class="min-h-5 text-sm" role="status" aria-live="polite"></p>
+
+                <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button id="btnCancelDeleteAccountReauth" type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Cancel</button>
+                  <button id="btnPermanentlyDeleteAccount" type="submit" disabled class="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 disabled:cursor-not-allowed disabled:opacity-50">Permanently Delete Account</button>
+                </div>
+              </form>
+            </div>
+
+            <div id="deleteAccountGooglePanel" hidden>
+              <h3 class="text-base font-semibold text-gray-900">Confirm your identity</h3>
+              <p class="mt-1 text-sm leading-6 text-gray-600">Continue with Google to confirm your identity before permanently deleting your account.</p>
+              <p id="deleteAccountGoogleMessage" class="mt-4 min-h-5 text-sm" role="status" aria-live="polite"></p>
+
+              <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button id="btnCancelDeleteAccountGoogle" type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Cancel</button>
+                <button id="btnReauthenticateDeleteGoogle" type="button" class="inline-flex items-center justify-center rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Continue with Google</button>
+              </div>
+            </div>
+
+            <div id="deleteAccountUnsupportedPanel" hidden>
+              <h3 class="text-base font-semibold text-gray-900">Unable to confirm your identity</h3>
+              <p id="deleteAccountUnsupportedMessage" class="mt-1 text-sm leading-6 text-red-700">This account provider is not supported for account deletion yet.</p>
+              <div class="mt-6 flex justify-end">
+                <button id="btnCancelDeleteAccountUnsupported" type="button" class="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900">Cancel</button>
+              </div>
+            </div>
+          </section>
+
+          <section id="deleteAccountStepSuccess" class="mt-6" hidden>
+            <div class="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm leading-6 text-green-800" role="status">Your Jubro account has been deleted. Redirecting you now.</div>
+          </section>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(div);
+    this.deleteAccountModal = div;
   }
 
   openSettingsModal() {
@@ -863,6 +1002,277 @@ export class Auth {
     } finally {
       this.deleteDataInProgress = false;
       this.setDeleteDataLoadingState(false);
+    }
+  }
+
+  showDeleteAccountMessage(text, type = 'error') {
+    const messageIds = ['deleteAccountMessage', 'deleteAccountGoogleMessage'];
+
+    messageIds.forEach((messageId) => {
+      const message = document.getElementById(messageId);
+
+      if (!message) return;
+
+      message.textContent = text;
+      message.classList.remove('text-red-700', 'text-green-700');
+
+      if (text) {
+        message.classList.add(type === 'success' ? 'text-green-700' : 'text-red-700');
+      }
+    });
+  }
+
+  setDeleteAccountStep(step) {
+    const steps = {
+      warning: 'deleteAccountStepWarning',
+      confirmation: 'deleteAccountStepConfirmation',
+      reauth: 'deleteAccountStepReauth',
+      success: 'deleteAccountStepSuccess'
+    };
+
+    Object.entries(steps).forEach(([stepName, elementId]) => {
+      const element = document.getElementById(elementId);
+      if (element) element.hidden = stepName !== step;
+    });
+  }
+
+  clearDeleteAccountPassword() {
+    const input = document.getElementById('deleteAccountPassword');
+    const button = document.getElementById('btnToggleDeleteAccountPassword');
+    const icon = button?.querySelector('i');
+
+    if (input) {
+      input.value = '';
+      input.type = 'password';
+    }
+
+    if (icon) icon.className = 'fa-solid fa-eye';
+    button?.setAttribute('aria-label', 'Show current password');
+    button?.setAttribute('aria-pressed', 'false');
+  }
+
+  resetDeleteAccountModal() {
+    document.getElementById('deleteAccountConfirmation').value = '';
+    this.clearDeleteAccountPassword();
+    document.getElementById('deleteAccountReauthEmail').textContent = '';
+    document.getElementById('deleteAccountUnsupportedMessage').textContent = 'This account provider is not supported for account deletion yet.';
+    document.getElementById('deleteAccountConfirmationMessage').textContent = '';
+    document.getElementById('deleteAccountMessage').textContent = '';
+    document.getElementById('deleteAccountGoogleMessage').textContent = '';
+    document.getElementById('btnContinueDeleteAccountReauth').disabled = true;
+    document.getElementById('btnPermanentlyDeleteAccount').disabled = true;
+    document.getElementById('deleteAccountPasswordPanel').hidden = true;
+    document.getElementById('deleteAccountGooglePanel').hidden = true;
+    document.getElementById('deleteAccountUnsupportedPanel').hidden = true;
+    this.setDeleteAccountStep('warning');
+    this.deleteAccountSucceeded = false;
+  }
+
+  openDeleteAccountModal() {
+    if (this.deleteAccountInProgress) return;
+
+    const user = authService.getCurrentUser();
+
+    if (!user) {
+      this.showDataMessage('You need to be signed in to delete your account.');
+      return;
+    }
+
+    this.resetDeleteAccountModal();
+    this.deleteAccountModal.classList.remove('hidden');
+    this.deleteAccountModal.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => document.getElementById('btnCancelDeleteAccount')?.focus());
+  }
+
+  closeDeleteAccountModal() {
+    if (this.deleteAccountInProgress) return;
+
+    this.deleteAccountModal.classList.add('hidden');
+    this.deleteAccountModal.setAttribute('aria-hidden', 'true');
+    this.resetDeleteAccountModal();
+  }
+
+  showDeleteAccountConfirmationStep() {
+    if (this.deleteAccountInProgress) return;
+
+    this.setDeleteAccountStep('confirmation');
+    window.requestAnimationFrame(() => document.getElementById('deleteAccountConfirmation')?.focus());
+  }
+
+  updateDeleteAccountConfirmationState() {
+    const input = document.getElementById('deleteAccountConfirmation');
+    const continueButton = document.getElementById('btnContinueDeleteAccountReauth');
+    const message = document.getElementById('deleteAccountConfirmationMessage');
+    const isValid = input?.value === 'DELETE';
+
+    if (continueButton) continueButton.disabled = !isValid;
+
+    if (message) {
+      message.textContent = input?.value && !isValid ? 'Type DELETE exactly, using capital letters.' : '';
+    }
+  }
+
+  showDeleteAccountReauthStep() {
+    if (this.deleteAccountInProgress) return;
+
+    if (document.getElementById('deleteAccountConfirmation')?.value !== 'DELETE') {
+      this.updateDeleteAccountConfirmationState();
+      return;
+    }
+
+    const user = authService.getCurrentUser();
+
+    if (!user) {
+      this.showDeleteAccountMessage('No signed-in account was found. Please sign in again.');
+      return;
+    }
+
+    const method = authService.getAccountReauthenticationMethod();
+    this.setDeleteAccountStep('reauth');
+    this.showDeleteAccountMessage('');
+    document.getElementById('deleteAccountPasswordPanel').hidden = method !== 'password';
+    document.getElementById('deleteAccountGooglePanel').hidden = method !== 'google';
+    document.getElementById('deleteAccountUnsupportedPanel').hidden = method !== 'unsupported';
+    document.getElementById('deleteAccountReauthEmail').textContent = user.email || 'your account';
+
+    if (method === 'password') {
+      window.requestAnimationFrame(() => document.getElementById('deleteAccountPassword')?.focus());
+    } else if (method === 'google') {
+      window.requestAnimationFrame(() => document.getElementById('btnReauthenticateDeleteGoogle')?.focus());
+    } else {
+      window.requestAnimationFrame(() => document.getElementById('btnCancelDeleteAccountUnsupported')?.focus());
+    }
+  }
+
+  updateDeleteAccountSubmitState() {
+    const button = document.getElementById('btnPermanentlyDeleteAccount');
+    const password = document.getElementById('deleteAccountPassword')?.value || '';
+    const confirmation = document.getElementById('deleteAccountConfirmation')?.value || '';
+
+    if (button) button.disabled = confirmation !== 'DELETE' || !password;
+  }
+
+  setDeleteAccountLoadingState(isLoading) {
+    const controls = this.deleteAccountModal.querySelectorAll('button, input');
+
+    controls.forEach((control) => {
+      control.disabled = isLoading;
+    });
+
+    this.deleteAccountModal.setAttribute('aria-busy', String(isLoading));
+
+    const passwordButton = document.getElementById('btnPermanentlyDeleteAccount');
+    const googleButton = document.getElementById('btnReauthenticateDeleteGoogle');
+
+    if (passwordButton) passwordButton.textContent = isLoading ? 'Deleting...' : 'Permanently Delete Account';
+    if (googleButton) googleButton.textContent = isLoading ? 'Deleting...' : 'Continue with Google';
+
+    if (!isLoading) {
+      this.updateDeleteAccountConfirmationState();
+      this.updateDeleteAccountSubmitState();
+    }
+  }
+
+  getFriendlyDeleteAccountError(error) {
+    const messages = {
+      'auth/invalid-credential': 'The password you entered is incorrect.',
+      'auth/wrong-password': 'The password you entered is incorrect.',
+      'auth/user-mismatch': 'The password you entered is incorrect.',
+      'auth/requires-recent-login': 'Please confirm your identity before deleting your account.',
+      'auth/too-many-requests': 'Too many attempts. Please try again later.',
+      'auth/network-request-failed': 'Unable to connect. Check your internet connection and try again.',
+      'auth/no-current-user': 'No signed-in account was found. Please sign in again.',
+      'auth/user-disabled': 'This account has been disabled.',
+      'auth/popup-closed-by-user': 'Identity confirmation was cancelled.',
+      'auth/popup-blocked': 'Your browser blocked the Google sign-in window. Please allow popups and try again.',
+      'auth/user-changed-during-deletion': 'Your signed-in account changed. No account was deleted.'
+    };
+
+    return messages[error?.code] || "We couldn't delete your account. Please try again.";
+  }
+
+  async finishCurrentUserDeletion() {
+    await authService.deleteCurrentUserAccount();
+    Storage.save({ active: null, data: {} });
+    this.notifyTrackerDataChanged(null);
+    this.deleteAccountSucceeded = true;
+    this.showDeleteAccountMessage('Your Jubro account has been deleted.', 'success');
+    this.setDeleteAccountStep('success');
+  }
+
+  async submitDeleteAccountReauthentication(event) {
+    event.preventDefault();
+
+    if (this.deleteAccountInProgress) return;
+
+    if (document.getElementById('deleteAccountConfirmation')?.value !== 'DELETE') {
+      this.setDeleteAccountStep('confirmation');
+      this.updateDeleteAccountConfirmationState();
+      return;
+    }
+
+    const password = document.getElementById('deleteAccountPassword')?.value || '';
+
+    if (!password) {
+      this.showDeleteAccountMessage('Enter your current password to continue.');
+      return;
+    }
+
+    this.deleteAccountInProgress = true;
+    this.showDeleteAccountMessage('');
+    this.setDeleteAccountLoadingState(true);
+
+    try {
+      await authService.reauthenticateCurrentUser(password);
+      await this.finishCurrentUserDeletion();
+    } catch (error) {
+      console.error('Delete account failed:', error);
+      this.showDeleteAccountMessage(this.getFriendlyDeleteAccountError(error));
+    } finally {
+      this.clearDeleteAccountPassword();
+      this.deleteAccountInProgress = false;
+      this.setDeleteAccountLoadingState(false);
+
+      if (this.deleteAccountSucceeded) {
+        window.setTimeout(() => {
+          this.closeDeleteAccountModal();
+          this.closeSettingsModal();
+          window.location.assign('/');
+        }, 1200);
+      }
+    }
+  }
+
+  async reauthenticateDeleteAccountWithGoogle() {
+    if (this.deleteAccountInProgress) return;
+
+    if (document.getElementById('deleteAccountConfirmation')?.value !== 'DELETE') {
+      this.setDeleteAccountStep('confirmation');
+      this.updateDeleteAccountConfirmationState();
+      return;
+    }
+
+    this.deleteAccountInProgress = true;
+    this.showDeleteAccountMessage('');
+    this.setDeleteAccountLoadingState(true);
+
+    try {
+      await authService.reauthenticateCurrentUserWithGoogle();
+      await this.finishCurrentUserDeletion();
+    } catch (error) {
+      console.error('Delete account failed:', error);
+      this.showDeleteAccountMessage(this.getFriendlyDeleteAccountError(error));
+    } finally {
+      this.deleteAccountInProgress = false;
+      this.setDeleteAccountLoadingState(false);
+
+      if (this.deleteAccountSucceeded) {
+        window.setTimeout(() => {
+          this.closeDeleteAccountModal();
+          this.closeSettingsModal();
+          window.location.assign('/');
+        }, 1200);
+      }
     }
   }
 
