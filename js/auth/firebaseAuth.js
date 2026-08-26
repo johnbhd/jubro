@@ -2,9 +2,14 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  reauthenticateWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+  deleteUser,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -81,19 +86,144 @@ class FirebaseAuthService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
+  async changePassword(currentPassword, newPassword) {
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      const error = new Error('No authenticated user.');
+      error.code = 'auth/no-current-user';
+      throw error;
+    }
+
+    if (!user.email) {
+      const error = new Error('The current account does not have an email address.');
+      error.code = 'auth/no-email';
+      throw error;
+    }
+
+    const hasPasswordProvider = user.providerData?.some(
+      ({ providerId }) => providerId === 'password'
+    );
+
+    if (!hasPasswordProvider) {
+      const error = new Error('Password changes require an email and password account.');
+      error.code = 'auth/password-provider-required';
+      throw error;
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+
+    await reauthenticateWithCredential(user, credential);
+    await updatePassword(user, newPassword);
+  }
+
+  getAccountReauthenticationMethod() {
+    const user = this.getCurrentUser();
+
+    if (!user) return null;
+
+    const providerIds = user.providerData?.map(({ providerId }) => providerId) || [];
+
+    if (providerIds.includes('password')) return 'password';
+    if (providerIds.includes('google.com')) return 'google';
+
+    return 'unsupported';
+  }
+
+  async reauthenticateCurrentUser(password) {
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      const error = new Error('No authenticated user.');
+      error.code = 'auth/no-current-user';
+      throw error;
+    }
+
+    if (!user.email) {
+      const error = new Error('The current account does not have an email address.');
+      error.code = 'auth/no-email';
+      throw error;
+    }
+
+    if (this.getAccountReauthenticationMethod() !== 'password') {
+      const error = new Error('Password re-authentication is not available for this account.');
+      error.code = 'auth/password-provider-required';
+      throw error;
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+  }
+
+  async reauthenticateCurrentUserWithGoogle() {
+    const user = this.getCurrentUser();
+
+    if (!user) {
+      const error = new Error('No authenticated user.');
+      error.code = 'auth/no-current-user';
+      throw error;
+    }
+
+    if (this.getAccountReauthenticationMethod() !== 'google') {
+      const error = new Error('Google re-authentication is not available for this account.');
+      error.code = 'auth/google-provider-required';
+      throw error;
+    }
+
+    await reauthenticateWithPopup(user, this.googleProvider);
+  }
+
+  async deleteCurrentUserAccount() {
+    const user = this.getCurrentUser();
+
+    if (!user?.uid) {
+      const error = new Error('No authenticated user.');
+      error.code = 'auth/no-current-user';
+      throw error;
+    }
+
+    const uid = user.uid;
+    await firebaseTrackerSync.deleteCurrentUserData(user);
+
+    const currentUser = this.getCurrentUser();
+
+    if (!currentUser || currentUser.uid !== uid) {
+      const error = new Error('Authenticated user changed during account deletion.');
+      error.code = 'auth/user-changed-during-deletion';
+      throw error;
+    }
+
+    await deleteUser(user);
+    this.syncedUserId = null;
+  }
+
   async logout() {
     await signOut(this.auth);
     this.syncedUserId = null;
   }
 
-  onAuthChange(callback) {
+  onAuthChange(callback, options = {}) {
+    const { waitForSync = true } = options;
+
     return onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        await this.syncTrackerData(user);
-      } else {
-        this.syncedUserId = null;
+      if (waitForSync) {
+        if (user) {
+          await this.syncTrackerData(user);
+        } else {
+          this.syncedUserId = null;
+        }
+
+        callback(user);
+        return;
       }
 
+      if (user) {
+        callback(user);
+        await this.syncTrackerData(user);
+        return;
+      }
+
+      this.syncedUserId = null;
       callback(user);
     });
   }

@@ -39,8 +39,113 @@ export class JSONService {
       rows: data.rows
     };
 
+    this.downloadJson(exportData, filename);
+  }
+
+  exportAll(state, filename = "jubro-backup.json") {
+    if (!state || typeof state !== "object" || !state.data || typeof state.data !== "object") {
+      throw new Error("Invalid Jubro tracker state");
+    }
+
+    const trackers = Object.entries(state.data).map(([trackerId, tracker]) => {
+      if (!tracker || typeof tracker !== "object") {
+        return {
+          id: trackerId,
+          value: tracker
+        };
+      }
+
+      return {
+        ...tracker,
+        id: tracker.id || trackerId
+      };
+    });
+
+    this.downloadJson({
+      app: "Jubro",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      active: state.active || null,
+      trackers
+    }, filename);
+  }
+
+  importAll() {
+    const input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = ".json,application/json";
+
+    return new Promise((resolve, reject) => {
+      const cleanup = () => input.remove();
+
+      input.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+
+        if (!file) {
+          cleanup();
+          resolve(null);
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(await file.text());
+
+          if (!parsed || !Array.isArray(parsed.trackers)) {
+            throw new Error("Invalid Jubro backup file");
+          }
+
+          const data = Object.create(null);
+
+          parsed.trackers.forEach((tracker, index) => {
+            if (!tracker || typeof tracker !== "object" || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) {
+              throw new Error(`Invalid tracker at position ${index + 1}`);
+            }
+
+            const sourceId = String(tracker.id || `imported_${index + 1}`);
+            let trackerId = sourceId;
+            let duplicateNumber = 2;
+
+            while (Object.prototype.hasOwnProperty.call(data, trackerId)) {
+              trackerId = `${sourceId}_${duplicateNumber}`;
+              duplicateNumber += 1;
+            }
+
+            data[trackerId] = {
+              ...tracker,
+              id: trackerId
+            };
+          });
+
+          const requestedActive = parsed.active === null || parsed.active === undefined
+            ? null
+            : String(parsed.active);
+
+          resolve({
+            active: requestedActive && data[requestedActive]
+              ? requestedActive
+              : Object.keys(data)[0] || null,
+            data
+          });
+        } catch (error) {
+          reject(error);
+        } finally {
+          cleanup();
+        }
+      }, { once: true });
+
+      try {
+        input.click();
+      } catch (error) {
+        cleanup();
+        reject(error);
+      }
+    });
+  }
+
+  downloadJson(data, filename) {
     const blob = new Blob(
-      [JSON.stringify(exportData, null, 2)],
+      [JSON.stringify(data, null, 2)],
       { type: "application/json" }
     );
 
@@ -51,13 +156,13 @@ export class JSONService {
     a.href = url;
     a.download = filename;
 
-    document.body.appendChild(a);
-
-    a.click();
-
-    a.remove();
-
-    URL.revokeObjectURL(url);
+    try {
+      document.body.appendChild(a);
+      a.click();
+    } finally {
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
   }
 
   import(callback) {
