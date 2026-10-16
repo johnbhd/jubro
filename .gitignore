@@ -1,2 +1,5 @@
 node_modules/
-workflows/
+Workflows/
+AGENTS.md
+.agents
+Project Context.md
