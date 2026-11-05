@@ -1,5 +1,8 @@
 node_modules/
 Workflows/
 AGENTS.md
+!/AGENTS.md
 .agents
 Project Context.md
+/docs/*
+!/docs/context/
