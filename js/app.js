@@ -2,6 +2,7 @@ import { TrackerApp } from './main/main.js';
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { app } from './firebase/firebaseApp.js';
 import { authService } from './auth/firebaseAuth.js';
+import { setupStorageNotice } from './storage/storageNotice.js';
 
 const db = getFirestore(app);
 const THEME_KEY = 'jubro_theme';
@@ -29,13 +30,15 @@ async function testFirestore() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log("APP LOADED");
 
   applySavedTheme();
+  setupStorageNotice();
   testFirestore();
 
   if (document.getElementById('appBody')) {
+    await authService.waitForWorkspace();
     const trackerApp = new TrackerApp();
 
     authService.onAuthChange(() => {

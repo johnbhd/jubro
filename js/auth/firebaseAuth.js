@@ -22,6 +22,7 @@ import {
 
 import { app } from "../firebase/firebaseApp.js";
 import { firebaseTrackerSync } from "../storage/firebaseTrackerSync.js";
+import { Storage } from "../storage/storage.js";
 
 class FirebaseAuthService {
   constructor() {
@@ -29,11 +30,24 @@ class FirebaseAuthService {
     this.db = getFirestore(app);
     this.googleProvider = new GoogleAuthProvider();
     this.syncedUserId = null;
-    this.conflictResolver = null;
+    this.syncingUserId = null;
+    this.syncPromise = null;
+    this.initialWorkspacePromise = null;
+    this.conflictResolver = ({ localTracker, firebaseTracker }) => window.confirm(
+      `"${localTracker?.title || 'Untitled tracker'}" differs from the account copy `
+      + `"${firebaseTracker?.title || 'Untitled tracker'}". Replace the account copy with this local tracker?`
+    );
+    this.guestTransferResolver = () => window.confirm(
+      'This browser has guest trackers and this account already has tracker data. Bring the guest trackers into this account?'
+    );
   }
 
   setConflictResolver(resolveConflict) {
     this.conflictResolver = resolveConflict;
+  }
+
+  setGuestTransferResolver(resolveGuestTransfer) {
+    this.guestTransferResolver = resolveGuestTransfer;
   }
 
   async loginWithGoogle() {
@@ -194,38 +208,81 @@ class FirebaseAuthService {
     }
 
     await deleteUser(user);
+    Storage.removeAccountWorkspace(uid);
+    Storage.useGuestWorkspace();
     this.syncedUserId = null;
   }
 
   async logout() {
-    await signOut(this.auth);
+    const previousUser = this.getCurrentUser();
+
+    Storage.useGuestWorkspace();
     this.syncedUserId = null;
+    this.syncingUserId = null;
+    this.syncPromise = null;
+
+    try {
+      await signOut(this.auth);
+    } catch (error) {
+      if (previousUser?.uid) {
+        Storage.useAccountWorkspace(previousUser.uid);
+      }
+
+      throw error;
+    }
   }
 
-  onAuthChange(callback, options = {}) {
-    const { waitForSync = true } = options;
-
+  onAuthChange(callback) {
     return onAuthStateChanged(this.auth, async (user) => {
-      if (waitForSync) {
-        if (user) {
-          await this.syncTrackerData(user);
-        } else {
-          this.syncedUserId = null;
-        }
-
+      try {
+        await this.prepareWorkspace(user);
         callback(user);
-        return;
-      }
-
-      if (user) {
+      } catch (error) {
+        this.reportSyncError(error);
         callback(user);
-        await this.syncTrackerData(user);
-        return;
       }
-
-      this.syncedUserId = null;
-      callback(user);
     });
+  }
+
+  waitForWorkspace() {
+    if (this.initialWorkspacePromise) return this.initialWorkspacePromise;
+
+    this.initialWorkspacePromise = new Promise((resolve) => {
+      const unsubscribe = onAuthStateChanged(this.auth, async (user) => {
+        try {
+          await this.prepareWorkspace(user);
+        } catch (error) {
+          this.reportSyncError(error);
+        } finally {
+          unsubscribe();
+          resolve(user);
+        }
+      });
+    });
+
+    return this.initialWorkspacePromise;
+  }
+
+  async prepareWorkspace(user) {
+    if (user?.uid) {
+      await this.syncTrackerData(user);
+      return;
+    }
+
+    Storage.useGuestWorkspace();
+    this.syncedUserId = null;
+    this.syncingUserId = null;
+    this.syncPromise = null;
+    document.dispatchEvent(new CustomEvent("tracker:sync-complete", {
+      detail: { userId: null }
+    }));
+  }
+
+  reportSyncError(error) {
+    console.error("Tracker sync error:", error);
+    document.dispatchEvent(new CustomEvent("tracker:sync-error", {
+      detail: { message: error?.message || "Tracker data could not be synchronized." }
+    }));
   }
 
   getCurrentUser() {
@@ -233,20 +290,38 @@ class FirebaseAuthService {
   }
 
   async syncTrackerData(user) {
-    if (!user || this.syncedUserId === user.uid) return;
+    if (!user?.uid) return;
 
-    this.syncedUserId = user.uid;
+    const owner = Storage.getCurrentOwner();
+
+    if (
+      this.syncedUserId === user.uid
+      && owner.ownerType === "account"
+      && owner.ownerId === user.uid
+    ) return;
+
+    if (this.syncPromise && this.syncingUserId === user.uid) {
+      return this.syncPromise;
+    }
+
+    this.syncingUserId = user.uid;
+    this.syncPromise = firebaseTrackerSync.syncLocalData(user, {
+      resolveConflict: this.conflictResolver,
+      resolveGuestTransfer: this.guestTransferResolver
+    });
 
     try {
-      await firebaseTrackerSync.syncLocalData(user, {
-        resolveConflict: this.conflictResolver
-      });
+      await this.syncPromise;
+      this.syncedUserId = user.uid;
       document.dispatchEvent(new CustomEvent("tracker:sync-complete", {
         detail: { userId: user.uid }
       }));
     } catch (err) {
       this.syncedUserId = null;
-      console.error("Tracker sync error:", err);
+      throw err;
+    } finally {
+      this.syncingUserId = null;
+      this.syncPromise = null;
     }
   }
 }

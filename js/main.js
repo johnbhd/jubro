@@ -1,4 +1,5 @@
 import { Storage } from './storage/storage.js';
+import { setupStorageNotice } from './storage/storageNotice.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -324,8 +325,13 @@ function updateHomepageStats() {
 
 async function setupAuth() {
   try {
-    const { Auth } = await import('./auth/auth.js');
+    const [{ Auth }, { authService }] = await Promise.all([
+      import('./auth/auth.js'),
+      import('./auth/firebaseAuth.js')
+    ]);
+
     new Auth();
+    await authService.waitForWorkspace();
   } catch (error) {
     console.error(error);
     setupFallbackThemeToggle();
@@ -342,7 +348,8 @@ async function initHomepage() {
   setupScrollAwareNavbar();
   setupActiveNavigation();
   syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
-  setupAuth();
+  setupStorageNotice();
+  await setupAuth();
 }
 
 const componentsReady = new Promise((resolve) => {

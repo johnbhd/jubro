@@ -332,7 +332,8 @@ export const listEditMethods = {
       };
     });
 
-    this.save();
+    if (this.save() === false) return;
+
     this.closeListEditModal();
     this.renderListView(tracker);
     this.applySearchFilter();

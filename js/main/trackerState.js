@@ -108,7 +108,10 @@ reloadStateFromStorage() {
   },
 
 save() {
-    Storage.save(this.state);
+    if (!Storage.save(this.state)) {
+      return false;
+    }
+
     return this.syncLocalStateToFirebase();
   },
 

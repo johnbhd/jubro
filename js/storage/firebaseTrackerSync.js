@@ -11,6 +11,11 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-aut
 
 import { app } from "../firebase/firebaseApp.js";
 import { Storage } from "./storage.js";
+import {
+  GUEST_TRANSFER_AUTOMATIC,
+  GUEST_TRANSFER_CONFIRM,
+  getGuestTransferMode
+} from "./workspacePolicy.js";
 
 export function hasValidTrackerData(state) {
   if (!state || typeof state !== "object") return false;
@@ -68,36 +73,91 @@ class FirebaseTrackerSync {
   }
 
   async syncLocalData(user, options = {}) {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    const localState = Storage.load();
+    const guestState = Storage.loadGuest();
+    const localState = Storage.useAccountWorkspace(user.uid);
     const firebaseState = await this.loadFirebaseState(user.uid);
 
     const hasLocalData = hasValidTrackerData(localState);
     const hasFirebaseData = hasValidTrackerData(firebaseState);
+    let accountState = localState;
+    let shouldUpload = false;
 
     if (!hasLocalData && hasFirebaseData) {
-      Storage.save(firebaseState);
-      console.log("Loaded Firestore trackerData into localStorage");
+      accountState = firebaseState;
+    } else if (hasLocalData && !hasFirebaseData) {
+      shouldUpload = true;
+    } else if (hasLocalData && hasFirebaseData) {
+      accountState = await this.mergeStates(
+        localState,
+        firebaseState,
+        options.resolveConflict
+      );
+      shouldUpload = true;
+    }
+
+    const hasAccountData = hasValidTrackerData(accountState);
+    const transferMode = getGuestTransferMode({
+      hasGuestData: hasValidTrackerData(guestState),
+      hasAccountData,
+      isLegacyGuest: guestState.legacyUnowned === true
+    });
+    let shouldTransferGuest = transferMode === GUEST_TRANSFER_AUTOMATIC;
+
+    if (transferMode === GUEST_TRANSFER_CONFIRM) {
+      shouldTransferGuest = typeof options.resolveGuestTransfer === "function"
+        ? await options.resolveGuestTransfer({
+            guestState: this.clone(guestState),
+            accountState: this.clone(accountState)
+          })
+        : false;
+    }
+
+    if (shouldTransferGuest) {
+      accountState = await this.mergeStates(
+        guestState,
+        accountState,
+        options.resolveConflict
+      );
+      shouldUpload = true;
+    }
+
+    if (!hasValidTrackerData(accountState)) {
+      console.log("No valid trackerData to sync");
       return;
     }
 
-    if (hasLocalData && !hasFirebaseData) {
-      await this.uploadLocalState(user, localState);
-      console.log("Uploaded local trackerData to Firestore");
-      return;
+    const ownedAccountState = this.asAccountState(accountState, user.uid);
+    const saved = Storage.replace(ownedAccountState, localState.revision);
+
+    if (!saved) {
+      throw new Error("Local tracker data changed before account sync completed.");
     }
 
-    if (hasLocalData && hasFirebaseData) {
-      const mergedState = await this.mergeStates(localState, firebaseState, options.resolveConflict);
+    const persistedState = Storage.load();
 
-      Storage.save(mergedState);
-      await this.uploadLocalState(user, mergedState);
-      console.log("Merged local and Firestore trackerData");
-      return;
+    if (shouldUpload) {
+      await this.uploadLocalState(user, persistedState);
     }
 
-    console.log("No valid trackerData to sync");
+    if (shouldTransferGuest) {
+      Storage.clearGuestAfterTransfer(guestState.revision);
+      console.log("Transferred guest trackerData to the signed-in account");
+    } else if (!hasLocalData && hasFirebaseData) {
+      console.log("Loaded Firestore trackerData into account storage");
+    } else if (shouldUpload) {
+      console.log("Synchronized account trackerData with Firestore");
+    }
+  }
+
+  asAccountState(state, userId) {
+    return {
+      ...this.clone(state),
+      ownerType: "account",
+      ownerId: userId,
+      revision: Number.isInteger(state?.revision) ? state.revision : 0
+    };
   }
 
   async mergeStates(localState, firebaseState, resolveConflict) {
@@ -139,7 +199,11 @@ class FirebaseTrackerSync {
 
     return {
       active,
-      data: mergedData
+      data: mergedData,
+      revision: Math.max(
+        Number.isInteger(localState?.revision) ? localState.revision : 0,
+        Number.isInteger(firebaseState?.revision) ? firebaseState.revision : 0
+      )
     };
   }
 
@@ -147,22 +211,26 @@ class FirebaseTrackerSync {
     const trackerDoc = await getDoc(doc(this.db, "trackerData", userId));
 
     if (trackerDoc.exists()) {
-      const trackerState = this.parseTrackerData(trackerDoc.data());
+      const trackerState = this.parseTrackerData(trackerDoc.data(), userId);
       if (hasValidTrackerData(trackerState)) return trackerState;
     }
 
     const userDoc = await getDoc(doc(this.db, "users", userId));
 
     if (userDoc.exists()) {
-      const userState = this.parseTrackerData(userDoc.data().trackerData);
+      const userState = this.parseTrackerData(userDoc.data().trackerData, userId);
       if (hasValidTrackerData(userState)) return userState;
     }
 
     return null;
   }
 
-  parseTrackerData(trackerData) {
+  parseTrackerData(trackerData, userId) {
     if (!trackerData || typeof trackerData !== "object") return null;
+    if (trackerData.ownerType && (
+      trackerData.ownerType !== "account"
+      || trackerData.ownerId !== userId
+    )) return null;
 
     let data = trackerData.data;
 
@@ -179,16 +247,25 @@ class FirebaseTrackerSync {
 
     return {
       active: trackerData.active || null,
-      data
+      data,
+      ownerType: "account",
+      ownerId: userId,
+      revision: Number.isInteger(trackerData.revision) ? trackerData.revision : 0
     };
   }
 
   async uploadLocalState(user, state) {
-    if (!state || typeof state !== "object" || !state.data || typeof state.data !== "object") return;
+    if (!user?.uid || !state || typeof state !== "object" || !state.data || typeof state.data !== "object") return;
+    if (state.ownerType !== "account" || state.ownerId !== user.uid) {
+      throw new Error("Refusing to upload tracker data for a different owner.");
+    }
 
     const trackerData = {
       active: state.active || null,
       data: JSON.stringify(state.data || {}),
+      ownerType: "account",
+      ownerId: user.uid,
+      revision: Number.isInteger(state.revision) ? state.revision : 0,
       syncedAt: new Date().toISOString()
     };
 
@@ -201,9 +278,14 @@ class FirebaseTrackerSync {
   }
 
   async syncCurrentLocalState(user) {
-    if (!user) return;
+    if (!user?.uid) return;
 
     const state = Storage.load();
+
+    if (state.ownerType !== "account" || state.ownerId !== user.uid) {
+      throw new Error("The active local workspace does not belong to the signed-in account.");
+    }
+
     await this.uploadLocalState(user, state);
   }
 
@@ -249,7 +331,8 @@ class FirebaseTrackerSync {
       state.active = Object.keys(state.data || {})[0] || null;
     }
 
-    Storage.save(state);
+    if (!Storage.save(state)) return;
+
     await this.uploadLocalState(user, state);
   }
 }

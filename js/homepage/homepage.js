@@ -135,7 +135,11 @@ export class TrackerHome {
   
     this.state.active = id;
   
-    Storage.save(this.state);
+    if (!Storage.save(this.state)) {
+      this.reloadFromStorage();
+      return;
+    }
+
     this.syncLocalStateToFirebase();
   
     this.titleInput.value = "";
@@ -198,7 +202,11 @@ export class TrackerHome {
       this.state.active = null;
     }
   
-    Storage.save(this.state);
+    if (!Storage.save(this.state)) {
+      this.reloadFromStorage();
+      return;
+    }
+
     this.syncLocalStateToFirebase();
   
     this.hideDeleteModal();
@@ -258,7 +266,11 @@ export class TrackerHome {
 
       card.addEventListener('click', () => {
         this.state.active = trackerId;
-        Storage.save(this.state);
+        if (!Storage.save(this.state)) {
+          this.reloadFromStorage();
+          return;
+        }
+
         window.location.href = boardUrl;
       });
 
@@ -283,9 +295,12 @@ export class TrackerHome {
         </a>
       `;
 
-      card.querySelector('a')?.addEventListener('click', () => {
+      card.querySelector('a')?.addEventListener('click', (event) => {
         this.state.active = trackerId;
-        Storage.save(this.state);
+        if (!Storage.save(this.state)) {
+          event.preventDefault();
+          this.reloadFromStorage();
+        }
       });
 
       const deleteBtn = card.querySelector('.btn-delete');

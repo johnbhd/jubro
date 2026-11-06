@@ -33,6 +33,7 @@ export class Auth {
     this.createSyncConflictModal();
     this.createDropdown();
     authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
+    authService.setGuestTransferResolver((details) => this.confirmGuestTransfer(details));
     this.bindEvents();
     this.listenAuth();
   }
@@ -970,7 +971,11 @@ export class Auth {
       }
 
       const user = authService.getCurrentUser();
-      Storage.save(importedState);
+      if (!Storage.replace(importedState)) {
+        this.showDataMessage('Your data changed in another tab. Reload before importing.');
+        return;
+      }
+
       this.notifyTrackerDataChanged(user);
 
       if (user) {
@@ -1017,7 +1022,11 @@ export class Auth {
     let localDataCleared = false;
 
     try {
-      Storage.save(emptyState);
+      if (!Storage.replace(emptyState)) {
+        this.showDataMessage('Your data changed in another tab. Reload before deleting it.');
+        return;
+      }
+
       localDataCleared = true;
       this.notifyTrackerDataChanged(user);
 
@@ -1228,7 +1237,6 @@ export class Auth {
 
   async finishCurrentUserDeletion() {
     await authService.deleteCurrentUserAccount();
-    Storage.save({ active: null, data: {} });
     this.notifyTrackerDataChanged(null);
     this.deleteAccountSucceeded = true;
     this.showDeleteAccountMessage('Your Jubro account has been deleted.', 'success');
@@ -1360,10 +1368,15 @@ export class Auth {
 
     div.id = 'syncConflictModal';
     div.className = 'hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4';
+    div.setAttribute('role', 'dialog');
+    div.setAttribute('aria-modal', 'true');
+    div.setAttribute('aria-labelledby', 'syncConflictTitle');
+    div.setAttribute('aria-describedby', 'syncConflictText');
+    div.setAttribute('aria-hidden', 'true');
 
     div.innerHTML = `
       <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 class="text-xl font-semibold text-gray-900">
+        <h2 id="syncConflictTitle" class="text-xl font-semibold text-gray-900">
           Tracker already exists
         </h2>
 
@@ -1371,17 +1384,17 @@ export class Auth {
 
         <div class="mt-6 flex flex-col gap-2 sm:flex-row">
           <button
-            id="btnKeepCloudTracker"
+            id="btnSyncChoiceCancel"
             type="button"
-            class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-100"
+            class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
           >
             Keep Cloud
           </button>
 
           <button
-            id="btnOverwriteCloudTracker"
+            id="btnSyncChoiceConfirm"
             type="button"
-            class="theme-create-button flex-1 rounded-xl bg-black px-4 py-2 font-medium text-white hover:bg-gray-800"
+            class="theme-create-button flex-1 rounded-xl bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
           >
             Overwrite
           </button>
@@ -1391,6 +1404,7 @@ export class Auth {
 
     document.body.appendChild(div);
     this.syncConflictModal = div;
+    this.syncConflictTitle = div.querySelector('#syncConflictTitle');
     this.syncConflictText = div.querySelector('#syncConflictText');
   }
 
@@ -1398,25 +1412,62 @@ export class Auth {
     const localTitle = localTracker?.title || 'Untitled tracker';
     const cloudTitle = firebaseTracker?.title || localTitle;
 
-    this.syncConflictText.textContent = `"${localTitle}" already exists in Firebase as "${cloudTitle}", but the entries do not match. Do you want to overwrite the Firebase tracker with this local tracker?`;
+    return this.presentSyncChoice({
+      title: 'Tracker already exists',
+      text: `"${localTitle}" already exists in your account as "${cloudTitle}", but the entries do not match. Replace the account tracker with this local tracker?`,
+      cancelLabel: 'Keep Account',
+      confirmLabel: 'Replace Account'
+    });
+  }
+
+  confirmGuestTransfer({ guestState, accountState }) {
+    const guestCount = Object.keys(guestState?.data || {}).length;
+    const accountCount = Object.keys(accountState?.data || {}).length;
+
+    return this.presentSyncChoice({
+      title: 'Guest trackers found',
+      text: `This browser has ${guestCount} guest tracker${guestCount === 1 ? '' : 's'}, and your account has ${accountCount}. Bring the guest trackers into this account?`,
+      cancelLabel: 'Keep Account Only',
+      confirmLabel: 'Bring Guest Trackers'
+    });
+  }
+
+  presentSyncChoice({ title, text, cancelLabel, confirmLabel }) {
+    const cancelButton = document.getElementById('btnSyncChoiceCancel');
+    const confirmButton = document.getElementById('btnSyncChoiceConfirm');
+    const previousFocus = document.activeElement;
+
+    this.syncConflictTitle.textContent = title;
+    this.syncConflictText.textContent = text;
+    cancelButton.textContent = cancelLabel;
+    confirmButton.textContent = confirmLabel;
     this.syncConflictModal.classList.remove('hidden');
+    this.syncConflictModal.setAttribute('aria-hidden', 'false');
 
     return new Promise((resolve) => {
-      const keepCloud = document.getElementById('btnKeepCloudTracker');
-      const overwriteCloud = document.getElementById('btnOverwriteCloudTracker');
-
-      const cleanup = (shouldOverwrite) => {
-        keepCloud.removeEventListener('click', keepHandler);
-        overwriteCloud.removeEventListener('click', overwriteHandler);
+      const cleanup = (confirmed) => {
+        cancelButton.removeEventListener('click', cancelHandler);
+        confirmButton.removeEventListener('click', confirmHandler);
+        this.syncConflictModal.removeEventListener('keydown', keydownHandler);
         this.syncConflictModal.classList.add('hidden');
-        resolve(shouldOverwrite);
+        this.syncConflictModal.setAttribute('aria-hidden', 'true');
+        previousFocus?.focus?.();
+        resolve(confirmed);
       };
 
-      const keepHandler = () => cleanup(false);
-      const overwriteHandler = () => cleanup(true);
+      const cancelHandler = () => cleanup(false);
+      const confirmHandler = () => cleanup(true);
+      const keydownHandler = (event) => {
+        if (event.key !== 'Escape') return;
 
-      keepCloud.addEventListener('click', keepHandler);
-      overwriteCloud.addEventListener('click', overwriteHandler);
+        event.preventDefault();
+        cleanup(false);
+      };
+
+      cancelButton.addEventListener('click', cancelHandler);
+      confirmButton.addEventListener('click', confirmHandler);
+      this.syncConflictModal.addEventListener('keydown', keydownHandler);
+      requestAnimationFrame(() => cancelButton.focus());
     });
   }
 
