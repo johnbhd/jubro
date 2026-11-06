@@ -158,6 +158,98 @@ function getStatusOptions(columns) {
   return columns.filter((column) => column.value !== null);
 }
 
+export function closeKanbanCardMenus(container) {
+  if (!container?.querySelectorAll) return;
+
+  container.querySelectorAll('[data-kanban-card-menu]').forEach((menu) => {
+    menu.classList.add('hidden');
+    menu.previousElementSibling?.setAttribute('aria-expanded', 'false');
+  });
+}
+
+function createKanbanCardAction(label, iconClass, className, handler) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `kanban-card-menu-action flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm ${className}`;
+  button.setAttribute('role', 'menuitem');
+
+  const icon = document.createElement('i');
+  icon.className = `fa-solid ${iconClass} w-4 text-xs`;
+
+  const text = document.createElement('span');
+  text.textContent = label;
+
+  button.append(icon, text);
+  button.addEventListener('click', handler);
+
+  return button;
+}
+
+function createKanbanCardMenu(app, rowIndex, cardLabel) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'relative shrink-0';
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'kanban-card-menu-toggle inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-400';
+  toggle.dataset.kanbanCardMenuToggle = 'true';
+  toggle.setAttribute('aria-label', `More options for ${cardLabel}`);
+  toggle.setAttribute('aria-haspopup', 'menu');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.title = 'More options';
+
+  const toggleIcon = document.createElement('i');
+  toggleIcon.className = 'fa-solid fa-ellipsis-vertical';
+  toggle.appendChild(toggleIcon);
+
+  const menu = document.createElement('div');
+  menu.className = 'kanban-card-menu hidden absolute right-0 top-9 z-20 min-w-[8rem] rounded-lg border border-gray-200 bg-white p-1 shadow-lg';
+  menu.dataset.kanbanCardMenu = 'true';
+  menu.setAttribute('role', 'menu');
+
+  const closeMenu = () => {
+    closeKanbanCardMenus(app.kanbanColumns);
+  };
+
+  const editButton = createKanbanCardAction(
+    'Edit',
+    'fa-pen',
+    'text-gray-700 hover:bg-gray-100',
+    (event) => {
+      event.stopPropagation();
+      closeMenu();
+      app.openListEditModal(rowIndex);
+    },
+  );
+  const deleteButton = createKanbanCardAction(
+    'Delete',
+    'fa-trash',
+    'text-red-600 hover:bg-red-50',
+    (event) => {
+      event.stopPropagation();
+      closeMenu();
+      app.deleteRowAt(rowIndex);
+    },
+  );
+
+  menu.append(editButton, deleteButton);
+  toggle.addEventListener('click', (event) => {
+    event.stopPropagation();
+
+    const shouldOpen = menu.classList.contains('hidden');
+
+    closeKanbanCardMenus(app.kanbanColumns);
+
+    if (shouldOpen) {
+      menu.classList.remove('hidden');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  wrapper.append(toggle, menu);
+  return wrapper;
+}
+
 export const kanbanMethods = {
   renderKanban(tracker) {
     if (!this.kanbanColumns) return;
@@ -252,7 +344,12 @@ export const kanbanMethods = {
           });
         }
 
-        appendText(card, 'block truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
+        const cardLabel = company === '-' ? 'application' : company;
+        const titleRow = document.createElement('div');
+        titleRow.className = 'flex min-w-0 items-start justify-between gap-2';
+        appendText(titleRow, 'min-w-0 flex-1 truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
+        titleRow.appendChild(createKanbanCardMenu(this, rowIndex, cardLabel));
+        card.appendChild(titleRow);
         appendText(card, 'mt-1 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);
 
         const meta = document.createElement('div');

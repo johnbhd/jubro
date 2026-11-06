@@ -120,6 +120,10 @@ input:disabled {
   overflow: visible;
 }
 
+.kanban-card-menu-action {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
 .kanban-card-meta {
   align-items: center;
   column-gap: 0.45rem;
@@ -588,6 +592,16 @@ input:disabled {
 
 .dark .kanban-card {
   border-color: #374151 !important;
+}
+
+.dark .kanban-card-menu {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .kanban-card-menu-action:hover {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
 }
 
 .dark .kanban-card .text-gray-900 {

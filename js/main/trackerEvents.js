@@ -1,4 +1,5 @@
 import { closeMenu } from './ui.js';
+import { closeKanbanCardMenus } from './kanban.js';
 
 export const trackerEventMethods = {
 initEvents() {
@@ -33,6 +34,10 @@ initEvents() {
     document.addEventListener('click', (e) => {
       if (!dropdown.contains(e.target) && e.target !== btnMenu) {
         dropdown.classList.add('hidden');
+      }
+
+      if (!e.target?.closest?.('[data-kanban-card-menu], [data-kanban-card-menu-toggle]')) {
+        closeKanbanCardMenus(this.kanbanColumns);
       }
     });
     
@@ -170,6 +175,7 @@ initEvents() {
       if (e.key === 'Escape') {
         this.closeMobileSearch();
         this.closeDashboard();
+        closeKanbanCardMenus(this.kanbanColumns);
       }
     });
     

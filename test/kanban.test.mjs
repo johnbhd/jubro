@@ -210,6 +210,58 @@ test('renders user values as text in Kanban cards', () => {
   }
 });
 
+test('renders a Kanban card menu with edit and delete actions', () => {
+  const previousDocument = globalThis.document;
+  const previousWindow = globalThis.window;
+  const container = new FakeElement('div');
+
+  globalThis.document = {
+    createElement(tagName) {
+      return new FakeElement(tagName);
+    },
+  };
+  globalThis.window = {
+    matchMedia() {
+      return { matches: false };
+    },
+  };
+
+  try {
+    kanbanMethods.renderKanban.call({
+      kanbanColumns: container,
+      getListColumnIndexes() {
+        return {
+          company: 0,
+          position: -1,
+          date: -1,
+          platform: -1,
+        };
+      },
+      getCellDisplay(cell) {
+        return cell?.value || '-';
+      },
+      moveKanbanRow() {},
+      openListEditModal() {},
+      deleteRowAt() {},
+    }, createTracker({
+      rows: [[
+        { value: 'Alpha', type: 'text' },
+        { value: 'Applied', type: 'select' },
+      ]],
+    }));
+
+    assert.match(container.textContent, /EditDelete/);
+
+    const kanbanSource = readFileSync('js/main/kanban.js', 'utf8');
+    assert.match(kanbanSource, /kanbanCardMenuToggle/);
+    assert.match(kanbanSource, /openListEditModal\(rowIndex\)/);
+    assert.match(kanbanSource, /deleteRowAt\(rowIndex\)/);
+  } finally {
+    globalThis.document = previousDocument;
+    globalThis.window = previousWindow;
+  }
+});
+
 test('separates Kanban date and platform metadata', () => {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
