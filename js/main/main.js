@@ -50,12 +50,16 @@ export class TrackerApp {
     this.tableClipboard = null;
     this.currentPage = 1;
     this.activeListFilters = {};
-    if (!this.getTracker()) {
-      window.location.href = window.location.pathname.includes('/pages/')
-        ? './tracker.html'
-        : '/trackers';
+
+    const route = this.applyTrackerRoute();
+
+    if (route.status === 'invalid' || !route.key) {
+      this.redirectToTrackers();
       return;
     }
+
+    this.ensureCanonicalTrackerURL(route.key);
+
     this.initEvents();
     this.restoreBoardViewPreference();
     this.restoreListSortPreference();
