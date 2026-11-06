@@ -2,6 +2,20 @@ import { closeMenu, UIState } from './ui.js';
 import { normalizeCellValue } from '../services/trackerData.js';
 
 export const trackerActionMethods = {
+showToast(message) {
+    const toast = document.getElementById('jubroToast');
+
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.classList.remove('hidden');
+
+    clearTimeout(this.toastTimeout);
+    this.toastTimeout = setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 2600);
+  },
+
 refresh({ persist = true } = {}) {
     const tracker = this.getTracker();
 
@@ -168,6 +182,10 @@ copyRow() {
 addRow({ useJobDefaults = false, insertAtStart = false } = {}) {
     const tracker = this.getTracker();
     const { activeRow } = UIState;
+
+    if (!tracker || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) {
+      return false;
+    }
   
     const newRow = tracker.columns.map((column) => {
       const type = typeof column === 'object' && column.type
@@ -212,8 +230,14 @@ addRow({ useJobDefaults = false, insertAtStart = false } = {}) {
   
     tracker.rows.splice(insertIndex, 0, newRow);
   
-    this.refresh();
+    const refreshResult = this.refresh();
     closeMenu();
+
+    if (useJobDefaults && refreshResult !== false && typeof this.showToast === 'function') {
+      this.showToast('New application created.');
+    }
+
+    return refreshResult !== false;
   },
 
 moveUp() {

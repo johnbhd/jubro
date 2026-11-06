@@ -90,3 +90,41 @@ test('does not redraw a rejected row move', () => {
   assert.equal(refreshCalls, 0);
   assert.equal(reloadCalls, 1);
 });
+
+test('shows a creation toast after a successful Add Application save', () => {
+  const tracker = {
+    columns: [
+      { name: 'Company', type: 'text' },
+    ],
+    rows: [],
+  };
+  let toastMessage = '';
+
+  const app = {
+    getTracker() {
+      return tracker;
+    },
+    getColumnIndexByNames() {
+      return 0;
+    },
+    getDateColumnIndex() {
+      return -1;
+    },
+    refresh() {
+      return true;
+    },
+    showToast(message) {
+      toastMessage = message;
+    },
+  };
+
+  assert.equal(
+    trackerActionMethods.addRow.call(app, {
+      useJobDefaults: true,
+      insertAtStart: true,
+    }),
+    true,
+  );
+  assert.equal(tracker.rows.length, 1);
+  assert.equal(toastMessage, 'New application created.');
+});

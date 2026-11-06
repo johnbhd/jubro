@@ -31,6 +31,11 @@ input:disabled {
   box-shadow: 0 3px 8px rgb(55 65 81 / 0.25);
 }
 
+.jubro-toast {
+  background-color: #374151;
+  color: #ffffff;
+}
+
 #boardWorkspace .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -577,6 +582,11 @@ input:disabled {
 
 .dark .primary-action-button:hover {
   background-color: #4b5563 !important;
+}
+
+.dark .jubro-toast {
+  background-color: #4b5563 !important;
+  color: #ffffff !important;
 }
 
 .dark .kanban-column {
