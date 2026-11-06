@@ -19,6 +19,18 @@ input:disabled {
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
 }
 
+.primary-action-button {
+  background-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgb(37 99 235 / 0.2);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primary-action-button:hover {
+  background-color: #1d4ed8;
+  box-shadow: 0 3px 8px rgb(37 99 235 / 0.25);
+}
+
 #boardWorkspace .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -558,9 +570,13 @@ input:disabled {
   color: #111827 !important;
 }
 
-.dark #btnListAddJob {
-  background-color: #f9fafb !important;
-  color: #111827 !important;
+.dark .primary-action-button {
+  background-color: #60a5fa !important;
+  color: #0f172a !important;
+}
+
+.dark .primary-action-button:hover {
+  background-color: #93c5fd !important;
 }
 
 .dark .kanban-column {

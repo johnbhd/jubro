@@ -354,9 +354,12 @@ test('keeps Kanban content and icon-only Add Application CTA usable at responsiv
 
   assert.match(boardMarkup, /id="kanbanColumns"[^>]*kanban-scroll-area/);
   assert.match(boardMarkup, /id="btnAddApplication"[^>]*title="Add Application"/);
+  assert.match(boardMarkup, /id="btnAddApplication"[^>]*primary-action-button/);
+  assert.match(boardMarkup, /id="btnListAddJob"[^>]*primary-action-button/);
   assert.doesNotMatch(boardMarkup, /kanban-add-label/);
   assert.match(kanbanSource, /kanban-card-meta/);
   assert.match(kanbanSource, /kanban-card-meta-separator/);
+  assert.match(kanbanSource, /primary-action-button/);
   assert.match(globalStyles, /\.kanban-scroll-area\s*\{[^}]*overflow-x:\s*auto/s);
   assert.match(globalStyles, /\.kanban-column\s*\{[^}]*min-width:/s);
   assert.match(globalStyles, /\.kanban-card\s*\{[^}]*overflow:\s*visible/s);
