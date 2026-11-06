@@ -8,6 +8,8 @@ const auth = {
 let failWrites = false;
 let nextUser = null;
 let signOutHook = null;
+let writeDelay = 0;
+const writes = [];
 
 export function __resetFirebase() {
   documents.clear();
@@ -15,6 +17,8 @@ export function __resetFirebase() {
   failWrites = false;
   nextUser = null;
   signOutHook = null;
+  writeDelay = 0;
+  writes.length = 0;
 }
 
 export function __setDocument(path, value) {
@@ -36,6 +40,14 @@ export function __setNextUser(user) {
 
 export function __setSignOutHook(callback) {
   signOutHook = callback;
+}
+
+export function __getWrites() {
+  return writes.map((write) => structuredClone(write));
+}
+
+export function __setWriteDelay(milliseconds) {
+  writeDelay = Math.max(0, Number(milliseconds) || 0);
 }
 
 export async function __emitAuth(user) {
@@ -110,6 +122,16 @@ export async function getDoc(path) {
 
 export async function setDoc(path, value, options = {}) {
   if (failWrites) throw new Error('simulated-write-failure');
+
+  writes.push({
+    path,
+    value,
+    options,
+  });
+
+  if (writeDelay > 0) {
+    await new Promise((resolve) => setTimeout(resolve, writeDelay));
+  }
 
   const previous = options.merge ? documents.get(path) || {} : {};
   const next = { ...previous };

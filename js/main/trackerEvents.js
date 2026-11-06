@@ -203,8 +203,19 @@ initEvents() {
     });
     
     this.titleInput.addEventListener('input', (e) => {
-      this.getTracker().title = e.target.value;
-      this.save();
+      const tracker = this.getTracker();
+
+      if (!tracker) return;
+
+      tracker.title = e.target.value;
+
+      if (this.save({ sync: false }) === false) return;
+
+      this.scheduleTitleSync();
+    });
+
+    this.titleInput.addEventListener('blur', () => {
+      this.flushScheduledTitleSync();
     });
 
     this.titleInput.addEventListener('keydown', (e) => {

@@ -90,6 +90,7 @@ test('saves a List checkbox editor as a Boolean', () => {
         rows: [row],
       };
     },
+    refresh() {},
     renderListView() {},
     save() {
       return true;
@@ -100,4 +101,52 @@ test('saves a List checkbox editor as a Boolean', () => {
 
   assert.equal(row[0].value, true);
   assert.equal(typeof row[0].value, 'boolean');
+});
+
+test('refreshes both views after a successful List edit', () => {
+  const row = [{ value: 'Original', type: 'text' }];
+  const input = {
+    dataset: { fieldKey: '0' },
+    value: 'Updated',
+  };
+  let refreshOptions = null;
+
+  globalThis.document = {
+    querySelectorAll() {
+      return [input];
+    },
+  };
+
+  const editor = {
+    ...listEditMethods,
+    activeListEditRowIndex: 0,
+    applySearchFilter() {},
+    closeListEditModal() {},
+    ensureListEditColumn(_tracker, field) {
+      return field.index;
+    },
+    getListEditFieldType() {
+      return 'text';
+    },
+    getListEditFields() {
+      return [{ key: '0', index: 0 }];
+    },
+    getTracker() {
+      return {
+        columns: [{ name: 'Company', type: 'text' }],
+        rows: [row],
+      };
+    },
+    refresh(options) {
+      refreshOptions = options;
+    },
+    renderListView() {},
+    save() {
+      return true;
+    },
+  };
+
+  editor.saveListEditModal();
+
+  assert.deepEqual(refreshOptions, { persist: false });
 });

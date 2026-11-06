@@ -8,6 +8,11 @@ refresh({ persist = true } = {}) {
 
     if (!tracker) return;
 
+    if (persist && this.save() === false) {
+      this.reloadStateFromStorage();
+      return false;
+    }
+
     this.renderSelectTextSortOptions();
     this.renderSelectValueFilterOptions();
     this.updateSelectTextSortVisibility();
@@ -22,9 +27,7 @@ refresh({ persist = true } = {}) {
       this.renderDashboard();
     }
 
-    if (persist) {
-      this.save();
-    }
+    return true;
   },
 
 clearTableSortControls() {
@@ -95,6 +98,13 @@ getVisibleMoveTargetRowIndex(rowIndex, direction) {
       this.setListManualSort();
     }
     const sync = this.save();
+
+    if (sync === false) {
+      this.reloadStateFromStorage();
+      closeMenu();
+      return sync;
+    }
+
     this.refresh({ persist: false });
     closeMenu();
 

@@ -367,7 +367,6 @@ export const listEditMethods = {
     if (this.save() === false) return;
 
     this.closeListEditModal();
-    this.renderListView(tracker);
-    this.applySearchFilter();
+    this.refresh({ persist: false });
   }
 };

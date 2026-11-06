@@ -179,3 +179,42 @@ test('normalizes legacy checkbox strings loaded from Firestore by column type', 
   assert.equal(typeof row[0].value, 'boolean');
   assert.equal(row[1].value, 'true');
 });
+
+test('coalesces duplicate same-revision sync requests', async () => {
+  Storage.useAccountWorkspace(ACCOUNT_A.uid);
+  assert.equal(Storage.save(trackerState('account-1', 'Account Tracker')), true);
+
+  const firstSync = firebaseTrackerSync.syncCurrentLocalState(ACCOUNT_A);
+  const secondSync = firebaseTrackerSync.syncCurrentLocalState(ACCOUNT_A);
+
+  await Promise.all([firstSync, secondSync]);
+
+  assert.deepEqual(
+    firebase.__getWrites().map(({ path }) => path),
+    ['users/account-a', 'trackerData/account-a']
+  );
+});
+
+test('serializes different-revision uploads for one account', async () => {
+  Storage.useAccountWorkspace(ACCOUNT_A.uid);
+  assert.equal(Storage.save(trackerState('account-1', 'First revision')), true);
+  firebase.__setWriteDelay(1);
+
+  const firstSync = firebaseTrackerSync.syncCurrentLocalState(ACCOUNT_A);
+  const nextState = Storage.load();
+  nextState.data['account-1'].title = 'Second revision';
+  assert.equal(Storage.save(nextState), true);
+  const secondSync = firebaseTrackerSync.syncCurrentLocalState(ACCOUNT_A);
+
+  await Promise.all([firstSync, secondSync]);
+
+  assert.deepEqual(
+    firebase.__getWrites().map(({ path }) => path),
+    [
+      'users/account-a',
+      'trackerData/account-a',
+      'users/account-a',
+      'trackerData/account-a',
+    ]
+  );
+});

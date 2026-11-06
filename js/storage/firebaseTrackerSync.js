@@ -39,6 +39,7 @@ class FirebaseTrackerSync {
   constructor() {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
+    this.pendingUploads = new Map();
   }
 
   clone(value) {
@@ -270,12 +271,37 @@ class FirebaseTrackerSync {
       syncedAt: new Date().toISOString()
     };
 
-    await setDoc(doc(this.db, "users", user.uid), {
-      email: user.email,
-      trackerData
-    }, { merge: true });
+    const revision = trackerData.revision;
+    const pendingUpload = this.pendingUploads.get(user.uid);
 
-    await setDoc(doc(this.db, "trackerData", user.uid), trackerData, { merge: true });
+    if (pendingUpload?.revision === revision) {
+      return pendingUpload.promise;
+    }
+
+    const previousPromise = pendingUpload?.promise || Promise.resolve();
+    const uploadPromise = previousPromise
+      .catch(() => {})
+      .then(async () => {
+        await setDoc(doc(this.db, "users", user.uid), {
+          email: user.email,
+          trackerData
+        }, { merge: true });
+
+        await setDoc(doc(this.db, "trackerData", user.uid), trackerData, { merge: true });
+      });
+
+    this.pendingUploads.set(user.uid, {
+      revision,
+      promise: uploadPromise,
+    });
+
+    try {
+      await uploadPromise;
+    } finally {
+      if (this.pendingUploads.get(user.uid)?.promise === uploadPromise) {
+        this.pendingUploads.delete(user.uid);
+      }
+    }
   }
 
   async syncCurrentLocalState(user) {

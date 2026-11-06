@@ -3,6 +3,8 @@ import { authService } from '../auth/firebaseAuth.js';
 import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
 import { createDefaultTracker } from '../tracker/defaultTracker.js';
 
+const TITLE_SYNC_DELAY_MS = 300;
+
 export const trackerStateMethods = {
 generateId() {
     return 'trk_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
@@ -107,11 +109,43 @@ reloadStateFromStorage() {
     this.refresh({ persist: false });
   },
 
-save() {
+save({ sync = true } = {}) {
     if (!Storage.save(this.state)) {
       return false;
     }
 
+    if (!sync) {
+      return true;
+    }
+
+    this.cancelScheduledTitleSync();
+    return this.syncLocalStateToFirebase();
+  },
+
+scheduleTitleSync() {
+    if (this.titleSyncTimer) {
+      clearTimeout(this.titleSyncTimer);
+    }
+
+    this.titleSyncTimer = setTimeout(() => {
+      this.titleSyncTimer = null;
+      this.syncLocalStateToFirebase();
+    }, TITLE_SYNC_DELAY_MS);
+  },
+
+cancelScheduledTitleSync() {
+    if (!this.titleSyncTimer) return;
+
+    clearTimeout(this.titleSyncTimer);
+    this.titleSyncTimer = null;
+  },
+
+flushScheduledTitleSync() {
+    if (!this.titleSyncTimer) {
+      return Promise.resolve();
+    }
+
+    this.cancelScheduledTitleSync();
     return this.syncLocalStateToFirebase();
   },
 
