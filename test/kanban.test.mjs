@@ -296,20 +296,19 @@ test('renders the empty tracker Board state with an Add Application action', () 
   }
 });
 
-test('keeps Kanban content and Add Application CTA usable at responsive widths', () => {
+test('keeps Kanban content and icon-only Add Application CTA usable at responsive widths', () => {
   const boardMarkup = readFileSync('board/index.html', 'utf8');
   const kanbanSource = readFileSync('js/main/kanban.js', 'utf8');
   const globalStyles = readFileSync('css/global.css', 'utf8');
 
   assert.match(boardMarkup, /id="kanbanColumns"[^>]*kanban-scroll-area/);
   assert.match(boardMarkup, /id="btnAddApplication"[^>]*title="Add Application"/);
-  assert.match(boardMarkup, /class="kanban-add-label"/);
+  assert.doesNotMatch(boardMarkup, /kanban-add-label/);
   assert.match(kanbanSource, /kanban-card-meta/);
   assert.match(kanbanSource, /kanban-card-meta-separator/);
   assert.match(globalStyles, /\.kanban-scroll-area\s*\{[^}]*overflow-x:\s*auto/s);
   assert.match(globalStyles, /\.kanban-column\s*\{[^}]*min-width:/s);
   assert.match(globalStyles, /\.kanban-card\s*\{[^}]*overflow:\s*visible/s);
-  assert.match(globalStyles, /\.kanban-add-label\s*\{[^}]*display:\s*none/s);
 });
 
 test('keeps Kanban column headers readable and grouped in both themes', () => {
@@ -533,13 +532,19 @@ test('keeps Table reachable through the shared view state', () => {
   assert.equal(app.updatedView, 'table');
 });
 
-test('Board markup exposes Kanban, Board/List navigation, Add Application, and advanced Table access', () => {
+test('Board markup exposes Kanban, List, Table, Add Application, and dropdown actions', () => {
   const boardMarkup = readFileSync(new URL('../board/index.html', import.meta.url), 'utf8');
+  const globalStyles = readFileSync(new URL('../css/global.css', import.meta.url), 'utf8');
 
   assert.match(boardMarkup, /id="kanbanView"/);
   assert.match(boardMarkup, /id="kanbanColumns"/);
   assert.match(boardMarkup, /data-board-view-button="kanban"/);
   assert.match(boardMarkup, /data-board-view-button="list"/);
+  assert.match(boardMarkup, /data-board-view-button="table"/);
   assert.match(boardMarkup, /id="btnAddApplication"/);
-  assert.match(boardMarkup, /id="btnTableView"/);
+  assert.doesNotMatch(boardMarkup, /id="btnTableView"/);
+  assert.match(boardMarkup, /id="btnDashboard"/);
+  assert.match(boardMarkup, /id="btnImport"/);
+  assert.match(boardMarkup, /id="btnExport"/);
+  assert.match(globalStyles, /#btnDashboard\s*\{[^}]*background-color:\s*transparent/s);
 });

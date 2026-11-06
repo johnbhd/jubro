@@ -7,7 +7,6 @@ initEvents() {
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
-    const btnTableView = document.getElementById('btnTableView');
     const btnAddApplication = document.getElementById('btnAddApplication');
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
@@ -242,11 +241,6 @@ initEvents() {
 
         this.setBoardView(view);
       });
-    });
-
-    btnTableView?.addEventListener('click', () => {
-      dropdown?.classList.add('hidden');
-      this.setBoardView('table');
     });
 
     listSearchInput?.addEventListener('input', () => {

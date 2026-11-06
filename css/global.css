@@ -133,11 +133,6 @@ input:disabled {
   line-height: 1;
 }
 
-.kanban-add-label {
-  display: none;
-  white-space: nowrap;
-}
-
 #contextMenu,
 #subMenu {
   max-width: calc(100vw - 1rem);
@@ -243,12 +238,6 @@ input:disabled {
 
   #jobSearchInput {
     padding-right: 0.75rem;
-  }
-}
-
-@media (min-width: 640px) {
-  .kanban-add-label {
-    display: inline;
   }
 }
 
@@ -546,9 +535,13 @@ input:disabled {
   background-color: transparent !important;
 }
 
+#btnDashboard {
+  background-color: transparent;
+}
+
 .dark #btnDashboard {
-  background-color: #f9fafb !important;
-  color: #111827 !important;
+  background-color: transparent !important;
+  color: #e5e7eb !important;
 }
 
 .dark #boardViewToggle {
@@ -622,10 +615,6 @@ input:disabled {
 .dark .kanban-card select {
   background-color: #1f2937 !important;
   color: #f9fafb !important;
-}
-
-.dark #btnDashboard:hover {
-  background-color: #e5e7eb !important;
 }
 
 .dark #btnOpenSearch,

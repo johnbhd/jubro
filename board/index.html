@@ -135,7 +135,7 @@
             <option value="list">List</option>
             <option value="table">Table</option>
           </select>
-          <div id="boardViewToggle" class="inline-flex shrink-0 items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" role="group" aria-label="Board view">
+          <div id="boardViewToggle" class="inline-flex shrink-0 flex-nowrap items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" role="group" aria-label="Board view">
             <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="kanban" aria-label="Board view" aria-pressed="true">
               <i class="fa-solid fa-table-columns"></i>
               <span>Board</span>
@@ -144,10 +144,13 @@
               <i class="fa-solid fa-list-ul"></i>
               <span>List</span>
             </button>
+            <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="table" aria-label="Table view" aria-pressed="false">
+              <i class="fa-solid fa-table-cells-large"></i>
+              <span>Table</span>
+            </button>
           </div>
-          <button id="btnAddApplication" type="button" title="Add Application" class="inline-flex h-10 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 sm:px-4" aria-label="Add Application">
+          <button id="btnAddApplication" type="button" title="Add Application" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900" aria-label="Add Application">
             <i class="fa-solid fa-plus text-xs"></i>
-            <span class="kanban-add-label">Add Application</span>
           </button>
           <button id="btnMenu" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-xl" aria-label="More options">
             <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -156,10 +159,6 @@
       
         <!-- DROPDOWN -->
         <div id="navDropdown" class="hidden absolute right-0 mt-1 w-48 bg-white border rounded-md shadow text-sm overflow-hidden">
-          <button id="btnTableView" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-table-cells-large w-4 text-gray-500"></i>
-            <span>Table (advanced)</span>
-          </button>
           <button id="btnDashboard" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
             <i class="fa-solid fa-chart-simple w-4 text-gray-500"></i>
             <span>Dashboard</span>
