@@ -7,6 +7,7 @@ import { trackerSearchMethods } from './trackerSearch.js';
 import { applicationEditorMethods } from './applicationEditor.js';
 import { trackerSettingsMethods } from './trackerSettings.js';
 import { kanbanMethods } from './kanban.js';
+import { trackerListViewMethods } from './trackerListView.js';
 import { trackerKeyboardMethods } from './trackerKeyboard.js';
 import { trackerActionMethods } from './trackerActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
@@ -17,6 +18,9 @@ export class TrackerApp {
     this.boardContainer = document.getElementById('boardContainer');
     this.kanbanView = document.getElementById('kanbanView');
     this.kanbanColumns = document.getElementById('kanbanColumns');
+    this.listView = document.getElementById('listView');
+    this.listCards = document.getElementById('listCards');
+    this.viewSelect = document.getElementById('boardViewSelect');
     this.titleInput = document.getElementById('trackerTitleInput');
     this.searchWrapper = document.getElementById('searchWrapper');
     this.searchInput = document.getElementById('jobSearchInput');
@@ -48,6 +52,7 @@ export class TrackerApp {
 
     this.ensureCanonicalTrackerURL(route.key);
     this.initEvents();
+    this.restoreBoardViewPreference();
     this.refresh({ persist: false });
   }
 }
@@ -62,6 +67,7 @@ Object.assign(
   applicationEditorMethods,
   trackerSettingsMethods,
   kanbanMethods,
+  trackerListViewMethods,
   trackerKeyboardMethods,
   trackerActionMethods,
   trackerEventMethods,

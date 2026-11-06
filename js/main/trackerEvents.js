@@ -8,11 +8,14 @@ export const trackerEventMethods = {
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
     const btnCustomizeFields = document.getElementById('btnCustomizeFields');
+    const btnBoardView = document.getElementById('btnBoardView');
+    const btnListView = document.getElementById('btnListView');
     const btnAddApplication = document.getElementById('btnAddApplication');
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
     const btnCloseSearch = document.getElementById('btnCloseSearch');
     const boardSortSelect = document.getElementById('boardSortSelect');
+    const boardViewSelect = document.getElementById('boardViewSelect');
     const selectTextSortSelect = document.getElementById('selectTextSortSelect');
     const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
     const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
@@ -36,6 +39,12 @@ export const trackerEventMethods = {
     btnCustomizeFields?.addEventListener('click', () => {
       dropdown?.classList.add('hidden');
       this.toggleTrackerSettings();
+    });
+
+    btnBoardView?.addEventListener('click', () => this.setBoardView('kanban'));
+    btnListView?.addEventListener('click', () => this.setBoardView('list'));
+    boardViewSelect?.addEventListener('change', () => {
+      this.setBoardView(boardViewSelect.value);
     });
 
     btnExport?.addEventListener('click', () => {

@@ -453,16 +453,18 @@ test('search targets Kanban cards without treating search as a mutation', () => 
   }
 });
 
-test('Board markup exposes Kanban-only navigation and field settings access', () => {
+test('Board markup exposes Board/List navigation and field settings access', () => {
   const boardMarkup = readFileSync(new URL('../board/index.html', import.meta.url), 'utf8');
   const globalStyles = readFileSync(new URL('../css/global.css', import.meta.url), 'utf8');
 
   assert.match(boardMarkup, /id="kanbanView"/);
   assert.match(boardMarkup, /id="kanbanColumns"/);
+  assert.match(boardMarkup, /id="btnBoardView"/);
+  assert.match(boardMarkup, /id="btnListView"/);
+  assert.match(boardMarkup, /id="listView"/);
   assert.match(boardMarkup, /id="btnAddApplication"/);
   assert.match(boardMarkup, /id="btnCustomizeFields"/);
   assert.doesNotMatch(boardMarkup, /id="tableView"/);
-  assert.doesNotMatch(boardMarkup, /id="listView"/);
   assert.doesNotMatch(boardMarkup, /id="btnTableView"/);
   assert.match(globalStyles, /\.dark #btnDashboard\s*\{[^}]*background-color:\s*transparent/s);
   assert.doesNotMatch(globalStyles, /\.dark #btnDashboard\s*\{[^}]*background-color:\s*#f9fafb/s);

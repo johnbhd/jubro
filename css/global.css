@@ -52,6 +52,32 @@ input:disabled {
   justify-content: flex-end;
 }
 
+.board-view-navigation {
+  flex-shrink: 0;
+}
+
+.board-view-button {
+  color: #6b7280;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.board-view-button:hover {
+  color: #111827;
+}
+
+.board-view-button.is-active {
+  background-color: #111827;
+  color: #ffffff;
+}
+
+.list-view-cards {
+  padding: 0.25rem;
+}
+
+.list-view-row {
+  overflow: visible;
+}
+
 .kanban-view {
   min-width: 0;
   overflow: visible;
@@ -486,6 +512,23 @@ input:disabled {
   border-color: #2f3b4d !important;
 }
 
+.dark .board-view-navigation {
+  background-color: #1f2937 !important;
+}
+
+.dark .board-view-button {
+  color: #d1d5db;
+}
+
+.dark .board-view-button:hover {
+  color: #ffffff;
+}
+
+.dark .board-view-button.is-active {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
 .dark .kanban-column-header {
   border-bottom-color: #3f4c60 !important;
 }
@@ -510,6 +553,24 @@ input:disabled {
 
 .dark .kanban-card {
   border-color: #374151 !important;
+}
+
+.dark .list-view-row {
+  border-color: #374151 !important;
+}
+
+.dark .list-view-row .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark .list-view-row .text-gray-600,
+.dark .list-view-row .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+.dark .list-view-row select {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
 }
 
 .dark .kanban-card .text-gray-900 {

@@ -1,6 +1,8 @@
 export const trackerSearchMethods = {
   getBoardRowSelector() {
-    return '#kanbanView [data-row-index]';
+    return this.viewSelect?.value === 'list'
+      ? '#listView [data-row-index]'
+      : '#kanbanView [data-row-index]';
   },
 
   getSearchColumnIndexes(tracker) {

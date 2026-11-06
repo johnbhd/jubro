@@ -17,6 +17,8 @@ export const trackerActionMethods = {
     this.renderSelectValueFilterOptions();
     this.updateSelectTextSortVisibility();
     this.renderKanban(tracker);
+    this.renderListView?.(tracker);
+    this.updateBoardView?.();
     this.titleInput.value = tracker.title;
     this.applySearchFilter();
 

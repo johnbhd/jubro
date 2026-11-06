@@ -130,6 +130,20 @@
           <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 lg:hidden" aria-label="Open search">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
+          <nav id="boardViewNavigation" class="board-view-navigation inline-flex items-center rounded-lg bg-gray-100 p-1" aria-label="Workspace view">
+            <button id="btnBoardView" type="button" class="board-view-button rounded-md px-2.5 py-1.5 text-xs font-medium" data-board-view-button="kanban" aria-pressed="true">
+              <i class="fa-solid fa-table-columns mr-1"></i>
+              Board
+            </button>
+            <button id="btnListView" type="button" class="board-view-button rounded-md px-2.5 py-1.5 text-xs font-medium" data-board-view-button="list" aria-pressed="false">
+              <i class="fa-solid fa-list mr-1"></i>
+              List
+            </button>
+          </nav>
+          <select id="boardViewSelect" class="sr-only" aria-label="Workspace view">
+            <option value="kanban">Board</option>
+            <option value="list">List</option>
+          </select>
           <button id="btnAddApplication" type="button" title="Add Application" class="inline-flex h-10 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 sm:px-4" aria-label="Add Application">
             <i class="fa-solid fa-plus text-xs"></i>
             <span class="kanban-add-label">Add Application</span>
@@ -164,6 +178,10 @@
     <main class="board-workspace min-w-0 py-3 sm:py-4" id="boardContainer">
       <div id="kanbanView" class="kanban-view min-w-0">
         <div id="kanbanColumns" class="kanban-scroll-area flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
+      </div>
+
+      <div id="listView" class="hidden min-w-0">
+        <div id="listCards" class="list-view-cards grid min-w-0 gap-3"></div>
       </div>
 
       <p id="noSearchResults" class="hidden text-gray-400 text-center py-6">
