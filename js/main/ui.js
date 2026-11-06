@@ -60,8 +60,7 @@ export function showMenu(e, rowIndex, colIndex, type) {
   e.preventDefault();
 
   const menu = document.getElementById('contextMenu');
-  const tableBody = document.getElementById('tableBody');
-  const rowCount = tableBody ? tableBody.querySelectorAll('tr').length : 0;
+  const rowCount = document.querySelectorAll('[data-row-index]').length;
 
   setActiveTarget(rowIndex, colIndex, type);
   
@@ -70,25 +69,16 @@ export function showMenu(e, rowIndex, colIndex, type) {
 
   
   const btnAddRow = document.getElementById('btn-addRow');
-  const btnAddCol = document.getElementById('btn-addCol');
   const btnMoveUp = document.getElementById('btn-moveUp');
   const btnMoveDown = document.getElementById('btn-moveDown');
-  const btnMoveLeft = document.getElementById('btn-moveLeft');
-  const btnMoveRight = document.getElementById('btn-moveRight');
   const btnDelRow = document.getElementById('btn-delRow');
-  const btnDelCol = document.getElementById('btn-delCol');
-  const btnCustomize = document.getElementById('btn-customize');
-  const subMenu = document.getElementById('subMenu');
   const btnCopyRow = document.getElementById('btn-copyRow');
-  const btnCopyCol = document.getElementById('btn-copyCol');
   
   [
-    btnAddRow, btnAddCol,
+    btnAddRow,
     btnMoveUp, btnMoveDown,
-    btnMoveLeft, btnMoveRight,
-    btnDelRow, btnDelCol,
-    btnCustomize, subMenu,
-    btnCopyRow, btnCopyCol
+    btnDelRow,
+    btnCopyRow
   ].forEach(btn => btn.classList.add('hidden'));
 
   if (type === 'row') {
@@ -99,17 +89,7 @@ export function showMenu(e, rowIndex, colIndex, type) {
     btnMoveDown.classList.remove('hidden');
   }
   
-  if (type === 'col') {
-    if (rowCount === 0) {
-      btnAddRow.classList.remove('hidden');
-    }
-    btnAddCol.classList.remove('hidden');
-    btnDelCol.classList.remove('hidden');
-    btnCopyCol.classList.remove('hidden');
-    btnCustomize.classList.remove('hidden');
-    btnMoveLeft.classList.remove('hidden');
-    btnMoveRight.classList.remove('hidden');
-  }
+  if (rowCount === 0) btnAddRow.classList.remove('hidden');
 }
 
 export function closeMenu() {
@@ -149,21 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!menu) return;
 
-  const btnCustomize = document.getElementById('btn-customize');
-  const subMenu = document.getElementById('subMenu');
-
-  btnCustomize?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    subMenu.classList.toggle('hidden');
-  });
-
-  subMenu?.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-
   document.addEventListener('click', (e) => {
     if (!menu.contains(e.target)) {
-      subMenu.classList.add('hidden');
+      menu.classList.add('hidden');
     }
   });
 

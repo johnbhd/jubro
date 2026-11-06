@@ -5,90 +5,67 @@ globalThis.window = new EventTarget();
 globalThis.document = new EventTarget();
 globalThis.document.getElementById = () => null;
 
-const { Table } = await import('../js/main/table.js');
-const { trackerTableActionMethods } = await import('../js/main/trackerTableActions.js');
+const { trackerActionMethods } = await import('../js/main/trackerActions.js');
 
 test('does not redraw a rejected persisted mutation', () => {
-  const originalRender = Table.render;
-  let rendered = false;
   let reloaded = false;
 
-  Table.render = () => {
-    rendered = true;
+  const app = {
+    getTracker() {
+      return {
+        title: 'Tracker',
+        columns: [],
+        rows: [],
+      };
+    },
+    reloadStateFromStorage() {
+      reloaded = true;
+    },
+    save() {
+      return false;
+    },
   };
 
-  try {
-    const app = {
-      getTracker() {
-        return {
-          title: 'Tracker',
-          columns: [],
-          rows: [],
-        };
-      },
-      renderKanban() {},
-      reloadStateFromStorage() {
-        reloaded = true;
-      },
-      save() {
-        return false;
-      },
-    };
-
-    assert.equal(trackerTableActionMethods.refresh.call(app), false);
-    assert.equal(rendered, false);
-    assert.equal(reloaded, true);
-  } finally {
-    Table.render = originalRender;
-  }
+  assert.equal(trackerActionMethods.refresh.call(app), false);
+  assert.equal(reloaded, true);
 });
 
 test('does not save when refresh only updates a view', () => {
-  const originalRender = Table.render;
   let saveCalls = 0;
 
-  Table.render = () => {};
+  const app = {
+    dashboardModal: null,
+    getTracker() {
+      return {
+        title: 'Tracker',
+        columns: [],
+        rows: [],
+      };
+    },
+    renderKanban() {},
+    renderListView() {},
+    renderSelectTextSortOptions() {},
+    renderSelectValueFilterOptions() {},
+    updateBoardView() {},
+    updateListFilterChipStyles() {},
+    updateSelectTextSortVisibility() {},
+    applySearchFilter() {},
+    titleInput: { value: '' },
+    save() {
+      saveCalls += 1;
+    },
+  };
 
-  try {
-    const app = {
-      dashboardModal: null,
-      getTableRowsForRender() {
-        return [];
-      },
-      getTracker() {
-        return {
-          title: 'Tracker',
-          columns: [],
-          rows: [],
-        };
-      },
-      renderKanban() {},
-      renderListView() {},
-      renderSelectTextSortOptions() {},
-      renderSelectValueFilterOptions() {},
-      updateBoardView() {},
-      updateListFilterChipStyles() {},
-      updateSelectTextSortVisibility() {},
-      applySearchFilter() {},
-      titleInput: { value: '' },
-      save() {
-        saveCalls += 1;
-      },
-    };
-
-    trackerTableActionMethods.refresh.call(app, { persist: false });
-    assert.equal(saveCalls, 0);
-  } finally {
-    Table.render = originalRender;
-  }
+  trackerActionMethods.refresh.call(app, { persist: false });
+  assert.equal(saveCalls, 0);
 });
 
-test('does not redraw a rejected row or column move', () => {
+test('does not redraw a rejected row move', () => {
   let refreshCalls = 0;
   let reloadCalls = 0;
 
   const app = {
-    clearTableSortControls() {},
+    clearSortControls() {},
     getTracker() {
       return {
         columns: [],
@@ -107,7 +84,7 @@ test('does not redraw a rejected row or column move', () => {
   };
 
   assert.equal(
-    trackerTableActionMethods.persistTableMove.call(app),
+    trackerActionMethods.persistRowMove.call(app),
     false
   );
   assert.equal(refreshCalls, 0);

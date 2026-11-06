@@ -13,7 +13,7 @@ initEvents() {
     const btnCloseSearch = document.getElementById('btnCloseSearch');
     const btnPaginationPrev = document.getElementById('btnPaginationPrev');
     const btnPaginationNext = document.getElementById('btnPaginationNext');
-    const tableSortSelect = document.getElementById('tableSortSelect');
+    const sortSelect = document.getElementById('sortSelect');
     const boardViewSelect = document.getElementById('boardViewSelect');
     const listSearchInput = document.getElementById('listSearchInput');
     const listSortSelect = document.getElementById('listSortSelect');
@@ -22,36 +22,6 @@ initEvents() {
     const selectTextSortSelect = document.getElementById('selectTextSortSelect');
     const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
     const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
-    
-    document.getElementById('btn-type-checkbox')?.addEventListener('click', () => {
-      this.setColumnType('checkbox');
-    });
-    
-    document.getElementById('btn-type-date')?.addEventListener('click', () => {
-      this.setColumnType('date');
-    });
-    
-    document.addEventListener('table:update', () => {
-      this.refresh();
-    });
-
-    document.addEventListener('table:row-reorder', (e) => {
-      const { fromIndex, toIndex } = e.detail || {};
-      this.reorderRow(Number(fromIndex), Number(toIndex));
-    });
-
-    document.addEventListener('table:col-reorder', (e) => {
-      const { fromIndex, toIndex } = e.detail || {};
-      this.reorderColumn(Number(fromIndex), Number(toIndex));
-    });
-    
-    document.getElementById('btn-type-text')?.addEventListener('click', () => {
-      this.setColumnType('text');
-    });
-    
-    document.getElementById('btn-type-select')?.addEventListener('click', () => {
-      this.setColumnType('select');
-    });
     
     // toggle dropdown
     btnMenu?.addEventListener('click', (e) => {
@@ -97,13 +67,13 @@ initEvents() {
 
         if (!confirmed) return;
 
-        const nextState = this.cloneTableValue(this.state);
+        const nextState = this.cloneValue(this.state);
         nextState.active = trackerKey;
         nextState.data[trackerKey] = {
           ...nextState.data[trackerKey],
           id: trackerKey,
-          columns: this.cloneTableValue(data.columns),
-          rows: this.cloneTableValue(data.rows)
+          columns: this.cloneValue(data.columns),
+          rows: this.cloneValue(data.rows)
         };
 
         if (!Storage.replace(nextState, this.state.revision)) {
@@ -177,21 +147,21 @@ initEvents() {
       }
 
       if ((e.ctrlKey || e.metaKey) && key === 'c' && !this.isEditableTarget(e.target)) {
-        if (this.copyHoveredTableTarget()) {
+        if (this.copyHoveredTarget()) {
           e.preventDefault();
         }
         return;
       }
 
       if ((e.ctrlKey || e.metaKey) && key === 'v' && !this.isEditableTarget(e.target)) {
-        if (this.pasteHoveredTableTarget()) {
+        if (this.pasteHoveredTarget()) {
           e.preventDefault();
         }
         return;
       }
 
       if ((e.key === 'Delete' || e.key === 'Backspace') && !this.isEditableTarget(e.target)) {
-        if (this.deleteHoveredTableTarget()) {
+        if (this.deleteHoveredTarget()) {
           e.preventDefault();
         }
         return;
@@ -288,7 +258,7 @@ initEvents() {
       this.applySearchFilter();
     });
 
-    tableSortSelect?.addEventListener('change', () => {
+    sortSelect?.addEventListener('change', () => {
       this.resetPagination();
       this.updateSelectTextSortVisibility();
       this.refresh({ persist: false });
@@ -332,24 +302,16 @@ initEvents() {
         closeMenu();
       }
     });
-    this.tableContainer.addEventListener('click', (e) => e.stopPropagation());
+    this.boardWorkspace.addEventListener('click', (e) => e.stopPropagation());
 
     const buttonActions = {
       "btn-addRow": (e) => {
         e.preventDefault();
         this.addRow();
       },
-      "btn-addCol": (e) => {
-        e.preventDefault();
-        this.addCol();
-      },
       "btn-copyRow": (e) => {
         e.preventDefault();
         this.copyRow();
-      },
-      "btn-copyCol": (e) => {
-        e.preventDefault();
-        this.copyCol();
       },
       "btn-moveUp": (e) => {
         e.preventDefault();
@@ -359,22 +321,10 @@ initEvents() {
         e.preventDefault();
         this.moveDown();
       },
-      "btn-moveLeft": (e) => {
-        e.preventDefault();
-        this.moveLeft();
-      },
-      "btn-moveRight": (e) => {
-        e.preventDefault();
-        this.moveRight();
-      },
       "btn-delRow": (e) => {
         e.preventDefault();
         this.deleteRow();
       },
-      "btn-delCol": (e) => {
-        e.preventDefault();
-        this.deleteCol();
-      }
     };
 
     Object.entries(buttonActions).forEach(([id, action]) => {

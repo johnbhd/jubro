@@ -1,19 +1,11 @@
-import { BOARD_PAGE_SIZE, BOARD_VIEW_KEY } from '../constants.js';
+import { BOARD_VIEW_KEY } from '../constants.js';
 import { closeMenu } from '../ui.js';
-import { Table } from '../table.js';
 
 export const boardViewMethods = {
   updateBoardView() {
     const currentView = this.viewSelect?.value || 'kanban';
     const isListView = this.viewSelect?.value === 'list';
     const isKanbanView = currentView === 'kanban';
-    const isTableView = currentView === 'table';
-
-    if (isTableView) {
-      Table.closeSelectDropdown();
-    }
-
-    this.tableView?.classList.toggle('hidden', !isTableView);
     this.listView?.classList.toggle('hidden', !isListView);
     this.kanbanView?.classList.toggle('hidden', !isKanbanView);
     this.updateBoardViewToggle();
@@ -37,7 +29,7 @@ export const boardViewMethods = {
   },
 
   setBoardView(view) {
-    if (!this.viewSelect || !['kanban', 'list', 'table'].includes(view)) {
+    if (!this.viewSelect || !['kanban', 'list'].includes(view)) {
       return;
     }
 
@@ -61,20 +53,6 @@ export const boardViewMethods = {
     }
 
     this.updateBoardViewToggle();
-  },
-
-  showTableRow(rowIndex) {
-    if (this.viewSelect) {
-      this.viewSelect.value = 'table';
-      this.saveBoardViewPreference();
-    }
-
-    this.currentPage = Math.floor(rowIndex / BOARD_PAGE_SIZE) + 1;
-    this.updateBoardView();
-    this.applySearchFilter();
-
-    const rowElement = document.querySelector(`#tableBody tr[data-row-index="${rowIndex}"]`);
-    rowElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   },
 
   deleteRowAt(rowIndex) {

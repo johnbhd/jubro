@@ -5,7 +5,7 @@ getBoardRowSelector(view = this.viewSelect?.value) {
     if (view === 'list') return '#listCards [data-row-index]';
     if (view === 'kanban') return '#kanbanView [data-row-index]';
 
-    return '#tableBody tr';
+    return '#kanbanView [data-row-index], #listCards [data-row-index]';
   },
 
 getSearchColumnIndexes(tracker) {
@@ -50,7 +50,7 @@ rowMatchesSelectFilter(row) {
 applySearchFilter() {
     const tracker = this.getTracker();
     const query = this.searchInput?.value.trim().toLowerCase() || '';
-    const currentView = this.viewSelect?.value || 'table';
+    const currentView = this.viewSelect?.value || 'kanban';
     const isListView = currentView === 'list';
     const isKanbanView = currentView === 'kanban';
     const rowElements = document.querySelectorAll(this.getBoardRowSelector(currentView));

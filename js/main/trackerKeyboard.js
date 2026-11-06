@@ -28,27 +28,22 @@ focusSearchShortcut() {
     this.searchInput?.select();
   },
 
-deleteHoveredTableTarget() {
+  deleteHoveredTarget() {
     if (UIState.activeType === 'row') {
       this.deleteRow();
-      return true;
-    }
-
-    if (UIState.activeType === 'col') {
-      this.deleteCol();
       return true;
     }
 
     return false;
   },
 
-cloneTableValue(value) {
+  cloneValue(value) {
     return typeof structuredClone === 'function'
       ? structuredClone(value)
       : JSON.parse(JSON.stringify(value));
   },
 
-copyHoveredTableTarget() {
+  copyHoveredTarget() {
     const tracker = this.getTracker();
 
     if (!tracker) return false;
@@ -57,21 +52,9 @@ copyHoveredTableTarget() {
       const row = tracker.rows?.[UIState.activeRow];
       if (!row) return false;
 
-      this.tableClipboard = {
+      this.clipboard = {
         type: 'row',
-        row: this.cloneTableValue(row)
-      };
-      return true;
-    }
-
-    if (UIState.activeType === 'col' && UIState.activeCol !== null) {
-      const column = tracker.columns?.[UIState.activeCol];
-      if (!column) return false;
-
-      this.tableClipboard = {
-        type: 'col',
-        column: this.cloneTableValue(column),
-        cells: tracker.rows.map((row) => this.cloneTableValue(row[UIState.activeCol]))
+        row: this.cloneValue(row)
       };
       return true;
     }
@@ -79,41 +62,18 @@ copyHoveredTableTarget() {
     return false;
   },
 
-pasteHoveredTableTarget() {
+  pasteHoveredTarget() {
     const tracker = this.getTracker();
 
-    if (!tracker || !this.tableClipboard) return false;
+    if (!tracker || !this.clipboard) return false;
 
     if (
-      this.tableClipboard.type === 'row'
+      this.clipboard.type === 'row'
       && UIState.activeType === 'row'
       && UIState.activeRow !== null
     ) {
-      tracker.rows.splice(UIState.activeRow + 1, 0, this.cloneTableValue(this.tableClipboard.row));
-      this.clearTableSortControls();
-      this.refresh();
-      closeMenu();
-      return true;
-    }
-
-    if (
-      this.tableClipboard.type === 'col'
-      && UIState.activeType === 'col'
-      && UIState.activeCol !== null
-    ) {
-      const insertIndex = UIState.activeCol + 1;
-
-      tracker.columns.splice(insertIndex, 0, this.cloneTableValue(this.tableClipboard.column));
-      tracker.rows.forEach((row, rowIndex) => {
-        const hasCopiedCell = rowIndex < this.tableClipboard.cells.length;
-        const pastedCell = hasCopiedCell
-          ? this.cloneTableValue(this.tableClipboard.cells[rowIndex])
-          : { value: '', type: 'text' };
-
-        row.splice(insertIndex, 0, pastedCell);
-      });
-
-      this.clearTableSortControls();
+      tracker.rows.splice(UIState.activeRow + 1, 0, this.cloneValue(this.clipboard.row));
+      this.clearSortControls();
       this.refresh();
       closeMenu();
       return true;

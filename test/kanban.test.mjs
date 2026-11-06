@@ -14,10 +14,9 @@ const {
   groupKanbanRows,
   kanbanMethods,
 } = await import('../js/main/kanban.js');
-const { trackerTableActionMethods } = await import('../js/main/trackerTableActions.js');
+const { trackerActionMethods } = await import('../js/main/trackerActions.js');
 const { trackerSearchMethods } = await import('../js/main/trackerSearch.js');
 const { boardViewMethods } = await import('../js/main/listView/boardView.js');
-const { Table } = await import('../js/main/table.js');
 
 class FakeElement {
   constructor(tagName) {
@@ -380,15 +379,10 @@ test('reloads canonical state when a Kanban status save is rejected', () => {
   assert.equal(tracker.rows[0][1].value, 'Applied');
 });
 
-test('refresh renders Kanban from the same tracker as Table and List', () => {
+test('refresh renders Kanban and List from the canonical tracker', () => {
   let kanbanCalls = 0;
-  const originalTableRender = Table.render;
-  Table.render = () => {};
   const app = {
     dashboardModal: null,
-    getTableRowsForRender() {
-      return [];
-    },
     getTracker() {
       return {
         title: 'Tracker',
@@ -410,11 +404,7 @@ test('refresh renders Kanban from the same tracker as Table and List', () => {
     save() {},
   };
 
-  try {
-    trackerTableActionMethods.refresh.call(app, { persist: false });
-  } finally {
-    Table.render = originalTableRender;
-  }
+  trackerActionMethods.refresh.call(app, { persist: false });
 
   assert.equal(kanbanCalls, 1);
 });
@@ -466,7 +456,7 @@ test('search targets Kanban cards without treating search as a mutation', () => 
   }
 });
 
-test('defaults Board view to Kanban and maps legacy Table preference to Kanban', () => {
+test('defaults Board view to Kanban and maps legacy preferences to Kanban', () => {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
   const previousStorage = globalThis.localStorage;
@@ -512,7 +502,7 @@ test('defaults Board view to Kanban and maps legacy Table preference to Kanban',
   }
 });
 
-test('keeps Table reachable through the shared view state', () => {
+test('rejects removed legacy view state', () => {
   const app = {
     viewSelect: { value: 'kanban' },
     resetPagination() {},
@@ -527,12 +517,12 @@ test('keeps Table reachable through the shared view state', () => {
 
   boardViewMethods.setBoardView.call(app, 'table');
 
-  assert.equal(app.viewSelect.value, 'table');
-  assert.equal(app.savedView, 'table');
-  assert.equal(app.updatedView, 'table');
+  assert.equal(app.viewSelect.value, 'kanban');
+  assert.equal(app.savedView, undefined);
+  assert.equal(app.updatedView, undefined);
 });
 
-test('Board markup exposes Kanban, List, Table, Add Application, and dropdown actions', () => {
+test('Board markup exposes only Kanban and List view controls', () => {
   const boardMarkup = readFileSync(new URL('../board/index.html', import.meta.url), 'utf8');
   const globalStyles = readFileSync(new URL('../css/global.css', import.meta.url), 'utf8');
 
@@ -540,9 +530,15 @@ test('Board markup exposes Kanban, List, Table, Add Application, and dropdown ac
   assert.match(boardMarkup, /id="kanbanColumns"/);
   assert.match(boardMarkup, /data-board-view-button="kanban"/);
   assert.match(boardMarkup, /data-board-view-button="list"/);
-  assert.match(boardMarkup, /data-board-view-button="table"/);
+  assert.equal((boardMarkup.match(/data-board-view-button=/g) || []).length, 2);
+  assert.doesNotMatch(boardMarkup, /data-board-view-button="table"/);
+  assert.doesNotMatch(boardMarkup, /id="tableView"/);
+  assert.doesNotMatch(boardMarkup, /id="tableSortSelect"/);
   assert.match(boardMarkup, /id="btnAddApplication"/);
-  assert.doesNotMatch(boardMarkup, /id="btnTableView"/);
+  assert.ok(
+    boardMarkup.indexOf('data-board-view-button="list"')
+      < boardMarkup.indexOf('id="btnAddApplication"')
+  );
   assert.match(boardMarkup, /id="btnDashboard"/);
   assert.match(boardMarkup, /id="btnImport"/);
   assert.match(boardMarkup, /id="btnExport"/);

@@ -6,7 +6,7 @@ Jubro is a free, simple, and customizable job application tracker for students, 
 
 - Create separate trackers for internships, full-time roles, freelance work, or different career paths.
 - Add and update applications with company, role, status, date, salary, source, links, contacts, notes, and custom fields.
-- Switch between a desktop-friendly **Table View** and a mobile-friendly **List View**.
+- Use the status-driven **Board View** or focused **List View** for applications.
 - Search, sort, and manually arrange applications.
 - Customize tracker fields: add, rename, remove, reorder, or control their List View visibility.
 - Review activity and status summaries in the Analytics dashboard.
@@ -21,7 +21,7 @@ Track applications through stages such as Open, Pending, Applied, Interview, Rej
 
 1. Create or open a tracker.
 2. Add a job application and its details.
-3. Choose the view that fits your device and workflow.
+3. Use Board to follow pipeline stages or List for focused application details.
 4. Search, sort, organize, and update records as the application progresses.
 5. Use Analytics to review your application activity and status distribution.
 

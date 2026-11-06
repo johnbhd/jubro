@@ -7,14 +7,13 @@ import { trackerSearchMethods } from './trackerSearch.js';
 import { trackerListViewMethods } from './trackerListView.js';
 import { kanbanMethods } from './kanban.js';
 import { trackerKeyboardMethods } from './trackerKeyboard.js';
-import { trackerTableActionMethods } from './trackerTableActions.js';
+import { trackerActionMethods } from './trackerActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
 
 export class TrackerApp {
   constructor() {
     this.appBody = document.getElementById('appBody');
-    this.tableContainer = document.getElementById('tableContainer');
-    this.tableView = document.getElementById('tableView');
+    this.boardWorkspace = document.getElementById('boardWorkspace');
     this.listView = document.getElementById('listView');
     this.kanbanView = document.getElementById('kanbanView');
     this.kanbanColumns = document.getElementById('kanbanColumns');
@@ -28,7 +27,7 @@ export class TrackerApp {
     this.searchWrapper = document.getElementById('searchWrapper');
     this.searchInput = document.getElementById('jobSearchInput');
     this.viewSelect = document.getElementById('boardViewSelect');
-    this.sortSelect = document.getElementById('tableSortSelect');
+    this.sortSelect = document.getElementById('sortSelect');
     this.selectTextSortWrapper = document.getElementById('selectTextSortWrapper');
     this.selectTextSortSelect = document.getElementById('selectTextSortSelect');
     this.selectValueFilterWrapper = document.getElementById('selectValueFilterWrapper');
@@ -50,7 +49,7 @@ export class TrackerApp {
     this.dashboardCharts = document.getElementById('dashboardCharts');
     this.state = this.initializeState();
     this.jsonService = new JSONService();
-    this.tableClipboard = null;
+    this.clipboard = null;
     this.currentPage = 1;
     this.activeListFilters = {};
 
@@ -80,6 +79,6 @@ Object.assign(
   trackerListViewMethods,
   kanbanMethods,
   trackerKeyboardMethods,
-  trackerTableActionMethods,
+  trackerActionMethods,
   trackerEventMethods
 );

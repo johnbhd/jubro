@@ -75,9 +75,9 @@
           ></i>
 
           <select
-            id="tableSortSelect"
+            id="sortSelect"
             class="cursor-pointer h-10 w-[86px] appearance-none rounded-full bg-gray-100 pl-8 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[90px]"
-            aria-label="Sort table by date"
+            aria-label="Sort applications by date"
           >
             <option value="date-desc">New</option>
             <option value="date-asc">Old</option>
@@ -126,14 +126,13 @@
         </button>
       </div>
       <div class="board-toolbar-actions relative justify-self-end">
-        <div class="board-toolbar-actions-row flex items-center justify-center gap-1 sm:gap-2">
+        <div class="board-toolbar-actions-row flex flex-nowrap items-center justify-center gap-1 sm:gap-2">
           <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 lg:hidden" aria-label="Open search">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
           <select id="boardViewSelect" class="hidden" aria-label="Board view" tabindex="-1">
             <option value="kanban">Board</option>
             <option value="list">List</option>
-            <option value="table">Table</option>
           </select>
           <div id="boardViewToggle" class="inline-flex shrink-0 flex-nowrap items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" role="group" aria-label="Board view">
             <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="kanban" aria-label="Board view" aria-pressed="true">
@@ -143,10 +142,6 @@
             <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="list" aria-label="List view" aria-pressed="false">
               <i class="fa-solid fa-list-ul"></i>
               <span>List</span>
-            </button>
-            <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="table" aria-label="Table view" aria-pressed="false">
-              <i class="fa-solid fa-table-cells-large"></i>
-              <span>Table</span>
             </button>
           </div>
           <button id="btnAddApplication" type="button" title="Add Application" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-black text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900" aria-label="Add Application">
@@ -175,18 +170,9 @@
       </div>
     </header>
     
-    <main class="board-workspace min-w-0 py-3 sm:py-4" id="tableContainer">
+    <main class="board-workspace min-w-0 py-3 sm:py-4" id="boardWorkspace">
       <div id="kanbanView" class="kanban-view min-w-0">
         <div id="kanbanColumns" class="kanban-scroll-area flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
-      </div>
-
-      <div id="tableView" class="hidden bg-white rounded-md shadow overflow-x-auto">
-        <table class="min-w-max w-full text-sm text-center" id="table">
-          <thead class="bg-gray-50 dark:bg-[#374151] sticky top-0">
-            <tr id="headerRow"></tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
       </div>
 
       <div id="listView" class="hidden grid grid-cols-1 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
@@ -339,45 +325,13 @@
   </div>
   
   <div id="contextMenu" class="hidden fixed z-50 bg-white border rounded-lg shadow w-48 text-sm">
-    <div class="relative group">
-      <button id="btn-customize" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-        Customize ▶
-      </button>
-    
-      <!-- SUBMENU -->
-      <div id="subMenu"
-        class="hidden absolute left-full top-0 ml-1 w-40 bg-white border rounded-md shadow text-sm overflow-hidden">
-        
-        <button id="btn-type-text" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Text
-        </button>
-        <button id="btn-type-checkbox" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Checkbox
-        </button>
-        <button id="btn-type-date" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Date
-        </button>
-        <button id="btn-type-select" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-          Select
-        </button>
-    
-      </div>
-    </div>
     <button id="btn-addRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Row</button>
-    <button id="btn-addCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Add Column</button>
     <button id="btn-copyRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
       Copy Row
     </button>
-    
-    <button id="btn-copyCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">
-      Copy Column
-    </button>
     <button id="btn-moveUp" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Up</button>
     <button id="btn-moveDown" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Down</button>
-    <button id="btn-moveLeft" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Left</button>
-    <button id="btn-moveRight" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100">Move Right</button>
     <button id="btn-delRow" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Row</button>
-    <button id="btn-delCol" type="button" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500">Delete Column</button>
   </div>
 
 <script type="module" src="/js/app.js"></script>

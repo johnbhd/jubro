@@ -19,19 +19,19 @@ input:disabled {
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
 }
 
-#tableContainer .overflow-x-auto {
+#boardWorkspace .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x pan-y;
 }
 
 #appNavbar,
-#tableContainer {
+#boardWorkspace {
   width: 100%;
   min-width: 0;
 }
 
-#tableContainer > .overflow-x-auto {
+#boardWorkspace > .overflow-x-auto {
   max-width: 100%;
 }
 
@@ -133,8 +133,7 @@ input:disabled {
   line-height: 1;
 }
 
-#contextMenu,
-#subMenu {
+#contextMenu {
   max-width: calc(100vw - 1rem);
 }
 
@@ -222,13 +221,6 @@ input:disabled {
     overflow-y: auto;
   }
 
-  #subMenu {
-    left: auto;
-    right: 0;
-    top: 100%;
-    margin-left: 0;
-    margin-top: 0.25rem;
-  }
 }
 
 @media (max-width: 420px) {
@@ -493,8 +485,7 @@ input:disabled {
 
 .dark #appNavbar,
 .dark #navDropdown,
-.dark #contextMenu,
-.dark #subMenu {
+.dark #contextMenu {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
   color: #e5e7eb;
@@ -513,7 +504,7 @@ input:disabled {
 .dark #dashboardDateTo,
 .dark #boardViewSelect,
 .dark #listSortSelect,
-.dark #tableSortSelect,
+.dark #sortSelect,
 .dark #selectTextSortSelect,
 .dark #selectValueFilterSelect {
   background-color: #111827 !important;
@@ -521,7 +512,7 @@ input:disabled {
   outline: none;
 }
 
-.dark #tableSortSelect option,
+.dark #sortSelect option,
 .dark #boardViewSelect option,
 .dark #listSortSelect option,
 .dark #dashboardRangeSelect option,
@@ -638,8 +629,7 @@ input:disabled {
 .dark #btnPaginationNext:hover,
 .dark #btnClearSelectFilter:hover,
 .dark #navDropdown button:hover,
-.dark #contextMenu button:hover,
-.dark #subMenu button:hover {
+.dark #contextMenu button:hover {
   background-color: #374151 !important;
 }
 
@@ -656,10 +646,6 @@ input:disabled {
   background-color: #f9fafb !important;
   border-color: #f9fafb !important;
   color: #111827 !important;
-}
-
-.dark table {
-  color: #e5e7eb;
 }
 
 .dark .list-panel,
@@ -982,23 +968,6 @@ input:disabled {
 
 .dark .list-info-dialog .hover\:text-blue-700:hover {
   color: #bfdbfe;
-}
-
-.dark table .text-blue-500 {
-  color: #3b82f6 !important;
-}
-
-.dark thead,
-.dark th {
-  background-color: #374151 !important;
-}
-
-.dark tr {
-  border-color: #374151 !important;
-}
-
-.dark tbody tr:hover {
-  background-color: #374151 !important;
 }
 
 .dashboard-area-card {
