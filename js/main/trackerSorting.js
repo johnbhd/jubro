@@ -29,7 +29,7 @@ getCellSortText(row, columnIndex) {
     return String(value || '').trim().toLowerCase();
   },
 
-getRowsForBoardRender(tracker = this.getTracker()) {
+getTableRowsForRender(tracker = this.getTracker()) {
     const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
     const rowItems = rows.map((row, rowIndex) => ({ row, rowIndex }));
     const sortValue = this.sortSelect?.value || '';
@@ -61,7 +61,7 @@ getRowsForBoardRender(tracker = this.getTracker()) {
   },
 
 applyCurrentSort() {
-    return this.getRowsForBoardRender();
+    return this.getTableRowsForRender();
   },
 
 renderSelectTextSortOptions() {

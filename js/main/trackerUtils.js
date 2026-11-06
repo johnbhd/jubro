@@ -50,25 +50,6 @@ getColumnIndexByNames(tracker, names, fallbackIndex = -1) {
     return index >= 0 ? index : fallbackIndex;
   },
 
-  getTrackerColumnIndexes(tracker) {
-    return {
-      company: this.getColumnIndexByNames(tracker, ['company'], 0),
-      position: this.getColumnIndexByNames(tracker, ['position', 'role', 'job title'], 1),
-      platform: this.getColumnIndexByNames(tracker, ['platform', 'source'], 2),
-      status: this.getColumnIndexByNames(tracker, ['status'], 3),
-      date: this.getDateColumnIndex(tracker),
-      link: this.getColumnIndexByNames(tracker, ['website', 'link', 'url', 'job link'], 5),
-      email: this.getColumnIndexByNames(tracker, ['email'], -1),
-      location: this.getColumnIndexByNames(tracker, ['location'], -1),
-    };
-  },
-
-  cloneValue(value) {
-    return typeof structuredClone === 'function'
-      ? structuredClone(value)
-      : JSON.parse(JSON.stringify(value));
-  },
-
 isHttpLink(value) {
     return Boolean(getSafeHttpUrl(value));
   },

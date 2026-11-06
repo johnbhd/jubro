@@ -13,19 +13,25 @@ input:disabled {
   cursor: not-allowed;
 }
 
-#boardContainer .overflow-x-auto {
+.board-view-button.is-active {
+  background: #111827 !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+}
+
+#tableContainer .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x pan-y;
 }
 
 #appNavbar,
-#boardContainer {
+#tableContainer {
   width: 100%;
   min-width: 0;
 }
 
-#boardContainer > .overflow-x-auto {
+#tableContainer > .overflow-x-auto {
   max-width: 100%;
 }
 
@@ -50,32 +56,6 @@ input:disabled {
   max-width: 100%;
   flex-wrap: wrap;
   justify-content: flex-end;
-}
-
-.board-view-navigation {
-  flex-shrink: 0;
-}
-
-.board-view-button {
-  color: #6b7280;
-  transition: background-color 150ms ease, color 150ms ease;
-}
-
-.board-view-button:hover {
-  color: #111827;
-}
-
-.board-view-button.is-active {
-  background-color: #111827;
-  color: #ffffff;
-}
-
-.list-view-cards {
-  padding: 0.25rem;
-}
-
-.list-view-row {
-  overflow: visible;
 }
 
 .kanban-view {
@@ -158,6 +138,51 @@ input:disabled {
   white-space: nowrap;
 }
 
+#contextMenu,
+#subMenu {
+  max-width: calc(100vw - 1rem);
+}
+
+.list-filter-chip {
+  position: relative;
+  --chip-color: #111827;
+  --chip-text-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1rem;
+  padding: 0.375rem 0.75rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.list-filter-count {
+  position: absolute;
+  right: -0.35rem;
+  top: -0.45rem;
+  display: inline-flex;
+  min-width: 1rem;
+  height: 1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--chip-color);
+  color: var(--chip-text-color);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+
+.list-filter-chip:hover,
+.list-filter-chip.is-active {
+  background: var(--chip-color);
+  border-color: var(--chip-color);
+  color: var(--chip-text-color);
+}
+
 .favicon-holder {
   display: inline-flex;
   width: 1.5rem;
@@ -197,6 +222,18 @@ input:disabled {
     max-width: calc(100vw - 1.5rem);
   }
 
+  #contextMenu {
+    max-height: min(28rem, calc(100vh - 1rem));
+    overflow-y: auto;
+  }
+
+  #subMenu {
+    left: auto;
+    right: 0;
+    top: 100%;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
 }
 
 @media (max-width: 420px) {
@@ -466,7 +503,9 @@ input:disabled {
 }
 
 .dark #appNavbar,
-.dark #navDropdown {
+.dark #navDropdown,
+.dark #contextMenu,
+.dark #subMenu {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
   color: #e5e7eb;
@@ -477,12 +516,15 @@ input:disabled {
 }
 
 .dark #jobSearchInput,
+.dark #listSearchInput,
 .dark #trackerTitleInput,
 .dark #dashboardSelectColumn,
 .dark #dashboardRangeSelect,
 .dark #dashboardDateFrom,
 .dark #dashboardDateTo,
-.dark #boardSortSelect,
+.dark #boardViewSelect,
+.dark #listSortSelect,
+.dark #tableSortSelect,
 .dark #selectTextSortSelect,
 .dark #selectValueFilterSelect {
   background-color: #111827 !important;
@@ -490,7 +532,9 @@ input:disabled {
   outline: none;
 }
 
-.dark #boardSortSelect option,
+.dark #tableSortSelect option,
+.dark #boardViewSelect option,
+.dark #listSortSelect option,
 .dark #dashboardRangeSelect option,
 .dark #selectTextSortSelect option,
 .dark #selectValueFilterSelect option {
@@ -503,30 +547,37 @@ input:disabled {
 }
 
 .dark #btnDashboard {
-  background-color: transparent !important;
-  color: #e5e7eb !important;
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark #boardViewToggle {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+}
+
+.dark .board-view-button {
+  color: #d1d5db !important;
+}
+
+.dark .board-view-button:hover {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .board-view-button.is-active {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark #btnListAddJob {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
 }
 
 .dark .kanban-column {
   background-color: #182233 !important;
   border-color: #2f3b4d !important;
-}
-
-.dark .board-view-navigation {
-  background-color: #1f2937 !important;
-}
-
-.dark .board-view-button {
-  color: #d1d5db;
-}
-
-.dark .board-view-button:hover {
-  color: #ffffff;
-}
-
-.dark .board-view-button.is-active {
-  background-color: #f9fafb;
-  color: #111827;
 }
 
 .dark .kanban-column-header {
@@ -555,24 +606,6 @@ input:disabled {
   border-color: #374151 !important;
 }
 
-.dark .list-view-row {
-  border-color: #374151 !important;
-}
-
-.dark .list-view-row .text-gray-900 {
-  color: #f9fafb !important;
-}
-
-.dark .list-view-row .text-gray-600,
-.dark .list-view-row .text-gray-500 {
-  color: #d1d5db !important;
-}
-
-.dark .list-view-row select {
-  background-color: #1f2937 !important;
-  color: #f9fafb !important;
-}
-
 .dark .kanban-card .text-gray-900 {
   color: #f9fafb !important;
 }
@@ -592,13 +625,14 @@ input:disabled {
 }
 
 .dark #btnDashboard:hover {
-  background-color: #374151 !important;
-  color: #ffffff !important;
+  background-color: #e5e7eb !important;
 }
 
 .dark #btnOpenSearch,
 .dark #btnMenu,
 .dark #btnCloseSearch,
+.dark #btnPaginationPrev,
+.dark #btnPaginationNext,
 .dark #btnCloseDashboard,
 .dark #btnClearSelectFilter {
   color: #e5e7eb !important;
@@ -611,13 +645,71 @@ input:disabled {
 .dark #btnOpenSearch:hover,
 .dark #btnMenu:hover,
 .dark #btnCloseSearch:hover,
+.dark #btnPaginationPrev:hover,
+.dark #btnPaginationNext:hover,
 .dark #btnClearSelectFilter:hover,
-.dark #navDropdown button:hover {
+.dark #navDropdown button:hover,
+.dark #contextMenu button:hover,
+.dark #subMenu button:hover {
   background-color: #374151 !important;
 }
 
 .dark #btnClearSelectFilter {
   background-color: #1f2937 !important;
+}
+
+.dark #boardPagination button {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark #boardPagination .pagination-page-active {
+  background-color: #f9fafb !important;
+  border-color: #f9fafb !important;
+  color: #111827 !important;
+}
+
+.dark table {
+  color: #e5e7eb;
+}
+
+.dark .list-panel,
+.dark .list-view-row,
+.dark .list-panel .border-gray-100,
+.dark .list-view-row .border-gray-100 {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark #listSearchInput,
+.dark #listSortSelect,
+.dark .list-view-row .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.dark .list-view-row .text-gray-900,
+.dark .list-view-row .text-gray-800,
+.dark .list-panel .text-gray-900,
+.dark .list-panel h2 {
+  color: #f9fafb !important;
+}
+
+.dark .list-filter-chip {
+  background-color: #111827;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark .list-filter-chip:hover,
+.dark .list-filter-chip.is-active {
+  background-color: var(--chip-color);
+  border-color: var(--chip-color);
+  color: var(--chip-text-color);
+}
+
+.dark .list-filter-count {
+  background-color: var(--chip-color);
+  color: var(--chip-text-color);
 }
 
 .dark .favicon-holder {
@@ -630,42 +722,106 @@ input:disabled {
   color: #111827 !important;
 }
 
-.dark .tracker-settings-dialog,
-.dark .application-edit-dialog {
+.dark .list-filter-chip.is-active .list-filter-count,
+.dark .list-filter-chip:hover .list-filter-count {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+/* List view field settings */
+.dark .list-settings-trigger {
+  border-color: #374151;
+  background-color: #1f2937;
+  color: #d1d5db;
+}
+
+.dark .list-settings-trigger:hover {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark .list-settings-dialog {
+  background-color: #111827 !important;
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark .list-settings-dialog .text-gray-900 {
+  color: #f9fafb;
+}
+
+.dark .list-settings-dialog .text-gray-700,
+.dark .list-settings-dialog .text-gray-500 {
+  color: #9ca3af;
+}
+
+.dark .list-settings-dialog .hover\:bg-gray-100:hover {
+  background-color: #1f2937;
+}
+
+.dark .list-settings-dialog .hover\:text-gray-900:hover {
+  color: #ffffff;
+}
+
+.dark .list-settings-dialog .list-settings-control {
+  border-color: #374151;
+  background-color: #030712;
+  color: #ffffff;
+}
+
+.dark .list-settings-dialog .list-settings-field-row {
+  border-color: #1f2937;
+  background-color: rgb(3 7 18 / 0.4);
+}
+
+.dark .list-settings-dialog .list-settings-drag-handle {
+  color: #6b7280;
+}
+
+.dark .list-settings-dialog .list-settings-drag-handle:hover {
+  color: #e5e7eb;
+}
+
+.dark .list-settings-dialog .text-blue-700 {
+  color: #bfdbfe;
+}
+
+.dark .list-settings-dialog .list-settings-note-edit {
+  color: #dbeafe;
+}
+
+.dark .list-settings-dialog .list-settings-note-delete {
+  color: #fee2e2;
+}
+
+/* List view edit modal */
+.dark .list-edit-dialog {
   background-color: #111827 !important;
   color: #f9fafb;
 }
 
-.dark .tracker-settings-dialog .text-gray-900,
-.dark .application-edit-dialog .text-gray-900 {
+.dark .list-edit-dialog .text-gray-900 {
   color: #f9fafb;
 }
 
-.dark .tracker-settings-dialog .text-gray-700,
-.dark .tracker-settings-dialog .text-gray-500,
-.dark .application-edit-dialog .text-gray-700,
-.dark .application-edit-dialog .text-gray-500 {
+.dark .list-edit-dialog .text-gray-700,
+.dark .list-edit-dialog .text-gray-500 {
   color: #d1d5db;
 }
 
-.dark .tracker-settings-dialog .hover\:bg-gray-100:hover,
-.dark .application-edit-dialog .hover\:bg-gray-100:hover {
+.dark .list-edit-dialog .hover\:bg-gray-100:hover {
   background-color: #1f2937;
 }
 
-.dark .tracker-settings-dialog .hover\:text-gray-900:hover,
-.dark .application-edit-dialog .hover\:text-gray-900:hover {
+.dark .list-edit-dialog .hover\:text-gray-900:hover {
   color: #ffffff;
 }
 
-.dark .tracker-settings-dialog .border-gray-300,
-.dark .application-edit-dialog .border-gray-300 {
+.dark .list-edit-dialog .border-gray-300 {
   border-color: #4b5563;
 }
 
-.dark .tracker-settings-dialog input,
-.dark .tracker-settings-dialog select,
-.dark .application-edit-dialog .application-edit-control {
+.dark .list-edit-dialog .list-edit-control {
   border-color: #374151;
   background-color: #1f2937;
   color: #ffffff;
@@ -758,6 +914,102 @@ input:disabled {
   .site-navbar {
     transition-duration: 0.01ms;
   }
+}
+
+.list-edit-select-dropdown {
+  position: fixed;
+  z-index: 90;
+  pointer-events: auto;
+  color: #111827;
+}
+
+.dark .list-edit-select-dropdown {
+  border-color: #374151;
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-add {
+  border-color: #374151;
+}
+
+.dark .list-edit-select-add-input {
+  border-color: #4b5563;
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-add-input::placeholder {
+  color: #9ca3af;
+}
+
+.dark .list-edit-select-option {
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-option:hover {
+  background-color: #1f2937;
+}
+
+.dark .list-edit-select-option .text-gray-900 {
+  color: #f9fafb;
+}
+
+.dark .list-edit-select-option .hover\:bg-red-50:hover {
+  background-color: rgb(127 29 29 / 0.35);
+}
+
+/* List view extra-info modal */
+.dark .list-info-dialog {
+  border-color: #374151;
+  background-color: #111827 !important;
+  color: #f9fafb;
+}
+
+.dark .list-info-dialog .text-gray-900 {
+  color: #f9fafb;
+}
+
+.dark .list-info-dialog .text-gray-500 {
+  color: #9ca3af;
+}
+
+.dark .list-info-dialog .hover\:bg-gray-100:hover {
+  background-color: #1f2937;
+}
+
+.dark .list-info-dialog .hover\:text-gray-900:hover {
+  color: #ffffff;
+}
+
+.dark .list-info-dialog .list-info-field {
+  border-color: #1f2937;
+  background-color: rgb(3 7 18 / 0.4);
+}
+
+.dark .list-info-dialog .text-blue-600 {
+  color: #93c5fd;
+}
+
+.dark .list-info-dialog .hover\:text-blue-700:hover {
+  color: #bfdbfe;
+}
+
+.dark table .text-blue-500 {
+  color: #3b82f6 !important;
+}
+
+.dark thead,
+.dark th {
+  background-color: #374151 !important;
+}
+
+.dark tr {
+  border-color: #374151 !important;
+}
+
+.dark tbody tr:hover {
+  background-color: #374151 !important;
 }
 
 .dashboard-area-card {

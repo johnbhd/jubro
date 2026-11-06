@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-const { applicationEditorMethods } = await import('../js/main/applicationEditor.js');
+const { listEditMethods } = await import('../js/main/listView/editModal.js');
 
-test('keeps application editor input when a stale save is rejected', () => {
+test('keeps the edit modal open when a stale save is rejected', () => {
   const row = [{ value: 'Original', type: 'text' }];
   const input = {
     dataset: { fieldKey: '0' },
     value: 'Unsaved Draft',
   };
   let closed = false;
+  let rendered = false;
 
   globalThis.document = {
     querySelectorAll() {
@@ -18,15 +19,19 @@ test('keeps application editor input when a stale save is rejected', () => {
   };
 
   const editor = {
-    ...applicationEditorMethods,
-    activeApplicationEditRowIndex: 0,
-    closeApplicationEditModal() {
+    ...listEditMethods,
+    activeListEditRowIndex: 0,
+    applySearchFilter() {},
+    closeListEditModal() {
       closed = true;
     },
-    getApplicationEditFieldType() {
+    ensureListEditColumn(_tracker, field) {
+      return field.index;
+    },
+    getListEditFieldType() {
       return 'text';
     },
-    getApplicationEditFields() {
+    getListEditFields() {
       return [{ key: '0', index: 0 }];
     },
     getTracker() {
@@ -35,18 +40,22 @@ test('keeps application editor input when a stale save is rejected', () => {
         rows: [row],
       };
     },
+    renderListView() {
+      rendered = true;
+    },
     save() {
       return false;
     },
   };
 
-  editor.saveApplicationEditModal();
+  editor.saveListEditModal();
 
   assert.equal(closed, false);
+  assert.equal(rendered, false);
   assert.equal(input.value, 'Unsaved Draft');
 });
 
-test('saves application checkbox editor as a Boolean', () => {
+test('saves a List checkbox editor as a Boolean', () => {
   const row = [{ value: false, type: 'checkbox' }];
   const input = {
     dataset: { fieldKey: '0' },
@@ -62,13 +71,17 @@ test('saves application checkbox editor as a Boolean', () => {
   };
 
   const editor = {
-    ...applicationEditorMethods,
-    activeApplicationEditRowIndex: 0,
-    closeApplicationEditModal() {},
-    getApplicationEditFieldType() {
+    ...listEditMethods,
+    activeListEditRowIndex: 0,
+    applySearchFilter() {},
+    closeListEditModal() {},
+    ensureListEditColumn(_tracker, field) {
+      return field.index;
+    },
+    getListEditFieldType() {
       return 'checkbox';
     },
-    getApplicationEditFields() {
+    getListEditFields() {
       return [{ key: '0', index: 0 }];
     },
     getTracker() {
@@ -78,18 +91,19 @@ test('saves application checkbox editor as a Boolean', () => {
       };
     },
     refresh() {},
+    renderListView() {},
     save() {
       return true;
     },
   };
 
-  editor.saveApplicationEditModal();
+  editor.saveListEditModal();
 
   assert.equal(row[0].value, true);
   assert.equal(typeof row[0].value, 'boolean');
 });
 
-test('refreshes Kanban after a successful application edit', () => {
+test('refreshes both views after a successful List edit', () => {
   const row = [{ value: 'Original', type: 'text' }];
   const input = {
     dataset: { fieldKey: '0' },
@@ -104,13 +118,17 @@ test('refreshes Kanban after a successful application edit', () => {
   };
 
   const editor = {
-    ...applicationEditorMethods,
-    activeApplicationEditRowIndex: 0,
-    closeApplicationEditModal() {},
-    getApplicationEditFieldType() {
+    ...listEditMethods,
+    activeListEditRowIndex: 0,
+    applySearchFilter() {},
+    closeListEditModal() {},
+    ensureListEditColumn(_tracker, field) {
+      return field.index;
+    },
+    getListEditFieldType() {
       return 'text';
     },
-    getApplicationEditFields() {
+    getListEditFields() {
       return [{ key: '0', index: 0 }];
     },
     getTracker() {
@@ -122,13 +140,13 @@ test('refreshes Kanban after a successful application edit', () => {
     refresh(options) {
       refreshOptions = options;
     },
+    renderListView() {},
     save() {
       return true;
     },
   };
 
-  editor.saveApplicationEditModal();
+  editor.saveListEditModal();
 
   assert.deepEqual(refreshOptions, { persist: false });
-  assert.equal(row[0].value, 'Updated');
 });

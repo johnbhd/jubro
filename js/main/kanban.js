@@ -116,7 +116,7 @@ export function getKanbanColumns(tracker) {
   return columns;
 }
 
-export function groupKanbanRows(tracker, rowItems = null) {
+export function groupKanbanRows(tracker) {
   const statusColumn = getKanbanStatusColumn(tracker);
   const columns = getKanbanColumns(tracker);
   const groups = columns.map((column) => ({
@@ -124,11 +124,7 @@ export function groupKanbanRows(tracker, rowItems = null) {
     rowIndexes: [],
   }));
 
-  const orderedRows = Array.isArray(rowItems)
-    ? rowItems
-    : (tracker?.rows || []).map((row, rowIndex) => ({ row, rowIndex }));
-
-  orderedRows.forEach(({ row, rowIndex }) => {
+  (tracker?.rows || []).forEach((row, rowIndex) => {
     const status = statusColumn
       ? getRowStatus(row, statusColumn.index)
       : null;
@@ -171,10 +167,7 @@ export const kanbanMethods = {
     if (!tracker || !Array.isArray(tracker.rows)) return;
 
     const statusColumn = getKanbanStatusColumn(tracker);
-    const rowItems = typeof this.getRowsForBoardRender === 'function'
-      ? this.getRowsForBoardRender(tracker)
-      : null;
-    const { groups } = groupKanbanRows(tracker, rowItems);
+    const { groups } = groupKanbanRows(tracker);
 
     if (tracker.rows.length === 0) {
       const emptyState = document.createElement('div');
@@ -204,7 +197,7 @@ export const kanbanMethods = {
 
     groups.forEach((group) => {
       const column = document.createElement('section');
-      column.className = 'kanban-column flex min-w-[17rem] flex-1 flex-col rounded-2xl bg-gray-100 p-3';
+      column.className = 'kanban-column flex min-w-[17rem] max-w-[21rem] flex-1 flex-col rounded-2xl bg-gray-100 p-3';
       column.dataset.kanbanStatus = group.value === null ? '' : group.value;
       column.style.borderTop = `3px solid ${group.color}`;
 
@@ -234,9 +227,9 @@ export const kanbanMethods = {
 
       group.rowIndexes.forEach((rowIndex) => {
         const row = tracker.rows[rowIndex];
-        const indexes = typeof this.getTrackerColumnIndexes === 'function'
-          ? this.getTrackerColumnIndexes(tracker)
-          : getFallbackColumnIndexes(tracker);
+        const indexes = typeof this.getListColumnIndexes === 'function'
+          ? this.getListColumnIndexes(tracker)
+          : {};
         const company = this.getCellDisplay(row?.[indexes.company]);
         const position = this.getCellDisplay(row?.[indexes.position]);
         const date = this.getCellDisplay(row?.[indexes.date]);
@@ -312,34 +305,6 @@ export const kanbanMethods = {
           card.appendChild(label);
         }
 
-        const actions = document.createElement('div');
-        actions.className = 'mt-4 flex flex-wrap items-center gap-2';
-
-        const editButton = createCardActionButton('Edit application', 'fa-pen');
-        editButton.addEventListener('click', () => {
-          this.openApplicationEditModal?.(rowIndex);
-        });
-
-        const moveUpButton = createCardActionButton('Move application up', 'fa-arrow-up');
-        moveUpButton.addEventListener('click', () => {
-          this.moveApplication?.(rowIndex, -1);
-        });
-
-        const moveDownButton = createCardActionButton('Move application down', 'fa-arrow-down');
-        moveDownButton.addEventListener('click', () => {
-          this.moveApplication?.(rowIndex, 1);
-        });
-
-        const deleteButton = createCardActionButton('Delete application', 'fa-trash', 'text-red-500');
-        deleteButton.addEventListener('click', () => {
-          if (window.confirm('Delete this application?')) {
-            this.deleteApplicationAt?.(rowIndex);
-          }
-        });
-
-        actions.append(editButton, moveUpButton, moveDownButton, deleteButton);
-        card.appendChild(actions);
-
         cards.appendChild(card);
       });
 
@@ -396,31 +361,4 @@ export const kanbanMethods = {
 
 function statusColumnForTracker(tracker) {
   return getKanbanStatusColumn(tracker);
-}
-
-function getFallbackColumnIndexes(tracker) {
-  const names = ['company', 'position', 'platform', 'date'];
-
-  return names.reduce((indexes, name, index) => {
-    const foundIndex = (tracker?.columns || []).findIndex((column) => (
-      String(getColumnName(column) || '').trim().toLowerCase() === name
-    ));
-
-    indexes[name] = foundIndex >= 0 ? foundIndex : index;
-    return indexes;
-  }, {});
-}
-
-function createCardActionButton(label, iconName, extraClass = '') {
-  const button = document.createElement('button');
-
-  button.type = 'button';
-  button.className = `inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 ${extraClass}`;
-  button.setAttribute('aria-label', label);
-
-  const icon = document.createElement('i');
-  icon.className = `fa-solid ${iconName} text-xs`;
-  button.appendChild(icon);
-
-  return button;
 }
