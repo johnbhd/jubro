@@ -176,51 +176,105 @@ export const listSettingsMethods = {
     const mode = this.getListSettingsMode();
 
     this.updateListSettingsModeButtons();
+    container.replaceChildren();
 
     if (!tracker || !Array.isArray(tracker.columns) || tracker.columns.length === 0) {
-      container.innerHTML = '<p class="text-sm text-gray-500">No columns yet.</p>';
+      const empty = document.createElement('p');
+      empty.className = 'text-sm text-gray-500';
+      empty.textContent = 'No columns yet.';
+      container.appendChild(empty);
       return;
     }
 
-    const note = mode === 'edit'
-      ? '<p class="list-settings-note-edit rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-800">You\'re editing field labels. Changes will be reflected across the list.</p>'
-      : mode === 'delete'
-        ? '<p class="list-settings-note-delete rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-800">Delete mode is active. Deleting a field removes it from all jobs in this tracker.</p>'
-        : '';
+    if (mode === 'edit' || mode === 'delete') {
+      const note = document.createElement('p');
+      note.className = mode === 'edit'
+        ? 'list-settings-note-edit rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs text-blue-800'
+        : 'list-settings-note-delete rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-800';
+      note.textContent = mode === 'edit'
+        ? "You're editing field labels. Changes will be reflected across the list."
+        : 'Delete mode is active. Deleting a field removes it from all jobs in this tracker.';
+      container.appendChild(note);
+    }
 
-    container.innerHTML = note + tracker.columns.map((column, index) => {
+    tracker.columns.forEach((column, index) => {
       const fieldKey = this.getListColumnFieldKey(tracker, index);
-      const checked = !settings.hiddenColumns.includes(index) && !settings.hiddenFields.includes(fieldKey)
-        ? 'checked'
-        : '';
+      const checked = !settings.hiddenColumns.includes(index) && !settings.hiddenFields.includes(fieldKey);
       const label = this.getColumnName(column) || `Column ${index + 1}`;
       const type = typeof column === 'object' && column.type ? column.type : 'text';
 
-      return `
-        <div class="list-settings-field-row flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3" draggable="true" data-column-index="${index}">
-          <button type="button" class="list-settings-drag-handle cursor-grab text-gray-400 hover:text-gray-700" aria-label="Drag field">
-            <i class="fa-solid fa-grip-vertical text-xs"></i>
-          </button>
-          <div class="min-w-0 flex-1">
-            ${mode === 'edit'
-              ? `<input type="text" class="list-settings-control list-settings-label-input h-8 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm text-gray-900 outline-none focus:border-blue-400" data-column-index="${index}" value="${this.escapeHtml(label)}" />`
-              : `<span class="block truncate text-sm text-gray-900">${this.escapeHtml(label)}</span>`
-            }
-          </div>
-          <label class="sr-only" for="list-settings-field-type-${index}">Field type for ${this.escapeHtml(label)}</label>
-          <select id="list-settings-field-type-${index}" class="list-settings-control list-settings-type h-8 shrink-0 rounded-lg border border-gray-300 bg-white px-2 text-xs text-gray-900 outline-none focus:border-blue-400" data-column-index="${index}" aria-label="Field type for ${this.escapeHtml(label)}">
-            <option value="text" ${type === 'text' ? 'selected' : ''}>Text</option>
-            <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
-            <option value="date" ${type === 'date' ? 'selected' : ''}>Date</option>
-            <option value="select" ${type === 'select' ? 'selected' : ''}>Select</option>
-          </select>
-          <input type="checkbox" class="list-settings-toggle h-5 w-5 shrink-0" data-column-index="${index}" ${checked} aria-label="Show ${this.escapeHtml(label)}" />
-          <button type="button" class="${mode === 'delete' ? 'inline-flex' : 'hidden'} list-settings-delete-field h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-300 hover:bg-red-500/15 hover:text-red-200" data-column-index="${index}" aria-label="Delete ${this.escapeHtml(label)}">
-            <i class="fa-solid fa-trash text-xs"></i>
-          </button>
-        </div>
-      `;
-    }).join('');
+      const row = document.createElement('div');
+      row.className = 'list-settings-field-row flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-3';
+      row.draggable = true;
+      row.dataset.columnIndex = String(index);
+
+      const dragButton = document.createElement('button');
+      dragButton.type = 'button';
+      dragButton.className = 'list-settings-drag-handle cursor-grab text-gray-400 hover:text-gray-700';
+      dragButton.setAttribute('aria-label', 'Drag field');
+      const dragIcon = document.createElement('i');
+      dragIcon.className = 'fa-solid fa-grip-vertical text-xs';
+      dragButton.appendChild(dragIcon);
+
+      const labelContainer = document.createElement('div');
+      labelContainer.className = 'min-w-0 flex-1';
+
+      if (mode === 'edit') {
+        const labelInput = document.createElement('input');
+        labelInput.type = 'text';
+        labelInput.className = 'list-settings-control list-settings-label-input h-8 w-full rounded-lg border border-gray-300 bg-white px-2 text-sm text-gray-900 outline-none focus:border-blue-400';
+        labelInput.dataset.columnIndex = String(index);
+        labelInput.value = label;
+        labelContainer.appendChild(labelInput);
+      } else {
+        const labelText = document.createElement('span');
+        labelText.className = 'block truncate text-sm text-gray-900';
+        labelText.textContent = label;
+        labelContainer.appendChild(labelText);
+      }
+
+      const typeLabel = document.createElement('label');
+      typeLabel.className = 'sr-only';
+      typeLabel.htmlFor = `list-settings-field-type-${index}`;
+      typeLabel.textContent = `Field type for ${label}`;
+
+      const typeSelect = document.createElement('select');
+      typeSelect.id = `list-settings-field-type-${index}`;
+      typeSelect.className = 'list-settings-control list-settings-type h-8 shrink-0 rounded-lg border border-gray-300 bg-white px-2 text-xs text-gray-900 outline-none focus:border-blue-400';
+      typeSelect.dataset.columnIndex = String(index);
+      typeSelect.setAttribute('aria-label', `Field type for ${label}`);
+      [
+        ['text', 'Text'],
+        ['checkbox', 'Checkbox'],
+        ['date', 'Date'],
+        ['select', 'Select'],
+      ].forEach(([value, text]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = text;
+        option.selected = type === value;
+        typeSelect.appendChild(option);
+      });
+
+      const visibilityToggle = document.createElement('input');
+      visibilityToggle.type = 'checkbox';
+      visibilityToggle.className = 'list-settings-toggle h-5 w-5 shrink-0';
+      visibilityToggle.dataset.columnIndex = String(index);
+      visibilityToggle.checked = checked;
+      visibilityToggle.setAttribute('aria-label', `Show ${label}`);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = `${mode === 'delete' ? 'inline-flex' : 'hidden'} list-settings-delete-field h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-300 hover:bg-red-500/15 hover:text-red-200`;
+      deleteButton.dataset.columnIndex = String(index);
+      deleteButton.setAttribute('aria-label', `Delete ${label}`);
+      const deleteIcon = document.createElement('i');
+      deleteIcon.className = 'fa-solid fa-trash text-xs';
+      deleteButton.appendChild(deleteIcon);
+
+      row.append(dragButton, labelContainer, typeLabel, typeSelect, visibilityToggle, deleteButton);
+      container.appendChild(row);
+    });
 
     container.querySelectorAll('.list-settings-toggle').forEach((toggle) => {
       toggle.addEventListener('change', () => {

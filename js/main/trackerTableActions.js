@@ -1,5 +1,6 @@
 import { Table } from './table.js';
 import { closeMenu, UIState } from './ui.js';
+import { normalizeCellValue } from '../services/trackerData.js';
 
 export const trackerTableActionMethods = {
 refresh({ persist = true } = {}) {
@@ -264,10 +265,16 @@ addRow({ useJobDefaults = false, insertAtStart = false } = {}) {
     const tracker = this.getTracker();
     const { activeRow } = UIState;
   
-    const newRow = tracker.columns.map(() => ({
-      value: '',
-      type: 'text'
-    }));
+    const newRow = tracker.columns.map((column) => {
+      const type = typeof column === 'object' && column.type
+        ? column.type
+        : 'text';
+
+      return {
+        value: normalizeCellValue(type, null),
+        type
+      };
+    });
 
     if (useJobDefaults) {
       const companyIndex = this.getColumnIndexByNames(tracker, ['company']);

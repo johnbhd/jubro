@@ -80,25 +80,44 @@ initEvents() {
 
     });
 
-    btnImport?.addEventListener('click', () => {
-      this.jsonService.import(async (data) => {
+    btnImport?.addEventListener('click', async () => {
+      try {
+        const data = await this.jsonService.import();
+
+        if (!data) return;
+
         const trackerKey = this.getActiveTrackerKey();
 
         if (!trackerKey) return;
 
-        this.state.active = trackerKey;
-        this.state.data[trackerKey] = {
-          ...this.state.data[trackerKey],
+        const confirmed = window.confirm(
+          'Replace this tracker with the imported data?'
+        );
+
+        if (!confirmed) return;
+
+        const nextState = this.cloneTableValue(this.state);
+        nextState.active = trackerKey;
+        nextState.data[trackerKey] = {
+          ...nextState.data[trackerKey],
           id: trackerKey,
           columns: this.cloneTableValue(data.columns),
           rows: this.cloneTableValue(data.rows)
         };
 
-        this.save();
+        if (!Storage.replace(nextState, this.state.revision)) {
+          window.alert('Your data changed in another tab. Reload before importing.');
+          return;
+        }
+
+        this.state = nextState;
         await this.syncLocalStateToFirebase();
         this.refresh({ persist: false });
         dropdown?.classList.add('hidden');
-      });
+      } catch (error) {
+        console.error('Jubro tracker import failed:', error);
+        window.alert(error.userMessage || 'This file is not a valid Jubro tracker file.');
+      }
     });
 
     btnDashboard?.addEventListener('click', () => {

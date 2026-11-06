@@ -169,10 +169,16 @@ export class Auth {
 
         if (!accountButton) return;
 
-        accountButton.innerHTML = `
-          <i class="fa-solid fa-user mr-2 shrink-0"></i>
-          <span class="min-w-0 truncate">${user.displayName || 'Account'}</span>
-        `;
+        accountButton.replaceChildren();
+
+        const accountIcon = document.createElement('i');
+        accountIcon.className = 'fa-solid fa-user mr-2 shrink-0';
+
+        const accountLabel = document.createElement('span');
+        accountLabel.className = 'min-w-0 truncate';
+        accountLabel.textContent = user.displayName || 'Account';
+
+        accountButton.append(accountIcon, accountLabel);
 
         accountButton.onclick = (e) => {
           e.stopPropagation();
@@ -994,7 +1000,9 @@ export class Auth {
       );
     } catch (error) {
       console.error('Jubro data import failed:', error);
-      this.showDataMessage('Something went wrong while importing your data. Please choose a valid Jubro backup.');
+      this.showDataMessage(
+        error.userMessage || 'Something went wrong while importing your data. Please choose a valid Jubro backup.'
+      );
     } finally {
       this.importInProgress = false;
       this.setImportLoadingState(false);

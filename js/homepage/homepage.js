@@ -253,6 +253,9 @@ export class TrackerHome {
 
     keys.forEach((id) => {
       const t = data[id];
+
+      if (!t || typeof t !== 'object') return;
+
       const trackerId = id;
       const boardUrl = this.getBoardUrl(trackerId);
 
@@ -276,24 +279,18 @@ export class TrackerHome {
 
       card.innerHTML = `
         <div class="flex justify-between items-start">
-          <h2 class="text-lg font-semibold truncate">${t.title}</h2>
-      
-          <button 
-            class="btn-delete text-gray-400 hover:text-red-500 transition"
-            type="button"
-            data-id="${trackerId}"
-            data-title="${t.title}"
-          >
+          <h2 class="tracker-card-title text-lg font-semibold truncate"></h2>
+          <button class="btn-delete text-gray-400 hover:text-red-500 transition" type="button" aria-label="Delete tracker">
             <i class="fa-solid fa-trash hover:text-red-500"></i>
           </button>
         </div>
-      
-        <p class="text-gray-500 mt-1">${t.rows.length} entries</p>
-      
-        <a href="${boardUrl}" class="mt-4 inline-block text-sm text-blue-500 transition group-hover:text-blue-600">
-          Open
-        </a>
+        <p class="tracker-card-count text-gray-500 mt-1"></p>
+        <a class="tracker-card-link mt-4 inline-block text-sm text-blue-500 transition group-hover:text-blue-600">Open</a>
       `;
+
+      card.querySelector('.tracker-card-title').textContent = t.title || 'Untitled Tracker';
+      card.querySelector('.tracker-card-count').textContent = `${Array.isArray(t.rows) ? t.rows.length : 0} entries`;
+      card.querySelector('.tracker-card-link').href = boardUrl;
 
       card.querySelector('a')?.addEventListener('click', (event) => {
         this.state.active = trackerId;
@@ -308,10 +305,7 @@ export class TrackerHome {
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation(); // prevents opening the card
       
-        const id = deleteBtn.dataset.id;
-        const title = deleteBtn.dataset.title;
-      
-        this.showDeleteModal(id, title);
+        this.showDeleteModal(trackerId, t.title || 'Untitled Tracker');
       });
       this.grid.appendChild(card);
     });

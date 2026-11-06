@@ -1,3 +1,5 @@
+import { normalizeLegacyWorkspaceState } from '../services/trackerData.js';
+
 export const STORAGE_KEY = 'flextracker_data';
 export const ACCOUNT_STORAGE_PREFIX = 'flextracker_data_account_';
 
@@ -69,13 +71,14 @@ function readWorkspace(owner = currentOwner) {
       return { key, state: null };
     }
 
+    const normalizedParsed = normalizeLegacyWorkspaceState(parsed);
     const legacyUnowned = owner.ownerType === 'guest'
-      && (!parsed.ownerType || parsed.legacyUnowned === true);
+      && (!normalizedParsed.ownerType || normalizedParsed.legacyUnowned === true);
 
     return {
       key,
       state: normalizeState({
-        ...parsed,
+        ...normalizedParsed,
         ...(legacyUnowned ? { legacyUnowned: true } : {}),
       }, owner),
     };

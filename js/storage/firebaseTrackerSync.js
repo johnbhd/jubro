@@ -11,6 +11,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-aut
 
 import { app } from "../firebase/firebaseApp.js";
 import { Storage } from "./storage.js";
+import { normalizeLegacyWorkspaceState } from "../services/trackerData.js";
 import {
   GUEST_TRANSFER_AUTOMATIC,
   GUEST_TRANSFER_CONFIRM,
@@ -245,13 +246,13 @@ class FirebaseTrackerSync {
 
     if (!data || typeof data !== "object") return null;
 
-    return {
+    return normalizeLegacyWorkspaceState({
       active: trackerData.active || null,
       data,
       ownerType: "account",
       ownerId: userId,
       revision: Number.isInteger(trackerData.revision) ? trackerData.revision : 0
-    };
+    });
   }
 
   async uploadLocalState(user, state) {

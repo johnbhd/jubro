@@ -2,6 +2,12 @@ import { clearActiveTarget, setActiveTarget, showMenu } from '../ui.js';
 import { getLinkFavicon } from '../favicon.js';
 
 export const listRenderMethods = {
+  createIcon(iconName) {
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${iconName} mr-1 text-[10px] text-gray-400`;
+    return icon;
+  },
+
   getListAdditionalDetails(tracker, row, indexes) {
     const selectColumnIndexes = new Set(this.getListSelectColumns().map(({ index }) => index));
     const reservedIndexes = new Set([
@@ -28,17 +34,6 @@ export const listRenderMethods = {
       .filter(Boolean)
   },
 
-  renderListAdditionalDetails(tracker, row, indexes) {
-    return this.getListAdditionalDetails(tracker, row, indexes)
-      .map(({ label, value }) => `
-        <span class="text-xs text-gray-500">
-          <span class="font-medium text-gray-400">${this.escapeHtml(label)}:</span>
-          ${this.escapeHtml(value)}
-        </span>
-      `)
-      .join('');
-  },
-
   ensureListInfoModal() {
     if (document.getElementById('listInfoModal')) return;
 
@@ -63,17 +58,22 @@ export const listRenderMethods = {
   },
 
   renderListInfoValue(value) {
-    if (this.isHttpLink(value)) {
-      const safeValue = this.escapeHtml(value);
+    const safeUrl = this.getSafeHttpUrl(value);
 
-      return `
-        <a href="${safeValue}" target="_blank" rel="noopener" class="break-words text-blue-600 hover:text-blue-700">
-          ${safeValue}
-        </a>
-      `;
+    if (safeUrl) {
+      const link = document.createElement('a');
+      link.href = safeUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.className = 'break-words text-blue-600 hover:text-blue-700';
+      link.textContent = value;
+      return link;
     }
 
-    return `<span class="break-words text-gray-900">${this.escapeHtml(value)}</span>`;
+    const text = document.createElement('span');
+    text.className = 'break-words text-gray-900';
+    text.textContent = value;
+    return text;
   },
 
   openListInfoModal(rowIndex) {
@@ -90,12 +90,23 @@ export const listRenderMethods = {
 
     if (!fields || details.length === 0) return;
 
-    fields.innerHTML = details.map(({ label, value }) => `
-      <div class="list-info-field rounded-lg border border-gray-200 bg-gray-50 p-3">
-        <p class="text-xs font-medium uppercase text-gray-500">${this.escapeHtml(label)}</p>
-        <div class="mt-2 text-sm leading-6">${this.renderListInfoValue(value)}</div>
-      </div>
-    `).join('');
+    fields.replaceChildren();
+
+    details.forEach(({ label, value }) => {
+      const field = document.createElement('div');
+      field.className = 'list-info-field rounded-lg border border-gray-200 bg-gray-50 p-3';
+
+      const labelElement = document.createElement('p');
+      labelElement.className = 'text-xs font-medium uppercase text-gray-500';
+      labelElement.textContent = label;
+
+      const valueElement = document.createElement('div');
+      valueElement.className = 'mt-2 text-sm leading-6';
+      valueElement.appendChild(this.renderListInfoValue(value));
+
+      field.append(labelElement, valueElement);
+      fields.appendChild(field);
+    });
 
     document.getElementById('listInfoModal')?.classList.remove('hidden');
   },
@@ -140,49 +151,31 @@ export const listRenderMethods = {
       const link = this.getFirstRowLink(row);
       const email = indexes.email >= 0 ? this.getCellValue(row[indexes.email]) : '';
       const location = indexes.location >= 0 ? this.getCellValue(row[indexes.location]) : '';
-      const safeDateApplied = this.escapeHtml(dateApplied);
-      const safePosition = this.escapeHtml(position);
-      const safeCompany = this.escapeHtml(company);
-      const safeLink = this.escapeHtml(link || '#');
-      const linkFavicon = getLinkFavicon(link);
-      const safeHostname = this.escapeHtml(linkFavicon.hostname);
       const { otherBadges, statusBadge } = this.renderListBadgesForCard(tracker, row, indexes.status);
       const shouldShowPosition = this.isListColumnVisible(tracker, indexes.position) && this.isUsefulListValue(position);
       const shouldShowCompany = this.isListColumnVisible(tracker, indexes.company) && this.isUsefulListValue(company);
       const titleText = shouldShowPosition
-        ? safePosition
+        ? position
         : shouldShowCompany
-          ? safeCompany
+          ? company
           : 'Job Application';
       const shouldShowDate = this.isListColumnVisible(tracker, indexes.date) && this.isUsefulListValue(dateApplied);
-      const shouldShowWebsite = this.isListColumnVisible(tracker, indexes.link) && this.isUsefulListValue(link);
       const additionalDetails = this.getListAdditionalDetails(tracker, row, indexes);
-      const extraDetails = [
-        this.isListColumnVisible(tracker, indexes.email) && this.isUsefulListValue(email)
-          ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-envelope mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(email)}</span>`
-          : '',
-        this.isListColumnVisible(tracker, indexes.location) && this.isUsefulListValue(location)
-          ? `<span class="text-xs text-gray-500"><i class="fa-solid fa-location-dot mr-1 text-[10px] text-gray-400"></i>${this.escapeHtml(location)}</span>`
-          : ''
-      ].filter(Boolean).join('');
 
       article.innerHTML = `
         <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div class="min-w-0 flex-1">
-            ${shouldShowDate ? `<p class="text-xs font-medium text-gray-400">${safeDateApplied}</p>` : ''}
-            <h3 class="mt-1 truncate text-lg font-semibold text-gray-900">${titleText}</h3>
+            <p class="list-card-date text-xs font-medium text-gray-400"></p>
+            <h3 class="list-card-title mt-1 truncate text-lg font-semibold text-gray-900"></h3>
             <div class="flex gap-5 mt-2 items-center">
-              ${shouldShowCompany && titleText !== safeCompany ? `<p class="truncate text-sm text-gray-500">${safeCompany}</p>` : ''}
-              ${extraDetails ? `<div class="flex flex-wrap items-center gap-3">${extraDetails}</div>` : ''}  
+              <p class="list-card-company truncate text-sm text-gray-500"></p>
+              <div class="list-card-extra flex flex-wrap items-center gap-3"></div>
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-3 xl:justify-end">
-            ${shouldShowWebsite ? `<a class="inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" href="${safeLink}" target="_blank" rel="noopener" aria-label="Open job link">
-              ${this.getFaviconHtml(linkFavicon)}
-              <span class="truncate">${safeHostname || 'Open link'}</span>
-            </a>` : ''}
-            ${otherBadges}
-            ${statusBadge}
+            <a class="list-card-link inline-flex h-9 max-w-[14rem] items-center gap-2 rounded-lg border border-gray-100 px-3 text-xs text-gray-500 hover:bg-gray-50" target="_blank" rel="noopener noreferrer" aria-label="Open job link"></a>
+            <span class="list-card-invalid-link max-w-[14rem] truncate text-xs text-gray-500"></span>
+            <div class="list-card-badges flex flex-wrap items-center gap-3"></div>
             <button type="button" class="btn-list-move-up inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40" aria-label="Move job up">
               <i class="fa-solid fa-arrow-up text-xs"></i>
             </button>
@@ -196,15 +189,71 @@ export const listRenderMethods = {
             <button type="button" class="btn-list-duplicate inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="Duplicate job">
               <i class="fa-solid fa-copy text-xs"></i>
             </button>
-            ${additionalDetails.length ? `<button type="button" class="btn-list-info inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="View extra info">
+            <button type="button" class="btn-list-info inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-gray-500 hover:bg-gray-50" aria-label="View extra info">
               <i class="fa-solid fa-circle-info text-xs"></i>
-            </button>` : ''}
+            </button>
             <button type="button" class="btn-list-delete inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-100 text-red-500 hover:bg-red-50" aria-label="Delete job">
               <i class="fa-solid fa-trash text-xs"></i>
             </button>
           </div>
         </div>
       `;
+
+      const dateElement = article.querySelector('.list-card-date');
+      const titleElement = article.querySelector('.list-card-title');
+      const companyElement = article.querySelector('.list-card-company');
+      const extraElement = article.querySelector('.list-card-extra');
+      const linkElement = article.querySelector('.list-card-link');
+      const invalidLinkElement = article.querySelector('.list-card-invalid-link');
+      const badgesElement = article.querySelector('.list-card-badges');
+      const infoButton = article.querySelector('.btn-list-info');
+      const safeLink = this.getSafeHttpUrl(link);
+
+      dateElement.hidden = !shouldShowDate;
+      dateElement.textContent = dateApplied;
+      titleElement.textContent = titleText;
+      companyElement.hidden = !(shouldShowCompany && titleText !== company);
+      companyElement.textContent = company;
+      infoButton.hidden = additionalDetails.length === 0;
+
+      if (this.isListColumnVisible(tracker, indexes.email) && this.isUsefulListValue(email)) {
+        const emailElement = document.createElement('span');
+        emailElement.className = 'text-xs text-gray-500';
+        emailElement.append(this.createIcon('fa-envelope'), document.createTextNode(email));
+        extraElement.appendChild(emailElement);
+      }
+
+      if (this.isListColumnVisible(tracker, indexes.location) && this.isUsefulListValue(location)) {
+        const locationElement = document.createElement('span');
+        locationElement.className = 'text-xs text-gray-500';
+        locationElement.append(this.createIcon('fa-location-dot'), document.createTextNode(location));
+        extraElement.appendChild(locationElement);
+      }
+
+      const shouldShowWebsite = this.isListColumnVisible(tracker, indexes.link)
+        && this.isUsefulListValue(link)
+        && Boolean(safeLink);
+
+      if (shouldShowWebsite) {
+        linkElement.href = safeLink;
+        const linkFavicon = getLinkFavicon(safeLink);
+        linkElement.appendChild(this.createFaviconElement(linkFavicon));
+        const hostname = document.createElement('span');
+        hostname.className = 'truncate';
+        hostname.textContent = linkFavicon.hostname || 'Open link';
+        linkElement.appendChild(hostname);
+      } else {
+        linkElement.remove();
+        invalidLinkElement.hidden = !(
+          this.isListColumnVisible(tracker, indexes.link)
+          && this.isUsefulListValue(link)
+          && !safeLink
+        );
+        invalidLinkElement.textContent = link;
+      }
+
+      otherBadges.forEach((badge) => badgesElement.appendChild(badge));
+      if (statusBadge) badgesElement.appendChild(statusBadge);
 
       const orderedRows = this.getSortedListRows(tracker);
       const currentDisplayIndex = orderedRows.findIndex((item) => item.rowIndex === rowIndex);

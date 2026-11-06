@@ -1,34 +1,67 @@
+import {
+  TrackerDataValidationError,
+  normalizeFullBackupImport,
+  normalizeSingleTrackerImport,
+} from './trackerData.js';
+
 export class JSONService {
-  normalizeColumns(columns) {
-    return columns.map((column) => (
-      typeof column === "object"
-        ? column
-        : {
-            name: String(column || "New"),
-            type: "text"
-          }
-    ));
+  parseJsonText(text) {
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      throw new TrackerDataValidationError(
+        `Invalid JSON: ${error.message}`,
+        'This file is not valid JSON.'
+      );
+    }
   }
 
-  normalizeRows(rows, columns) {
-    return rows.map((row) => (
-      columns.map((column, index) => {
-        const cell = row?.[index];
-        const columnType = typeof column === "object" && column.type ? column.type : "text";
+  parseSingleTrackerText(text) {
+    return normalizeSingleTrackerImport(this.parseJsonText(text));
+  }
 
-        if (cell && typeof cell === "object" && "value" in cell) {
-          return {
-            ...cell,
-            type: cell.type || columnType
-          };
-        }
+  parseFullBackupText(text) {
+    return normalizeFullBackupImport(this.parseJsonText(text));
+  }
 
-        return {
-          value: cell ?? "",
-          type: columnType
-        };
-      })
-    ));
+  chooseJsonFile() {
+    const input = document.createElement('input');
+
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.hidden = true;
+
+    return new Promise((resolve, reject) => {
+      let settled = false;
+
+      const cleanup = () => {
+        input.remove();
+      };
+
+      const finish = (callback, value) => {
+        if (settled) return;
+
+        settled = true;
+        cleanup();
+        callback(value);
+      };
+
+      input.addEventListener('change', () => {
+        finish(resolve, input.files?.[0] || null);
+      }, { once: true });
+
+      input.addEventListener('cancel', () => {
+        finish(resolve, null);
+      }, { once: true });
+
+      document.body?.appendChild(input);
+
+      try {
+        input.click();
+      } catch (error) {
+        finish(reject, error);
+      }
+    });
   }
 
   export(data, filename = "tracker.json") {
@@ -70,77 +103,12 @@ export class JSONService {
     }, filename);
   }
 
-  importAll() {
-    const input = document.createElement("input");
+  async importAll() {
+    const file = await this.chooseJsonFile();
 
-    input.type = "file";
-    input.accept = ".json,application/json";
+    if (!file) return null;
 
-    return new Promise((resolve, reject) => {
-      const cleanup = () => input.remove();
-
-      input.addEventListener("change", async (event) => {
-        const file = event.target.files?.[0];
-
-        if (!file) {
-          cleanup();
-          resolve(null);
-          return;
-        }
-
-        try {
-          const parsed = JSON.parse(await file.text());
-
-          if (!parsed || !Array.isArray(parsed.trackers)) {
-            throw new Error("Invalid Jubro backup file");
-          }
-
-          const data = Object.create(null);
-
-          parsed.trackers.forEach((tracker, index) => {
-            if (!tracker || typeof tracker !== "object" || !Array.isArray(tracker.columns) || !Array.isArray(tracker.rows)) {
-              throw new Error(`Invalid tracker at position ${index + 1}`);
-            }
-
-            const sourceId = String(tracker.id || `imported_${index + 1}`);
-            let trackerId = sourceId;
-            let duplicateNumber = 2;
-
-            while (Object.prototype.hasOwnProperty.call(data, trackerId)) {
-              trackerId = `${sourceId}_${duplicateNumber}`;
-              duplicateNumber += 1;
-            }
-
-            data[trackerId] = {
-              ...tracker,
-              id: trackerId
-            };
-          });
-
-          const requestedActive = parsed.active === null || parsed.active === undefined
-            ? null
-            : String(parsed.active);
-
-          resolve({
-            active: requestedActive && data[requestedActive]
-              ? requestedActive
-              : Object.keys(data)[0] || null,
-            data
-          });
-        } catch (error) {
-          reject(error);
-        } finally {
-          cleanup();
-        }
-      }, { once: true });
-
-      try {
-        input.click();
-      } catch (error) {
-        cleanup();
-        reject(error);
-      }
-    });
+    return this.parseFullBackupText(await file.text());
   }
 
   downloadJson(data, filename) {
@@ -165,41 +133,11 @@ export class JSONService {
     }
   }
 
-  import(callback) {
-    const input = document.createElement("input");
+  async import() {
+    const file = await this.chooseJsonFile();
 
-    input.type = "file";
-    input.accept = ".json";
+    if (!file) return null;
 
-    input.addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-
-      if (!file) return;
-
-      try {
-        const text = await file.text();
-
-        const data = JSON.parse(text);
-
-        if (!data.columns || !data.rows) {
-          throw new Error("Invalid tracker file");
-        }
-
-        const columns = this.normalizeColumns(data.columns);
-
-        callback({
-          columns,
-          rows: this.normalizeRows(data.rows, columns)
-        });
-
-      } catch (err) {
-        console.error(err);
-        alert("Invalid JSON file");
-      }
-
-      input.remove();
-    });
-
-    input.click();
+    return this.parseSingleTrackerText(await file.text());
   }
 }

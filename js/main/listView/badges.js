@@ -1,48 +1,60 @@
 import { getPlatformFavicon } from '../favicon.js';
 
 export const listBadgeMethods = {
-  getFaviconHtml(favicon) {
-    if (!favicon?.url) {
-      return '<span class="favicon-holder"><i class="fa-solid fa-globe text-[11px] text-gray-500"></i></span>';
+  createFaviconElement(favicon) {
+    const holder = document.createElement('span');
+    holder.className = 'favicon-holder';
+
+    const fallback = () => {
+      holder.replaceChildren();
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-globe text-[11px] text-gray-500';
+      holder.appendChild(icon);
+    };
+
+    if (!favicon?.url || !this.getSafeHttpUrl(favicon.url)) {
+      fallback();
+      return holder;
     }
 
-    return `
-      <span class="favicon-holder">
-        <img
-          src="${this.escapeHtml(favicon.url)}"
-          alt=""
-          class="h-5 w-5 rounded"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          onerror="this.replaceWith(Object.assign(document.createElement('i'), { className: 'fa-solid fa-globe text-[11px] text-gray-500' }))"
-        />
-      </span>
-    `;
+    const image = document.createElement('img');
+    image.src = favicon.url;
+    image.alt = '';
+    image.className = 'h-5 w-5 rounded';
+    image.loading = 'lazy';
+    image.referrerPolicy = 'no-referrer';
+    image.addEventListener('error', fallback);
+    holder.appendChild(image);
+
+    return holder;
   },
 
-  getListBadgeHtml(column, value) {
-    if (!this.isUsefulListValue(value)) return '';
+  createListBadgeElement(column, value) {
+    if (!this.isUsefulListValue(value)) return null;
 
-    const safeValue = this.escapeHtml(value);
     const color = this.getOptionColor(column, value, '#6b7280');
     const textColor = this.getContrastColor(color);
     const columnName = this.normalizeText(this.getColumnName(column));
-    const platformIcon = ['platform', 'source'].includes(columnName)
-      ? this.getFaviconHtml(getPlatformFavicon(value))
-      : '';
+    const badge = document.createElement('span');
+    badge.className = 'inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold';
+    badge.style.backgroundColor = color;
+    badge.style.color = textColor;
 
-    return `
-      <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold" style="background-color: ${color}; color: ${textColor};">
-        ${platformIcon}
-        ${safeValue}
-      </span>
-    `;
+    if (['platform', 'source'].includes(columnName)) {
+      badge.appendChild(this.createFaviconElement(getPlatformFavicon(value)));
+    }
+
+    const label = document.createElement('span');
+    label.textContent = value;
+    badge.appendChild(label);
+
+    return badge;
   },
 
   renderListSelectBadges(tracker, row) {
-    return this.getListSelectColumns().map(({ column, index }) => (
-      this.getListBadgeHtml(column, this.getCellDisplay(row[index]))
-    )).join('');
+    return this.getListSelectColumns()
+      .map(({ column, index }) => this.createListBadgeElement(column, this.getCellDisplay(row[index])))
+      .filter(Boolean);
   },
 
   renderListBadgesForCard(tracker, row, statusIndex) {
@@ -55,11 +67,11 @@ export const listBadgeMethods = {
         return !['platform', 'source'].includes(name) || this.isListColumnVisible(tracker, index);
       })
       .filter(({ index }) => this.isListColumnVisible(tracker, index))
-      .map(({ column, index }) => this.getListBadgeHtml(column, this.getCellDisplay(row[index])))
-      .join('');
+      .map(({ column, index }) => this.createListBadgeElement(column, this.getCellDisplay(row[index])))
+      .filter(Boolean);
     const statusBadge = statusColumn && this.isListColumnVisible(tracker, statusColumn.index)
-      ? this.getListBadgeHtml(statusColumn.column, this.getCellDisplay(row[statusColumn.index]))
-      : '';
+      ? this.createListBadgeElement(statusColumn.column, this.getCellDisplay(row[statusColumn.index]))
+      : null;
 
     return {
       otherBadges,

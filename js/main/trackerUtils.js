@@ -1,3 +1,21 @@
+export function getSafeHttpUrl(value) {
+  const source = String(value ?? '').trim();
+
+  if (!source) return null;
+
+  try {
+    const url = new URL(source);
+
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return null;
+    }
+
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
 export const trackerUtilityMethods = {
 getColumnName(column) {
     return typeof column === 'object' ? column.name : column;
@@ -33,7 +51,11 @@ getColumnIndexByNames(tracker, names, fallbackIndex = -1) {
   },
 
 isHttpLink(value) {
-    return /^https?:\/\//i.test(String(value || '').trim());
+    return Boolean(getSafeHttpUrl(value));
+  },
+
+  getSafeHttpUrl(value) {
+    return getSafeHttpUrl(value);
   },
 
 escapeHtml(value) {
@@ -59,7 +81,9 @@ getDashboardOptions(column) {
 
       return {
         label: option.label || 'Option',
-        color: option.color || '#6b7280'
+        color: /^#[0-9a-f]{6}$/i.test(option.color || '')
+          ? option.color
+          : '#6b7280'
       };
     });
   },

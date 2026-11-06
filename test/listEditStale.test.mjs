@@ -54,3 +54,50 @@ test('keeps the edit modal open when a stale save is rejected', () => {
   assert.equal(rendered, false);
   assert.equal(input.value, 'Unsaved Draft');
 });
+
+test('saves a List checkbox editor as a Boolean', () => {
+  const row = [{ value: false, type: 'checkbox' }];
+  const input = {
+    dataset: { fieldKey: '0' },
+    type: 'checkbox',
+    checked: true,
+    value: 'on',
+  };
+
+  globalThis.document = {
+    querySelectorAll() {
+      return [input];
+    },
+  };
+
+  const editor = {
+    ...listEditMethods,
+    activeListEditRowIndex: 0,
+    applySearchFilter() {},
+    closeListEditModal() {},
+    ensureListEditColumn(_tracker, field) {
+      return field.index;
+    },
+    getListEditFieldType() {
+      return 'checkbox';
+    },
+    getListEditFields() {
+      return [{ key: '0', index: 0 }];
+    },
+    getTracker() {
+      return {
+        columns: [{ name: 'Done', type: 'checkbox' }],
+        rows: [row],
+      };
+    },
+    renderListView() {},
+    save() {
+      return true;
+    },
+  };
+
+  editor.saveListEditModal();
+
+  assert.equal(row[0].value, true);
+  assert.equal(typeof row[0].value, 'boolean');
+});

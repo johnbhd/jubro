@@ -64,6 +64,35 @@ test('classifies legacy flextracker_data as revision-zero guest data', () => {
   assert.equal(state.data['1'].title, 'Legacy Guest');
 });
 
+test('normalizes legacy checkbox strings only under checkbox columns', () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    active: '1',
+    data: {
+      1: {
+        id: '1',
+        title: 'Legacy Types',
+        columns: [
+          { name: 'Done', type: 'checkbox' },
+          { name: 'Text', type: 'text' },
+        ],
+        rows: [[
+          { value: 'true', type: 'checkbox' },
+          { value: 'true', type: 'text' },
+        ], ['false', 'false']],
+      },
+    },
+  }));
+
+  const state = Storage.load();
+
+  assert.equal(state.data['1'].rows[0][0].value, true);
+  assert.equal(typeof state.data['1'].rows[0][0].value, 'boolean');
+  assert.equal(state.data['1'].rows[0][1].value, 'true');
+  assert.equal(state.data['1'].rows[1][0].value, false);
+  assert.equal(state.data['1'].rows[1][0].type, 'checkbox');
+  assert.equal(state.data['1'].rows[1][1], 'false');
+});
+
 test('keeps guest and account workspaces isolated by Firebase UID', () => {
   const guestState = stateWith('Guest');
   assert.equal(Storage.save(guestState), true);

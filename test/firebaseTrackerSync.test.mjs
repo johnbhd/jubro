@@ -141,3 +141,41 @@ test('does not silently transfer legacy unowned data to an empty account', async
   assert.equal(Storage.loadGuest().data['legacy-1'].title, 'Legacy Data');
   assert.equal(firebase.__getDocument('trackerData/account-a'), undefined);
 });
+
+test('normalizes legacy checkbox strings loaded from Firestore by column type', async () => {
+  const cloudPayload = {
+    active: 'cloud-1',
+    data: JSON.stringify({
+      'cloud-1': {
+        id: 'cloud-1',
+        title: 'Cloud Types',
+        columns: [
+          { name: 'Done', type: 'checkbox' },
+          { name: 'Text', type: 'text' },
+        ],
+        rows: [[
+          { value: 'true', type: 'checkbox' },
+          { value: 'true', type: 'text' },
+        ]],
+      },
+    }),
+    ownerType: 'account',
+    ownerId: ACCOUNT_A.uid,
+    revision: 3,
+  };
+
+  const parsedState = firebaseTrackerSync.parseTrackerData(cloudPayload, ACCOUNT_A.uid);
+  assert.equal(parsedState.data['cloud-1'].rows[0][0].value, true);
+  assert.equal(parsedState.data['cloud-1'].rows[0][1].value, 'true');
+
+  firebase.__setDocument('trackerData/account-a', cloudPayload);
+
+  await firebaseTrackerSync.syncLocalData(ACCOUNT_A);
+
+  const state = Storage.load();
+  const row = state.data['cloud-1'].rows[0];
+
+  assert.equal(row[0].value, true);
+  assert.equal(typeof row[0].value, 'boolean');
+  assert.equal(row[1].value, 'true');
+});

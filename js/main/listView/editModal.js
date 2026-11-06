@@ -1,3 +1,5 @@
+import { normalizeCellValue } from '../../services/trackerData.js';
+
 export const listEditMethods = {
   ensureListEditModal() {
     if (document.getElementById('listEditModal')) return;
@@ -77,35 +79,60 @@ export const listEditMethods = {
       const options = this.getDashboardOptions(column);
       const selected = options.find((option) => option.label === value);
 
-      return `
-        <div class="block">
-          <span class="text-sm font-medium text-gray-700">${this.escapeHtml(field.label)}</span>
-          <input type="hidden" data-field-key="${this.escapeHtml(field.key)}" value="${this.escapeHtml(value || '')}" />
-          <button
-            type="button"
-            class="list-edit-select-trigger list-edit-control mt-1 flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400"
-            data-column-index="${field.index}"
-          >
-            <span class="truncate">${this.escapeHtml(selected?.label || 'Select')}</span>
-            <i class="fa-solid fa-chevron-down ml-3 text-xs"></i>
-          </button>
-        </div>
-      `;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'block';
+
+      const label = document.createElement('span');
+      label.className = 'text-sm font-medium text-gray-700';
+      label.textContent = field.label;
+
+      const valueInput = document.createElement('input');
+      valueInput.type = 'hidden';
+      valueInput.dataset.fieldKey = field.key;
+      valueInput.value = typeof value === 'string' ? value : '';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'list-edit-select-trigger list-edit-control mt-1 flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400';
+      trigger.dataset.columnIndex = String(field.index);
+
+      const selectedLabel = document.createElement('span');
+      selectedLabel.className = 'truncate';
+      selectedLabel.textContent = selected?.label || 'Select';
+
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-chevron-down ml-3 text-xs';
+      trigger.append(selectedLabel, icon);
+      wrapper.append(label, valueInput, trigger);
+
+      return wrapper;
     }
 
-    const inputType = type === 'date' ? 'date' : 'text';
+    const label = document.createElement('label');
+    label.className = 'block';
 
-    return `
-      <label class="block">
-        <span class="text-sm font-medium text-gray-700">${this.escapeHtml(field.label)}</span>
-        <input
-          type="${inputType}"
-          class="list-edit-control mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400"
-          data-field-key="${this.escapeHtml(field.key)}"
-          value="${this.escapeHtml(value || '')}"
-        />
-      </label>
-    `;
+    const labelText = document.createElement('span');
+    labelText.className = 'text-sm font-medium text-gray-700';
+    labelText.textContent = field.label;
+
+    const input = document.createElement('input');
+    input.type = type === 'date'
+      ? 'date'
+      : type === 'checkbox'
+        ? 'checkbox'
+        : 'text';
+    input.className = 'list-edit-control mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400';
+    input.dataset.fieldKey = field.key;
+
+    if (type === 'checkbox') {
+      input.classList.add('h-5', 'w-5');
+      input.checked = value === true;
+    } else {
+      input.value = value === null || value === undefined ? '' : String(value);
+    }
+
+    label.append(labelText, input);
+    return label;
   },
 
   openListEditModal(rowIndex) {
@@ -117,9 +144,10 @@ export const listEditMethods = {
 
     this.activeListEditRowIndex = rowIndex;
     this.removeListEditSelectDropdowns();
-    fieldsContainer.innerHTML = this.getListEditFields(tracker)
-      .map((field) => this.createListEditInput(field, row))
-      .join('');
+    fieldsContainer.replaceChildren();
+    this.getListEditFields(tracker).forEach((field) => {
+      fieldsContainer.appendChild(this.createListEditInput(field, row));
+    });
     this.setupListEditSelectFields(tracker);
 
     document.getElementById('listEditModal')?.classList.remove('hidden');
@@ -230,7 +258,9 @@ export const listEditMethods = {
           deleteButton.type = 'button';
           deleteButton.className = 'inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded text-red-500 hover:bg-red-50';
           deleteButton.setAttribute('aria-label', `Delete ${option.label}`);
-          deleteButton.innerHTML = '<i class="fa-solid fa-trash text-xs"></i>';
+          const deleteIcon = document.createElement('i');
+          deleteIcon.className = 'fa-solid fa-trash text-xs';
+          deleteButton.appendChild(deleteIcon);
 
           label.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -326,8 +356,10 @@ export const listEditMethods = {
         index: columnIndex
       });
 
+      const rawValue = columnType === 'checkbox' ? input.checked : input.value;
+
       row[columnIndex] = {
-        value: input.value.trim(),
+        value: normalizeCellValue(columnType, rawValue),
         type: columnType
       };
     });

@@ -1,5 +1,7 @@
 import { startPress, cancelPress, showMenu, setActiveTarget, clearActiveTarget } from './ui.js';
 import { createFaviconElement, getLinkFavicon, getPlatformFavicon } from './favicon.js';
+import { getSafeHttpUrl } from './trackerUtils.js';
+import { normalizeCellValue } from '../services/trackerData.js';
 
 let activeDropdown = null;
 
@@ -454,7 +456,8 @@ export const Table = {
           input.value = cellData.value || '';
           input.classList.add('pointer-events-none');
           
-          const isLink = typeof cellData.value === 'string' && /^https?:\/\//.test(cellData.value);
+          const safeLink = getSafeHttpUrl(cellData.value);
+          const isLink = Boolean(safeLink);
           if (isLink) {
             input.classList.add('text-blue-500');
           } else {
@@ -466,7 +469,7 @@ export const Table = {
         
             input.addEventListener('click', (e) => {
               e.stopPropagation();
-              window.open(cellData.value, '_blank');
+              window.open(safeLink, '_blank', 'noopener,noreferrer');
             });
           }
           
@@ -502,9 +505,14 @@ export const Table = {
           blurOnEnter(input);
 
           input.addEventListener('change', (e) => {
-            row[colIndex] = cellData.type === 'checkbox'
-              ? { value: e.target.checked, type: 'checkbox' }
-              : { value: e.target.value, type: cellData.type };
+            const rawValue = cellData.type === 'checkbox'
+              ? e.target.checked
+              : e.target.value;
+
+            row[colIndex] = {
+              value: normalizeCellValue(cellData.type, rawValue),
+              type: cellData.type
+            };
 
             document.dispatchEvent(new Event('table:update'));
           });
