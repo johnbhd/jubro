@@ -275,7 +275,7 @@ export const kanbanMethods = {
 
       const addButton = document.createElement('button');
       addButton.type = 'button';
-      addButton.className = 'primary-action-button mt-5 inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600';
+      addButton.className = 'primary-action-button mt-5 inline-flex h-10 items-center gap-2 rounded-lg px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500';
       addButton.dataset.kanbanAddApplication = 'true';
       addButton.textContent = 'Add Application';
 
