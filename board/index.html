@@ -125,8 +125,8 @@
           <i class="fa-solid fa-xmark text-sm"></i>
         </button>
       </div>
-      <div class="relative justify-self-end">
-        <div class="flex items-center justify-center gap-1 sm:gap-2">
+      <div class="board-toolbar-actions relative justify-self-end">
+        <div class="board-toolbar-actions-row flex items-center justify-center gap-1 sm:gap-2">
           <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 lg:hidden" aria-label="Open search">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
@@ -145,9 +145,9 @@
               <span>List</span>
             </button>
           </div>
-          <button id="btnAddApplication" type="button" class="inline-flex h-10 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 sm:px-4" aria-label="Add application">
+          <button id="btnAddApplication" type="button" title="Add Application" class="inline-flex h-10 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 sm:px-4" aria-label="Add Application">
             <i class="fa-solid fa-plus text-xs"></i>
-            <span class="hidden sm:inline">Add Application</span>
+            <span class="kanban-add-label">Add Application</span>
           </button>
           <button id="btnMenu" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-xl" aria-label="More options">
             <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -176,9 +176,9 @@
       </div>
     </header>
     
-    <main class="min-w-0 py-3 sm:py-4" id="tableContainer">
-      <div id="kanbanView" class="min-w-0">
-        <div id="kanbanColumns" class="flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
+    <main class="board-workspace min-w-0 py-3 sm:py-4" id="tableContainer">
+      <div id="kanbanView" class="kanban-view min-w-0">
+        <div id="kanbanColumns" class="kanban-scroll-area flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
       </div>
 
       <div id="tableView" class="hidden bg-white rounded-md shadow overflow-x-auto">

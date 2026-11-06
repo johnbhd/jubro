@@ -216,7 +216,7 @@ export const kanbanMethods = {
       column.appendChild(header);
 
       const cards = document.createElement('div');
-      cards.className = 'min-h-20 space-y-3';
+      cards.className = 'kanban-card-list';
 
       if (group.rowIndexes.length === 0) {
         const empty = document.createElement('p');
@@ -256,11 +256,19 @@ export const kanbanMethods = {
         appendText(card, 'mt-1 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);
 
         const meta = document.createElement('div');
-        meta.className = 'mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500';
+        meta.className = 'kanban-card-meta mt-3 text-xs text-gray-500';
 
-        if (date !== '-') appendText(meta, '', date);
-        if (platform !== '-') appendText(meta, '', platform);
-        if (meta.childNodes.length > 0) card.appendChild(meta);
+        const metadata = [date, platform].filter((value) => value !== '-');
+
+        metadata.forEach((value, index) => {
+          if (index > 0) {
+            appendText(meta, 'kanban-card-meta-separator', '·');
+          }
+
+          appendText(meta, '', value);
+        });
+
+        if (metadata.length > 0) card.appendChild(meta);
 
         if (statusColumn) {
           const label = document.createElement('label');

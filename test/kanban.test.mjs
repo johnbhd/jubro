@@ -211,6 +211,64 @@ test('renders user values as text in Kanban cards', () => {
   }
 });
 
+test('separates Kanban date and platform metadata', () => {
+  const previousDocument = globalThis.document;
+  const previousWindow = globalThis.window;
+  const container = new FakeElement('div');
+  const tracker = createTracker({
+    columns: [
+      { name: 'Company', type: 'text' },
+      { name: 'Position', type: 'text' },
+      { name: 'Date Applied', type: 'date' },
+      { name: 'Platform', type: 'text' },
+      { name: 'Status', type: 'select', options: [
+        { label: 'Applied', color: '#3b82f6' },
+      ] },
+    ],
+    rows: [[
+      { value: 'Alpha', type: 'text' },
+      { value: 'Engineer', type: 'text' },
+      { value: '2026-11-06', type: 'date' },
+      { value: 'LinkedIn', type: 'text' },
+      { value: 'Applied', type: 'select' },
+    ]],
+  });
+
+  globalThis.document = {
+    createElement(tagName) {
+      return new FakeElement(tagName);
+    },
+  };
+  globalThis.window = {
+    matchMedia() {
+      return { matches: false };
+    },
+  };
+
+  try {
+    kanbanMethods.renderKanban.call({
+      kanbanColumns: container,
+      getListColumnIndexes() {
+        return {
+          company: 0,
+          position: 1,
+          date: 2,
+          platform: 3,
+        };
+      },
+      getCellDisplay(cell) {
+        return cell?.value || '-';
+      },
+      moveKanbanRow() {},
+    }, tracker);
+
+    assert.match(container.textContent, /2026-11-06·LinkedIn/);
+  } finally {
+    globalThis.document = previousDocument;
+    globalThis.window = previousWindow;
+  }
+});
+
 test('renders the empty tracker Board state with an Add Application action', () => {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
@@ -236,6 +294,22 @@ test('renders the empty tracker Board state with an Add Application action', () 
     globalThis.document = previousDocument;
     globalThis.window = previousWindow;
   }
+});
+
+test('keeps Kanban content and Add Application CTA usable at responsive widths', () => {
+  const boardMarkup = readFileSync('board/index.html', 'utf8');
+  const kanbanSource = readFileSync('js/main/kanban.js', 'utf8');
+  const globalStyles = readFileSync('css/global.css', 'utf8');
+
+  assert.match(boardMarkup, /id="kanbanColumns"[^>]*kanban-scroll-area/);
+  assert.match(boardMarkup, /id="btnAddApplication"[^>]*title="Add Application"/);
+  assert.match(boardMarkup, /class="kanban-add-label"/);
+  assert.match(kanbanSource, /kanban-card-meta/);
+  assert.match(kanbanSource, /kanban-card-meta-separator/);
+  assert.match(globalStyles, /\.kanban-scroll-area\s*\{[^}]*overflow-x:\s*auto/s);
+  assert.match(globalStyles, /\.kanban-column\s*\{[^}]*min-width:/s);
+  assert.match(globalStyles, /\.kanban-card\s*\{[^}]*overflow:\s*visible/s);
+  assert.match(globalStyles, /\.kanban-add-label\s*\{[^}]*display:\s*none/s);
 });
 
 test('moves a Kanban card through the canonical save and refresh path', () => {

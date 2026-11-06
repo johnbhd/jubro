@@ -35,6 +35,89 @@ input:disabled {
   max-width: 100%;
 }
 
+#appNavbar {
+  isolation: isolate;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.board-workspace {
+  padding-top: 1rem;
+  padding-bottom: 1.25rem;
+}
+
+.board-toolbar-actions {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.board-toolbar-actions-row {
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.kanban-view {
+  min-width: 0;
+  overflow: visible;
+}
+
+.kanban-scroll-area {
+  align-items: stretch;
+  display: flex;
+  gap: 1rem;
+  min-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+  padding: 0.5rem 0.25rem 1rem;
+  scrollbar-width: thin;
+  touch-action: pan-x pan-y;
+}
+
+.kanban-column {
+  box-sizing: border-box;
+  flex: 1 0 17.5rem;
+  max-width: 21rem;
+  min-height: 24rem;
+  min-width: 17.5rem;
+  overflow: visible;
+}
+
+.kanban-card-list {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 5rem;
+  overflow: visible;
+}
+
+.kanban-card {
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+.kanban-card-meta {
+  align-items: center;
+  column-gap: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 0.25rem;
+}
+
+.kanban-card-meta-separator {
+  color: #9ca3af;
+  line-height: 1;
+}
+
+.kanban-add-label {
+  display: none;
+  white-space: nowrap;
+}
+
 #contextMenu,
 #subMenu {
   max-width: calc(100vw - 1rem);
@@ -98,6 +181,14 @@ input:disabled {
 }
 
 @media (max-width: 1023px) {
+  #appNavbar {
+    align-items: start;
+  }
+
+  .board-toolbar-actions-row {
+    justify-content: flex-end;
+  }
+
   #searchWrapper {
     max-width: 100%;
     scrollbar-width: thin;
@@ -132,6 +223,12 @@ input:disabled {
 
   #jobSearchInput {
     padding-right: 0.75rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .kanban-add-label {
+    display: inline;
   }
 }
 
@@ -473,6 +570,10 @@ input:disabled {
 .dark .kanban-card .text-gray-600,
 .dark .kanban-card .text-gray-500 {
   color: #d1d5db !important;
+}
+
+.dark .kanban-card-meta-separator {
+  color: #9ca3af;
 }
 
 .dark .kanban-card select {
