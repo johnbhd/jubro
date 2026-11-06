@@ -312,6 +312,21 @@ test('keeps Kanban content and Add Application CTA usable at responsive widths',
   assert.match(globalStyles, /\.kanban-add-label\s*\{[^}]*display:\s*none/s);
 });
 
+test('keeps Kanban column headers readable and grouped in both themes', () => {
+  const kanbanSource = readFileSync('js/main/kanban.js', 'utf8');
+  const globalStyles = readFileSync('css/global.css', 'utf8');
+
+  assert.match(kanbanSource, /kanban-column-header/);
+  assert.match(kanbanSource, /kanban-column-title/);
+  assert.match(kanbanSource, /kanban-column-count/);
+  assert.match(kanbanSource, /kanban-column-empty/);
+  assert.match(globalStyles, /\.kanban-column\s*\{[^}]*background-color:/s);
+  assert.match(globalStyles, /\.kanban-column-header\s*\{[^}]*border-bottom:/s);
+  assert.match(globalStyles, /\.dark \.kanban-column\s*\{[^}]*background-color:/s);
+  assert.match(globalStyles, /\.dark \.kanban-column-title\s*\{[^}]*color:/s);
+  assert.match(globalStyles, /\.dark \.kanban-column-count\s*\{[^}]*color:/s);
+});
+
 test('moves a Kanban card through the canonical save and refresh path', () => {
   const tracker = createTracker();
   let saveCalls = 0;

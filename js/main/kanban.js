@@ -174,7 +174,7 @@ export const kanbanMethods = {
       emptyState.className = 'rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm';
 
       const heading = document.createElement('h2');
-      heading.className = 'text-lg font-semibold text-gray-900';
+      heading.className = 'kanban-empty-state-title text-lg font-semibold text-gray-900';
       heading.textContent = 'Your job pipeline is empty.';
 
       const description = document.createElement('p');
@@ -202,14 +202,14 @@ export const kanbanMethods = {
       column.style.borderTop = `3px solid ${group.color}`;
 
       const header = document.createElement('div');
-      header.className = 'mb-3 flex items-center justify-between gap-3';
+      header.className = 'kanban-column-header mb-3 flex items-center justify-between gap-3';
 
       const heading = document.createElement('h2');
-      heading.className = 'min-w-0 truncate text-sm font-semibold text-gray-900';
+      heading.className = 'kanban-column-title min-w-0 truncate text-sm font-semibold text-gray-900';
       heading.textContent = group.label;
 
       const count = document.createElement('span');
-      count.className = 'shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-gray-500';
+      count.className = 'kanban-column-count shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-gray-500';
       count.textContent = String(group.rowIndexes.length);
 
       header.append(heading, count);
@@ -220,7 +220,7 @@ export const kanbanMethods = {
 
       if (group.rowIndexes.length === 0) {
         const empty = document.createElement('p');
-        empty.className = 'rounded-xl border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500';
+        empty.className = 'kanban-column-empty rounded-xl border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500';
         empty.textContent = 'No applications here yet.';
         cards.appendChild(empty);
       }
