@@ -21,7 +21,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { app } from "../firebase/firebaseApp.js";
-import { firebaseTrackerSync } from "../storage/firebaseTrackerSync.js";
+import {
+  dispatchTrackerSyncError,
+  firebaseTrackerSync,
+} from "../storage/firebaseTrackerSync.js";
 import { Storage } from "../storage/storage.js";
 
 class FirebaseAuthService {
@@ -280,9 +283,7 @@ class FirebaseAuthService {
 
   reportSyncError(error) {
     console.error("Tracker sync error:", error);
-    document.dispatchEvent(new CustomEvent("tracker:sync-error", {
-      detail: { message: error?.message || "Tracker data could not be synchronized." }
-    }));
+    dispatchTrackerSyncError(error);
   }
 
   getCurrentUser() {

@@ -34,6 +34,9 @@ export function setupStorageNotice() {
   document.addEventListener('tracker:sync-error', () => {
     show('Cloud sync failed. Your local data remains on this device. Reload to try again.');
   });
+  document.addEventListener('tracker:cloud-conflict', () => {
+    show('Your data changed from another session. Your local changes remain safe. Reload the latest data before trying again.');
+  });
 
   document.body.appendChild(notice);
 }

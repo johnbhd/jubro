@@ -1,4 +1,5 @@
 const documents = new Map();
+const documentVersions = new Map();
 const authListeners = new Set();
 
 const auth = {
@@ -9,20 +10,26 @@ let failWrites = false;
 let nextUser = null;
 let signOutHook = null;
 let writeDelay = 0;
+let transactionDelay = 0;
+let transactionAttempts = 0;
 const writes = [];
 
 export function __resetFirebase() {
   documents.clear();
+  documentVersions.clear();
   auth.currentUser = null;
   failWrites = false;
   nextUser = null;
   signOutHook = null;
   writeDelay = 0;
+  transactionDelay = 0;
+  transactionAttempts = 0;
   writes.length = 0;
 }
 
 export function __setDocument(path, value) {
   documents.set(path, structuredClone(value));
+  documentVersions.set(path, (documentVersions.get(path) || 0) + 1);
 }
 
 export function __getDocument(path) {
@@ -48,6 +55,14 @@ export function __getWrites() {
 
 export function __setWriteDelay(milliseconds) {
   writeDelay = Math.max(0, Number(milliseconds) || 0);
+}
+
+export function __setTransactionDelay(milliseconds) {
+  transactionDelay = Math.max(0, Number(milliseconds) || 0);
+}
+
+export function __getTransactionAttempts() {
+  return transactionAttempts;
 }
 
 export async function __emitAuth(user) {
@@ -145,10 +160,113 @@ export async function setDoc(path, value, options = {}) {
   });
 
   documents.set(path, next);
+  documentVersions.set(path, (documentVersions.get(path) || 0) + 1);
 }
 
 export async function deleteDoc(path) {
   documents.delete(path);
+  documentVersions.set(path, (documentVersions.get(path) || 0) + 1);
+}
+
+function createSnapshot(path) {
+  return {
+    data() {
+      return structuredClone(documents.get(path));
+    },
+    exists() {
+      return documents.has(path);
+    },
+  };
+}
+
+function applyWrite(path, value, options = {}) {
+  const previous = options.merge ? documents.get(path) || {} : {};
+  const next = { ...previous };
+
+  Object.entries(value).forEach(([key, entry]) => {
+    if (entry === DELETE_FIELD) {
+      delete next[key];
+    } else {
+      next[key] = structuredClone(entry);
+    }
+  });
+
+  documents.set(path, next);
+  documentVersions.set(path, (documentVersions.get(path) || 0) + 1);
+}
+
+export async function runTransaction(_db, updateFunction) {
+  const maxAttempts = 5;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    transactionAttempts += 1;
+
+    const reads = new Map();
+    const pendingWrites = [];
+    let hasWritten = false;
+
+    const transaction = {
+      async get(path) {
+        if (hasWritten) {
+          throw new Error('Firestore transactions must read before writing.');
+        }
+
+        reads.set(path, documentVersions.get(path) || 0);
+        return createSnapshot(path);
+      },
+
+      set(path, value, options = {}) {
+        hasWritten = true;
+        pendingWrites.push({ path, value, options });
+      },
+
+      delete(path) {
+        hasWritten = true;
+        pendingWrites.push({ path, value: null, options: { delete: true } });
+      },
+    };
+
+    const result = await updateFunction(transaction);
+
+    if (transactionDelay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, transactionDelay));
+    }
+
+    const hasChangedRead = [...reads.entries()].some(([path, version]) => (
+      (documentVersions.get(path) || 0) !== version
+    ));
+
+    if (hasChangedRead) {
+      continue;
+    }
+
+    if (failWrites) {
+      throw new Error('simulated-write-failure');
+    }
+
+    if (writeDelay > 0) {
+      await new Promise((resolve) => setTimeout(resolve, writeDelay));
+    }
+
+    pendingWrites.forEach(({ path, value, options }) => {
+      if (options.delete) {
+        documents.delete(path);
+        documentVersions.set(path, (documentVersions.get(path) || 0) + 1);
+        return;
+      }
+
+      writes.push({
+        path,
+        value,
+        options,
+      });
+      applyWrite(path, value, options);
+    });
+
+    return result;
+  }
+
+  throw new Error('simulated-transaction-retry-limit');
 }
 
 const DELETE_FIELD = Symbol('delete-field');

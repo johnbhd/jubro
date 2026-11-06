@@ -1,6 +1,9 @@
 import { Storage } from '../storage/storage.js';
 import { authService } from '../auth/firebaseAuth.js';
-import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
+import {
+  dispatchTrackerSyncError,
+  firebaseTrackerSync,
+} from '../storage/firebaseTrackerSync.js';
 
 const TITLE_SYNC_DELAY_MS = 300;
 
@@ -241,6 +244,7 @@ syncLocalStateToFirebase() {
 
     return firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
       console.error("Tracker Firebase sync error:", err);
+      dispatchTrackerSyncError(err);
     });
   }
 };

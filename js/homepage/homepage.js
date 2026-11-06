@@ -1,6 +1,9 @@
 import { Storage } from '../storage/storage.js';
 import { authService } from '../auth/firebaseAuth.js';
-import { firebaseTrackerSync } from '../storage/firebaseTrackerSync.js';
+import {
+  dispatchTrackerSyncError,
+  firebaseTrackerSync,
+} from '../storage/firebaseTrackerSync.js';
 import { createDefaultTracker } from '../tracker/defaultTracker.js';
 
 export class TrackerHome {
@@ -220,6 +223,7 @@ export class TrackerHome {
 
     firebaseTrackerSync.syncCurrentLocalState(user).catch((err) => {
       console.error("Tracker Firebase sync error:", err);
+      dispatchTrackerSyncError(err);
     });
   }
   render() {

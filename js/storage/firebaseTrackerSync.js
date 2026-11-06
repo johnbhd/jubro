@@ -4,7 +4,8 @@ import {
   getDoc,
   deleteDoc,
   deleteField,
-  setDoc
+  setDoc,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -35,7 +36,43 @@ export function hasValidTrackerData(state) {
   });
 }
 
-class FirebaseTrackerSync {
+function validCloudRevision(value) {
+  return Number.isInteger(value) && value >= 0 ? value : 0;
+}
+
+export function createCloudConflictError({
+  expectedCloudRevision,
+  currentCloudRevision,
+}) {
+  const error = new Error(
+    "Cloud data changed in another session before this workspace could sync."
+  );
+
+  error.name = "CloudConflictError";
+  error.code = "sync/cloud-conflict";
+  error.expectedCloudRevision = expectedCloudRevision;
+  error.currentCloudRevision = currentCloudRevision;
+  error.userMessage = "Your data changed from another session. Your local changes are safe, but newer cloud data already exists.";
+
+  return error;
+}
+
+export function dispatchTrackerSyncError(error) {
+  if (typeof document === "undefined") return;
+
+  const eventName = error?.code === "sync/cloud-conflict"
+    ? "tracker:cloud-conflict"
+    : "tracker:sync-error";
+
+  document.dispatchEvent(new CustomEvent(eventName, {
+    detail: {
+      code: error?.code,
+      message: error?.userMessage || error?.message || "Tracker data could not be synchronized.",
+    },
+  }));
+}
+
+export class FirebaseTrackerSync {
   constructor() {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
@@ -130,7 +167,14 @@ class FirebaseTrackerSync {
       return;
     }
 
-    const ownedAccountState = this.asAccountState(accountState, user.uid);
+    const expectedCloudRevision = firebaseState
+      ? this.getCloudRevision(firebaseState)
+      : this.getCloudRevision(localState);
+    const ownedAccountState = this.asAccountState(
+      accountState,
+      user.uid,
+      expectedCloudRevision
+    );
     const saved = Storage.replace(ownedAccountState, localState.revision);
 
     if (!saved) {
@@ -153,13 +197,18 @@ class FirebaseTrackerSync {
     }
   }
 
-  asAccountState(state, userId) {
+  asAccountState(state, userId, cloudRevision = this.getCloudRevision(state)) {
     return {
       ...this.clone(state),
       ownerType: "account",
       ownerId: userId,
-      revision: Number.isInteger(state?.revision) ? state.revision : 0
+      revision: Number.isInteger(state?.revision) ? state.revision : 0,
+      cloudRevision: validCloudRevision(cloudRevision),
     };
+  }
+
+  getCloudRevision(state) {
+    return validCloudRevision(state?.cloudRevision);
   }
 
   async mergeStates(localState, firebaseState, resolveConflict) {
@@ -214,14 +263,14 @@ class FirebaseTrackerSync {
 
     if (trackerDoc.exists()) {
       const trackerState = this.parseTrackerData(trackerDoc.data(), userId);
-      if (hasValidTrackerData(trackerState)) return trackerState;
+      if (trackerState) return trackerState;
     }
 
     const userDoc = await getDoc(doc(this.db, "users", userId));
 
     if (userDoc.exists()) {
       const userState = this.parseTrackerData(userDoc.data().trackerData, userId);
-      if (hasValidTrackerData(userState)) return userState;
+      if (userState) return userState;
     }
 
     return null;
@@ -247,13 +296,109 @@ class FirebaseTrackerSync {
 
     if (!data || typeof data !== "object") return null;
 
+    const revision = Number.isInteger(trackerData.revision)
+      ? trackerData.revision
+      : 0;
+
     return normalizeLegacyWorkspaceState({
       active: trackerData.active || null,
       data,
       ownerType: "account",
       ownerId: userId,
-      revision: Number.isInteger(trackerData.revision) ? trackerData.revision : 0
+      revision,
+      cloudRevision: revision,
     });
+  }
+
+  assertCloudOwner(payload, userId) {
+    if (!payload || !payload.ownerType) return;
+
+    if (payload.ownerType !== "account" || payload.ownerId !== userId) {
+      throw new Error("Refusing to use cloud tracker data for a different owner.");
+    }
+  }
+
+  resolveTransactionCloudState(primarySnapshot, userSnapshot, userId) {
+    const primaryPayload = primarySnapshot.exists()
+      ? primarySnapshot.data()
+      : null;
+
+    this.assertCloudOwner(primaryPayload, userId);
+
+    const primaryState = this.parseTrackerData(primaryPayload, userId);
+    if (primaryState) return primaryState;
+
+    const userPayload = userSnapshot.exists()
+      ? userSnapshot.data()?.trackerData
+      : null;
+
+    this.assertCloudOwner(userPayload, userId);
+    return this.parseTrackerData(userPayload, userId);
+  }
+
+  async commitCloudState(user, state) {
+    if (!user?.uid || !state || typeof state !== "object" || !state.data || typeof state.data !== "object") {
+      return null;
+    }
+
+    if (state.ownerType !== "account" || state.ownerId !== user.uid) {
+      throw new Error("Refusing to upload tracker data for a different owner.");
+    }
+
+    const expectedCloudRevision = this.getCloudRevision(state);
+    const trackerReference = doc(this.db, "trackerData", user.uid);
+    const userReference = doc(this.db, "users", user.uid);
+
+    return runTransaction(this.db, async (transaction) => {
+      const trackerSnapshot = await transaction.get(trackerReference);
+      const userSnapshot = await transaction.get(userReference);
+      const cloudState = this.resolveTransactionCloudState(
+        trackerSnapshot,
+        userSnapshot,
+        user.uid
+      );
+      const currentCloudRevision = this.getCloudRevision(cloudState);
+
+      if (currentCloudRevision !== expectedCloudRevision) {
+        throw createCloudConflictError({
+          expectedCloudRevision,
+          currentCloudRevision,
+        });
+      }
+
+      const nextCloudRevision = currentCloudRevision + 1;
+      const trackerData = {
+        active: state.active || null,
+        data: JSON.stringify(state.data || {}),
+        ownerType: "account",
+        ownerId: user.uid,
+        revision: nextCloudRevision,
+        syncedAt: new Date().toISOString(),
+      };
+
+      transaction.set(userReference, {
+        email: user.email,
+        trackerData,
+      }, { merge: true });
+
+      transaction.set(trackerReference, trackerData, { merge: true });
+
+      return nextCloudRevision;
+    });
+  }
+
+  getCurrentUploadState(user, fallbackState) {
+    const currentState = Storage.load();
+
+    if (
+      currentState.ownerType === "account"
+      && currentState.ownerId === user.uid
+      && currentState.revision >= (fallbackState?.revision || 0)
+    ) {
+      return currentState;
+    }
+
+    return fallbackState;
   }
 
   async uploadLocalState(user, state) {
@@ -262,19 +407,14 @@ class FirebaseTrackerSync {
       throw new Error("Refusing to upload tracker data for a different owner.");
     }
 
-    const trackerData = {
-      active: state.active || null,
-      data: JSON.stringify(state.data || {}),
-      ownerType: "account",
-      ownerId: user.uid,
-      revision: Number.isInteger(state.revision) ? state.revision : 0,
-      syncedAt: new Date().toISOString()
-    };
-
-    const revision = trackerData.revision;
+    const revision = Number.isInteger(state.revision) ? state.revision : 0;
+    const cloudRevision = this.getCloudRevision(state);
     const pendingUpload = this.pendingUploads.get(user.uid);
 
-    if (pendingUpload?.revision === revision) {
+    if (
+      pendingUpload?.revision === revision
+      && pendingUpload.cloudRevision === cloudRevision
+    ) {
       return pendingUpload.promise;
     }
 
@@ -282,16 +422,25 @@ class FirebaseTrackerSync {
     const uploadPromise = previousPromise
       .catch(() => {})
       .then(async () => {
-        await setDoc(doc(this.db, "users", user.uid), {
-          email: user.email,
-          trackerData
-        }, { merge: true });
+        const uploadState = this.getCurrentUploadState(user, state);
+        const expectedCloudRevision = this.getCloudRevision(uploadState);
+        const nextCloudRevision = await this.commitCloudState(user, uploadState);
+        const recorded = Storage.updateCloudRevision(
+          nextCloudRevision,
+          expectedCloudRevision
+        );
 
-        await setDoc(doc(this.db, "trackerData", user.uid), trackerData, { merge: true });
+        if (!recorded) {
+          throw new Error("Local tracker data changed before cloud revision could be recorded.");
+        }
+
+        uploadState.cloudRevision = nextCloudRevision;
+        return nextCloudRevision;
       });
 
     this.pendingUploads.set(user.uid, {
       revision,
+      cloudRevision,
       promise: uploadPromise,
     });
 

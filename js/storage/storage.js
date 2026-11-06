@@ -211,6 +211,35 @@ export const Storage = {
     return true;
   },
 
+  updateCloudRevision(cloudRevision, expectedCloudRevision = 0) {
+    const nextCloudRevision = validRevision(cloudRevision);
+    const expectedRevision = validRevision(expectedCloudRevision);
+    const current = readWorkspace();
+
+    if (!current.state || !ownersMatch(current.state, currentOwner)) {
+      return false;
+    }
+
+    const currentCloudRevision = validRevision(current.state.cloudRevision);
+
+    if (currentCloudRevision === nextCloudRevision || currentCloudRevision > nextCloudRevision) {
+      return true;
+    }
+
+    if (currentCloudRevision !== expectedRevision || nextCloudRevision < expectedRevision) {
+      return false;
+    }
+
+    const nextState = normalizeState({
+      ...current.state,
+      cloudRevision: nextCloudRevision,
+    }, currentOwner, current.state.revision);
+
+    localStorage.setItem(current.key, JSON.stringify(nextState));
+    loadedRevision = nextState.revision;
+    return true;
+  },
+
   removeAccountWorkspace(userId) {
     if (!userId) return;
 

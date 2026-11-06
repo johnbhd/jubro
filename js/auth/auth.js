@@ -2,7 +2,10 @@ import { authService } from "./firebaseAuth.js";
 import { Message } from "./message.js";
 import { Storage } from "../storage/storage.js";
 import { JSONService } from "../services/jsonService.js";
-import { firebaseTrackerSync } from "../storage/firebaseTrackerSync.js";
+import {
+  dispatchTrackerSyncError,
+  firebaseTrackerSync,
+} from "../storage/firebaseTrackerSync.js";
 
 const THEME_KEY = 'jubro_theme';
 
@@ -977,7 +980,15 @@ export class Auth {
       }
 
       const user = authService.getCurrentUser();
-      if (!Storage.replace(importedState)) {
+      const currentState = Storage.load();
+      const stateForCurrentWorkspace = user?.uid
+        ? {
+            ...importedState,
+            cloudRevision: currentState.cloudRevision,
+          }
+        : importedState;
+
+      if (!Storage.replace(stateForCurrentWorkspace)) {
         this.showDataMessage('Your data changed in another tab. Reload before importing.');
         return;
       }
@@ -989,7 +1000,11 @@ export class Auth {
           await firebaseTrackerSync.syncCurrentLocalState(user);
         } catch (error) {
           console.error('Imported Jubro data locally, but Firebase sync failed:', error);
-          this.showDataMessage('Data was imported locally, but syncing to your account failed. Please try again.');
+          dispatchTrackerSyncError(error);
+          this.showDataMessage(
+            error.userMessage
+              || 'Data was imported locally, but syncing to your account failed. Please try again.'
+          );
           return;
         }
       }

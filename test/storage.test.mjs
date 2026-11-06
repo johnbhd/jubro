@@ -182,3 +182,17 @@ test('clears only the transferred guest revision', () => {
   assert.deepEqual(Storage.loadGuest().data, {});
   assert.equal(Storage.loadGuest().revision, transferredRevision + 1);
 });
+
+test('updates cloud base revision without changing local revision', () => {
+  Storage.useAccountWorkspace('account-a');
+  const state = stateWith('Account');
+  assert.equal(Storage.save(state), true);
+
+  const localRevision = state.revision;
+  assert.equal(Storage.updateCloudRevision(4, 0), true);
+
+  const persisted = Storage.load();
+  assert.equal(persisted.revision, localRevision);
+  assert.equal(persisted.cloudRevision, 4);
+  assert.equal(Storage.updateCloudRevision(5, 3), false);
+});
