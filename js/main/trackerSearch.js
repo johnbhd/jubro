@@ -1,6 +1,13 @@
 import { BOARD_PAGE_SIZE } from './constants.js';
 
 export const trackerSearchMethods = {
+getBoardRowSelector(view = this.viewSelect?.value) {
+    if (view === 'list') return '#listCards [data-row-index]';
+    if (view === 'kanban') return '#kanbanView [data-row-index]';
+
+    return '#tableBody tr';
+  },
+
 getSearchColumnIndexes(tracker) {
     const searchableNames = ['company', 'position', 'status', 'link', 'date applied', 'date'];
 
@@ -43,8 +50,10 @@ rowMatchesSelectFilter(row) {
 applySearchFilter() {
     const tracker = this.getTracker();
     const query = this.searchInput?.value.trim().toLowerCase() || '';
-    const isListView = this.viewSelect?.value === 'list';
-    const rowElements = document.querySelectorAll(isListView ? '#listCards [data-row-index]' : '#tableBody tr');
+    const currentView = this.viewSelect?.value || 'table';
+    const isListView = currentView === 'list';
+    const isKanbanView = currentView === 'kanban';
+    const rowElements = document.querySelectorAll(this.getBoardRowSelector(currentView));
     const columnIndexes = this.getSearchColumnIndexes(tracker);
     const hasSelectFilter = this.sortSelect?.value === 'select-text' && Boolean(this.selectValueFilterSelect?.value);
     const hasListFilter = isListView && (
@@ -68,14 +77,21 @@ applySearchFilter() {
       }
     });
 
-    this.applyPagination(matchedElements);
+    if (isKanbanView) {
+      rowElements.forEach((rowElement) => {
+        rowElement.classList.toggle('hidden', !matchedElements.includes(rowElement));
+      });
+      this.boardPagination?.classList.add('hidden');
+      this.boardPagination?.classList.remove('flex');
+    } else {
+      this.applyPagination(matchedElements);
+    }
+
     this.noSearchResults?.classList.toggle('hidden', matchedElements.length > 0 || !hasActiveFilter);
   },
 
 applyPagination(matchedElements) {
-    const rowElements = document.querySelectorAll(
-      this.viewSelect?.value === 'list' ? '#listCards [data-row-index]' : '#tableBody tr'
-    );
+    const rowElements = document.querySelectorAll(this.getBoardRowSelector());
     const totalItems = matchedElements.length;
     const totalPages = Math.max(1, Math.ceil(totalItems / BOARD_PAGE_SIZE));
 

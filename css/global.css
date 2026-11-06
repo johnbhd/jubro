@@ -458,6 +458,28 @@ input:disabled {
   color: #111827 !important;
 }
 
+.dark .kanban-column {
+  background-color: #111827 !important;
+}
+
+.dark .kanban-card {
+  border-color: #374151 !important;
+}
+
+.dark .kanban-card .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark .kanban-card .text-gray-600,
+.dark .kanban-card .text-gray-500 {
+  color: #d1d5db !important;
+}
+
+.dark .kanban-card select {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
 .dark #btnDashboard:hover {
   background-color: #e5e7eb !important;
 }

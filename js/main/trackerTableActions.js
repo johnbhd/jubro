@@ -18,6 +18,7 @@ refresh({ persist = true } = {}) {
     this.updateSelectTextSortVisibility();
     const tableRows = this.getTableRowsForRender(tracker);
     Table.render(tracker.columns, tableRows, tracker.rows);
+    this.renderKanban(tracker);
     this.renderListView(tracker);
     this.updateListFilterChipStyles();
     this.updateBoardView();

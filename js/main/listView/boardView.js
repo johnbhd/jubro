@@ -4,19 +4,23 @@ import { Table } from '../table.js';
 
 export const boardViewMethods = {
   updateBoardView() {
+    const currentView = this.viewSelect?.value || 'kanban';
     const isListView = this.viewSelect?.value === 'list';
+    const isKanbanView = currentView === 'kanban';
+    const isTableView = currentView === 'table';
 
-    if (isListView) {
+    if (isTableView) {
       Table.closeSelectDropdown();
     }
 
-    this.tableView?.classList.toggle('hidden', isListView);
+    this.tableView?.classList.toggle('hidden', !isTableView);
     this.listView?.classList.toggle('hidden', !isListView);
+    this.kanbanView?.classList.toggle('hidden', !isKanbanView);
     this.updateBoardViewToggle();
   },
 
   updateBoardViewToggle() {
-    const currentView = this.viewSelect?.value || 'table';
+    const currentView = this.viewSelect?.value || 'kanban';
 
     document.querySelectorAll('[data-board-view-button]').forEach((button) => {
       const isActive = button.dataset.boardViewButton === currentView;
@@ -32,17 +36,28 @@ export const boardViewMethods = {
     localStorage.setItem(BOARD_VIEW_KEY, this.viewSelect.value);
   },
 
+  setBoardView(view) {
+    if (!this.viewSelect || !['kanban', 'list', 'table'].includes(view)) {
+      return;
+    }
+
+    this.viewSelect.value = view;
+    this.saveBoardViewPreference();
+    this.resetPagination();
+    this.updateBoardView();
+    this.applySearchFilter();
+  },
+
   restoreBoardViewPreference() {
     if (!this.viewSelect) return;
 
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const savedView = localStorage.getItem(BOARD_VIEW_KEY) || 'list';
+    const savedView = localStorage.getItem(BOARD_VIEW_KEY);
 
-    if (isMobile) {
-      this.viewSelect.value = 'list';
-      localStorage.setItem(BOARD_VIEW_KEY, 'list');
-    } else if (savedView === 'list' || savedView === 'table') {
+    if (savedView === 'list') {
       this.viewSelect.value = savedView;
+    } else {
+      this.viewSelect.value = 'kanban';
+      localStorage.setItem(BOARD_VIEW_KEY, 'kanban');
     }
 
     this.updateBoardViewToggle();

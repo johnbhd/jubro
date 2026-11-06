@@ -26,6 +26,7 @@ test('does not redraw a rejected persisted mutation', () => {
           rows: [],
         };
       },
+      renderKanban() {},
       reloadStateFromStorage() {
         reloaded = true;
       },
@@ -61,6 +62,7 @@ test('does not save when refresh only updates a view', () => {
           rows: [],
         };
       },
+      renderKanban() {},
       renderListView() {},
       renderSelectTextSortOptions() {},
       renderSelectValueFilterOptions() {},

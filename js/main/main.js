@@ -5,6 +5,7 @@ import { trackerSortingMethods } from './trackerSorting.js';
 import { trackerDashboardMethods } from './trackerDashboard.js';
 import { trackerSearchMethods } from './trackerSearch.js';
 import { trackerListViewMethods } from './trackerListView.js';
+import { kanbanMethods } from './kanban.js';
 import { trackerKeyboardMethods } from './trackerKeyboard.js';
 import { trackerTableActionMethods } from './trackerTableActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
@@ -15,6 +16,8 @@ export class TrackerApp {
     this.tableContainer = document.getElementById('tableContainer');
     this.tableView = document.getElementById('tableView');
     this.listView = document.getElementById('listView');
+    this.kanbanView = document.getElementById('kanbanView');
+    this.kanbanColumns = document.getElementById('kanbanColumns');
     this.listCards = document.getElementById('listCards');
     this.listSearchInput = document.getElementById('listSearchInput');
     this.listSortSelect = document.getElementById('listSortSelect');
@@ -75,6 +78,7 @@ Object.assign(
   trackerDashboardMethods,
   trackerSearchMethods,
   trackerListViewMethods,
+  kanbanMethods,
   trackerKeyboardMethods,
   trackerTableActionMethods,
   trackerEventMethods

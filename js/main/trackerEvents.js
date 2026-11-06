@@ -7,6 +7,8 @@ initEvents() {
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
+    const btnTableView = document.getElementById('btnTableView');
+    const btnAddApplication = document.getElementById('btnAddApplication');
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
     const btnCloseSearch = document.getElementById('btnCloseSearch');
@@ -231,24 +233,20 @@ initEvents() {
     });
 
     boardViewSelect?.addEventListener('change', () => {
-      this.saveBoardViewPreference();
-      this.resetPagination();
-      this.updateBoardView();
-      this.applySearchFilter();
+      this.setBoardView(boardViewSelect.value);
     });
 
     document.querySelectorAll('[data-board-view-button]').forEach((button) => {
       button.addEventListener('click', () => {
         const view = button.dataset.boardViewButton;
 
-        if (!this.viewSelect || (view !== 'table' && view !== 'list')) return;
-
-        this.viewSelect.value = view;
-        this.saveBoardViewPreference();
-        this.resetPagination();
-        this.updateBoardView();
-        this.applySearchFilter();
+        this.setBoardView(view);
       });
+    });
+
+    btnTableView?.addEventListener('click', () => {
+      dropdown?.classList.add('hidden');
+      this.setBoardView('table');
     });
 
     listSearchInput?.addEventListener('input', () => {
@@ -263,8 +261,17 @@ initEvents() {
       this.applySearchFilter();
     });
 
-    btnListAddJob?.addEventListener('click', () => {
+    const addApplication = () => {
       this.addRow({ useJobDefaults: true, insertAtStart: true });
+    };
+
+    btnAddApplication?.addEventListener('click', addApplication);
+    btnListAddJob?.addEventListener('click', addApplication);
+
+    document.getElementById('kanbanView')?.addEventListener('click', (event) => {
+      if (!event.target.closest('[data-kanban-add-application]')) return;
+
+      addApplication();
     });
 
     listFilterSections?.addEventListener('click', (e) => {
