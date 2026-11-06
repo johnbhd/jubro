@@ -14,10 +14,8 @@ const {
   groupKanbanRows,
   kanbanMethods,
 } = await import('../js/main/kanban.js');
-const { trackerTableActionMethods } = await import('../js/main/trackerTableActions.js');
+const { trackerActionMethods } = await import('../js/main/trackerActions.js');
 const { trackerSearchMethods } = await import('../js/main/trackerSearch.js');
-const { boardViewMethods } = await import('../js/main/listView/boardView.js');
-const { Table } = await import('../js/main/table.js');
 
 class FakeElement {
   constructor(tagName) {
@@ -189,7 +187,7 @@ test('renders user values as text in Kanban cards', () => {
   try {
     kanbanMethods.renderKanban.call({
       kanbanColumns: container,
-      getListColumnIndexes() {
+      getTrackerColumnIndexes() {
         return {
           company: 0,
           position: -1,
@@ -248,7 +246,7 @@ test('separates Kanban date and platform metadata', () => {
   try {
     kanbanMethods.renderKanban.call({
       kanbanColumns: container,
-      getListColumnIndexes() {
+      getTrackerColumnIndexes() {
         return {
           company: 0,
           position: 1,
@@ -381,15 +379,10 @@ test('reloads canonical state when a Kanban status save is rejected', () => {
   assert.equal(tracker.rows[0][1].value, 'Applied');
 });
 
-test('refresh renders Kanban from the same tracker as Table and List', () => {
+test('refresh renders Kanban from canonical tracker state', () => {
   let kanbanCalls = 0;
-  const originalTableRender = Table.render;
-  Table.render = () => {};
   const app = {
     dashboardModal: null,
-    getTableRowsForRender() {
-      return [];
-    },
     getTracker() {
       return {
         title: 'Tracker',
@@ -400,22 +393,15 @@ test('refresh renders Kanban from the same tracker as Table and List', () => {
     renderKanban() {
       kanbanCalls += 1;
     },
-    renderListView() {},
     renderSelectTextSortOptions() {},
     renderSelectValueFilterOptions() {},
-    updateBoardView() {},
-    updateListFilterChipStyles() {},
     updateSelectTextSortVisibility() {},
     applySearchFilter() {},
     titleInput: { value: '' },
     save() {},
   };
 
-  try {
-    trackerTableActionMethods.refresh.call(app, { persist: false });
-  } finally {
-    Table.render = originalTableRender;
-  }
+  trackerActionMethods.refresh.call(app, { persist: false });
 
   assert.equal(kanbanCalls, 1);
 });
@@ -467,79 +453,17 @@ test('search targets Kanban cards without treating search as a mutation', () => 
   }
 });
 
-test('defaults Board view to Kanban and maps legacy Table preference to Kanban', () => {
-  const previousDocument = globalThis.document;
-  const previousWindow = globalThis.window;
-  const previousStorage = globalThis.localStorage;
-  const values = new Map();
-
-  globalThis.document = {
-    querySelectorAll() {
-      return [];
-    },
-  };
-  globalThis.window = {
-    matchMedia() {
-      return { matches: false };
-    },
-  };
-  globalThis.localStorage = {
-    getItem(key) {
-      return values.get(key) || null;
-    },
-    setItem(key, value) {
-      values.set(key, value);
-    },
-  };
-
-  try {
-    const app = {
-      viewSelect: { value: 'table' },
-      updateBoardViewToggle() {},
-    };
-
-    boardViewMethods.restoreBoardViewPreference.call(app);
-    assert.equal(app.viewSelect.value, 'kanban');
-    assert.equal(values.get('jubro_board_view'), 'kanban');
-
-    values.set('jubro_board_view', 'list');
-    app.viewSelect.value = 'kanban';
-    boardViewMethods.restoreBoardViewPreference.call(app);
-    assert.equal(app.viewSelect.value, 'list');
-  } finally {
-    globalThis.document = previousDocument;
-    globalThis.window = previousWindow;
-    globalThis.localStorage = previousStorage;
-  }
-});
-
-test('keeps Table reachable through the shared view state', () => {
-  const app = {
-    viewSelect: { value: 'kanban' },
-    resetPagination() {},
-    saveBoardViewPreference() {
-      this.savedView = this.viewSelect.value;
-    },
-    updateBoardView() {
-      this.updatedView = this.viewSelect.value;
-    },
-    applySearchFilter() {},
-  };
-
-  boardViewMethods.setBoardView.call(app, 'table');
-
-  assert.equal(app.viewSelect.value, 'table');
-  assert.equal(app.savedView, 'table');
-  assert.equal(app.updatedView, 'table');
-});
-
-test('Board markup exposes Kanban, Board/List navigation, Add Application, and advanced Table access', () => {
+test('Board markup exposes Kanban-only navigation and field settings access', () => {
   const boardMarkup = readFileSync(new URL('../board/index.html', import.meta.url), 'utf8');
+  const globalStyles = readFileSync(new URL('../css/global.css', import.meta.url), 'utf8');
 
   assert.match(boardMarkup, /id="kanbanView"/);
   assert.match(boardMarkup, /id="kanbanColumns"/);
-  assert.match(boardMarkup, /data-board-view-button="kanban"/);
-  assert.match(boardMarkup, /data-board-view-button="list"/);
   assert.match(boardMarkup, /id="btnAddApplication"/);
-  assert.match(boardMarkup, /id="btnTableView"/);
+  assert.match(boardMarkup, /id="btnCustomizeFields"/);
+  assert.doesNotMatch(boardMarkup, /id="tableView"/);
+  assert.doesNotMatch(boardMarkup, /id="listView"/);
+  assert.doesNotMatch(boardMarkup, /id="btnTableView"/);
+  assert.match(globalStyles, /\.dark #btnDashboard\s*\{[^}]*background-color:\s*transparent/s);
+  assert.doesNotMatch(globalStyles, /\.dark #btnDashboard\s*\{[^}]*background-color:\s*#f9fafb/s);
 });
