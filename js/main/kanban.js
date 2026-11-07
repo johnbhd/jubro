@@ -1,4 +1,5 @@
 import { normalizeCellValue } from '../services/trackerData.js';
+import { createKanbanDrag } from './kanbanDrag.js';
 
 const DEFAULT_COLUMN_COLOR = '#6b7280';
 
@@ -148,12 +149,6 @@ function appendText(parent, className, value) {
   return element;
 }
 
-function getPointerFineSupport() {
-  return typeof window !== 'undefined'
-    && typeof window.matchMedia === 'function'
-    && window.matchMedia('(pointer: fine)').matches;
-}
-
 function getStatusOptions(columns) {
   return columns.filter((column) => column.value !== null);
 }
@@ -254,6 +249,7 @@ export const kanbanMethods = {
   renderKanban(tracker) {
     if (!this.kanbanColumns) return;
 
+    this.kanbanDrag?.destroy();
     this.kanbanColumns.replaceChildren();
 
     if (!tracker || !Array.isArray(tracker.rows)) return;
@@ -285,13 +281,14 @@ export const kanbanMethods = {
     }
 
     const statusOptions = getStatusOptions(groups);
-    const canDrag = getPointerFineSupport();
+    this.kanbanDrag = createKanbanDrag(this, tracker);
 
     groups.forEach((group) => {
       const column = document.createElement('section');
       column.className = 'kanban-column flex min-w-[17rem] max-w-[21rem] flex-1 flex-col rounded-2xl bg-gray-100 p-3';
       column.dataset.kanbanStatus = group.value === null ? '' : group.value;
       column.style.borderTop = `3px solid ${group.color}`;
+      column.style.setProperty('--status-accent', group.color);
 
       const header = document.createElement('div');
       header.className = 'kanban-column-header mb-3 flex items-center justify-between gap-3';
@@ -330,19 +327,8 @@ export const kanbanMethods = {
 
         card.className = 'kanban-card rounded-xl border border-gray-200 bg-white p-4 shadow-sm';
         card.dataset.rowIndex = String(rowIndex);
-        card.draggable = canDrag && group.value !== null;
-
-        if (card.draggable) {
-          card.addEventListener('dragstart', (event) => {
-            event.dataTransfer.effectAllowed = 'move';
-            event.dataTransfer.setData('text/plain', String(rowIndex));
-            card.classList.add('opacity-50');
-          });
-
-          card.addEventListener('dragend', () => {
-            card.classList.remove('opacity-50');
-          });
-        }
+        card.draggable = false;
+        if (group.value !== null) this.kanbanDrag?.attachCard(card, rowIndex);
 
         const cardLabel = company === '-' ? 'application' : company;
         const titleRow = document.createElement('div');
@@ -406,17 +392,7 @@ export const kanbanMethods = {
       });
 
       column.appendChild(cards);
-      column.addEventListener('dragover', (event) => {
-        if (group.value !== null) event.preventDefault();
-      });
-      column.addEventListener('drop', (event) => {
-        event.preventDefault();
-
-        if (group.value === null) return;
-
-        const rowIndex = Number(event.dataTransfer?.getData('text/plain'));
-        this.moveKanbanRow(rowIndex, group.value);
-      });
+      this.kanbanDrag?.attachColumn(column, group.value);
 
       this.kanbanColumns.appendChild(column);
     });
@@ -446,7 +422,15 @@ export const kanbanMethods = {
       type: 'select',
     };
 
-    if (this.save() === false) {
+    let saved;
+
+    try {
+      saved = this.save();
+    } catch (failure) {
+      this.reloadStateFromStorage();
+      throw failure;
+    }
+    if (saved === false) {
       this.reloadStateFromStorage();
       return false;
     }

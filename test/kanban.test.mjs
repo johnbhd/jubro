@@ -434,6 +434,19 @@ test('reloads canonical state when a Kanban status save is rejected', () => {
   assert.equal(tracker.rows[0][1].value, 'Applied');
 });
 
+test('reloads canonical state when a Kanban status save throws', () => {
+  const tracker = createTracker();
+  let reloaded = false;
+  const app = {
+    ...kanbanMethods,
+    getTracker: () => tracker,
+    save() { throw new Error('Storage unavailable'); },
+    reloadStateFromStorage() { reloaded = true; },
+  };
+  assert.throws(() => app.moveKanbanRow(0, 'Interview'), /Storage unavailable/);
+  assert.equal(reloaded, true);
+});
+
 test('refresh renders Kanban and List from the canonical tracker', () => {
   let kanbanCalls = 0;
   const app = {

@@ -137,6 +137,37 @@ input:disabled {
   overflow: visible;
 }
 
+.kanban-card[draggable="true"] {
+  cursor: grab;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.4;
+}
+
+.kanban-column.is-drop-target {
+  outline: 2px solid var(--status-accent, #64748b);
+  outline-offset: -2px;
+}
+
+.is-card-dragging,
+.is-card-dragging * {
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kanban-drag-preview {
+  box-shadow: 0 12px 28px #0004;
+  left: 0;
+  margin: 0;
+  opacity: 0.9;
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  z-index: 90;
+}
+
 .kanban-card-menu-action {
   transition: background-color 0.15s ease, color 0.15s ease;
 }
