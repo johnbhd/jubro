@@ -106,11 +106,185 @@ input:disabled {
 
 .kanban-column-header {
   border-bottom: 1px solid #d1d5db;
-  padding-bottom: 0.75rem;
+  background-color: color-mix(in srgb, var(--status-accent, #64748b) 9%, transparent);
+  border-radius: calc(1rem - 1px) calc(1rem - 1px) 0 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  min-height: 4.25rem;
 }
 
 .kanban-column-title {
   color: #111827;
+  flex: 1;
+}
+
+.kanban-status-dot {
+  background: var(--status-accent, #64748b);
+  border-radius: 50%;
+  flex: 0 0 0.625rem;
+  height: 0.625rem;
+}
+
+.kanban-status-menu-wrapper {
+  flex-shrink: 0;
+}
+
+.kanban-status-menu-toggle {
+  align-items: center;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  font-size: 1.25rem;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+.kanban-status-menu {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px #0003;
+  color: #111827;
+  inset: auto;
+  margin: 0;
+  min-width: 10rem;
+  padding: 0.25rem;
+  position: fixed;
+}
+
+.kanban-status-menu-action {
+  border-radius: 0.5rem;
+  display: block;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  width: 100%;
+}
+
+.kanban-status-menu-action:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.kanban-status-menu-toggle:hover,
+.kanban-status-menu-action:not(:disabled):hover {
+  background-color: #0000000d;
+}
+
+.status-dialog {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 1rem;
+  color: #111827;
+  margin: auto;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  padding: 1.25rem;
+  width: min(26rem, calc(100vw - 2rem));
+}
+
+.status-dialog::backdrop {
+  background: #0009;
+}
+
+.status-dialog h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.status-dialog input {
+  background: transparent;
+  border: 1px solid #9ca3af;
+  border-radius: 0.5rem;
+  display: block;
+  margin-top: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.status-dialog-error {
+  color: #b91c1c;
+  margin-top: 0.75rem;
+}
+
+.status-dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.status-dialog-actions button {
+  border: 1px solid #9ca3af;
+  border-radius: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+}
+
+.status-color-palette {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(5, 2.75rem);
+  margin: 1.25rem 0;
+}
+
+.status-color-choice {
+  align-items: center;
+  background: var(--status-accent);
+  border: 2px solid transparent;
+  border-radius: 50%;
+  color: #111827;
+  display: inline-flex;
+  flex: 0 0 2.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  height: 2.75rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.75rem;
+  text-shadow: 0 0 3px #ffffff;
+}
+
+.status-color-choice[aria-pressed="true"] {
+  border-color: currentColor;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.status-color-choice:hover {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.kanban-status-menu-toggle:focus-visible,
+.kanban-status-menu-action:focus-visible,
+.status-dialog button:focus-visible,
+.status-dialog input:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.dark .kanban-status-menu,
+.dark .status-dialog {
+  background-color: #1f2937;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.dark .kanban-status-menu-toggle:hover,
+.dark .kanban-status-menu-action:not(:disabled):hover {
+  background-color: #ffffff1a;
+}
+
+.dark .status-dialog-error {
+  color: #fca5a5;
+}
+
+.dark .status-dialog input {
+  color: #f9fafb;
 }
 
 .kanban-column-count {
@@ -129,6 +303,7 @@ input:disabled {
   gap: 0.75rem;
   min-height: 5rem;
   overflow: visible;
+  padding: 0.75rem;
 }
 
 .kanban-card {
@@ -137,17 +312,101 @@ input:disabled {
   overflow: visible;
 }
 
-.kanban-card[draggable="true"] {
+.kanban-card[draggable="true"],
+.list-view-row[draggable="true"] {
   cursor: grab;
 }
 
-.kanban-card.is-dragging {
+.application-drag-handle {
+  align-items: center;
+  background: transparent;
+  border-radius: 0.5rem;
+  color: #64748b;
+  cursor: grab;
+  display: inline-flex;
+  flex: 0 0 2.75rem;
+  height: 2.75rem;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  width: 2.75rem;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+}
+
+.application-drag-handle:hover {
+  background-color: #64748b20;
+}
+
+.application-drag-handle:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.dark .application-drag-handle {
+  color: #94a3b8;
+}
+
+.is-card-dragging .application-drag-handle {
+  cursor: grabbing;
+}
+
+.kanban-card.is-dragging,
+.list-view-row.is-dragging {
   opacity: 0.4;
 }
 
 .kanban-column.is-drop-target {
   outline: 2px solid var(--status-accent, #64748b);
   outline-offset: -2px;
+}
+
+.kanban-card,
+.list-view-row,
+.kanban-card-list {
+  position: relative;
+}
+
+.drop-before::before,
+.drop-after::after,
+.is-drop-append > .kanban-card-list::after {
+  background-color: var(--status-accent, #3b82f6);
+  border-radius: 999px;
+  content: '';
+  height: 3px;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.drop-before::before {
+  top: -7px;
+}
+
+.drop-after::after {
+  bottom: -7px;
+}
+
+.is-drop-append > .kanban-card-list::after {
+  bottom: 4px;
+  left: 0.75rem;
+  right: 0.75rem;
+}
+
+.is-card-dragging .list-view-row:hover {
+  transform: none;
+  translate: none;
+}
+
+.application-order-hint {
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.dark .application-order-hint {
+  color: #9ca3af;
 }
 
 .is-card-dragging,
@@ -165,11 +424,18 @@ input:disabled {
   pointer-events: none;
   position: fixed;
   top: 0;
+  transition: none;
+  translate: none;
   z-index: 90;
 }
 
 .kanban-card-menu-action {
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.kanban-card-menu-action:disabled {
+  cursor: default;
+  opacity: 0.4;
 }
 
 .kanban-card-meta {
@@ -623,6 +889,7 @@ input:disabled {
 .dark .kanban-column {
   background-color: #182233 !important;
   border-color: #2f3b4d !important;
+  border-top-color: var(--status-accent, #64748b) !important;
 }
 
 .dark .kanban-column-header {

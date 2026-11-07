@@ -1,3 +1,5 @@
+import { isStatusColorKey } from './statusColors.js';
+
 export const FIELD_TYPES = Object.freeze([
   'text',
   'date',
@@ -49,7 +51,6 @@ function normalizeOption(option, { strict }) {
 
     return {
       label: option,
-      color: DEFAULT_OPTION_COLOR,
     };
   }
 
@@ -57,11 +58,13 @@ function normalizeOption(option, { strict }) {
     fail('Select options must contain a non-empty label.', 'A select option is invalid.');
   }
 
-  const color = option.color || DEFAULT_OPTION_COLOR;
+  if (option.color === undefined) return { label: option.label };
 
-  if (!HEX_COLOR_PATTERN.test(color)) {
+  const color = option.color;
+
+  if (!isStatusColorKey(color) && !(typeof color === 'string' && HEX_COLOR_PATTERN.test(color))) {
     if (strict) {
-      fail('Select option colors must be six-digit hexadecimal colors.', 'A select option color is invalid.');
+      fail('Select option colors must be a supported color key or a legacy six-digit hexadecimal color.', 'A select option color is invalid.');
     }
 
     return {

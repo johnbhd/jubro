@@ -1,7 +1,119 @@
 import { closeMenu, UIState } from './ui.js';
 import { normalizeCellValue } from '../services/trackerData.js';
+import { getKanbanColumns, getKanbanStatusColumn } from './kanban.js';
 
 export const trackerActionMethods = {
+  moveApplicationByDirection(rowIndex, direction) {
+    if (![-1, 1].includes(direction)) return false;
+    const isList = this.viewSelect?.value === 'list';
+    const root = isList ? this.listCards : this.kanbanColumns;
+    const elements = [...root.querySelectorAll('[data-row-index]')];
+    const source = elements.find(card => Number(card.dataset.rowIndex) === rowIndex);
+    const column = isList ? null : source?.closest('.kanban-column');
+    const visible = elements.filter(card => (
+      !card.classList.contains('hidden') && (isList || card.closest('.kanban-column') === column)
+    ));
+    const index = visible.indexOf(source);
+    const target = index < 0 ? null : visible[index + direction];
+    if (!target) return false;
+    const targetIndex = Number(target.dataset.rowIndex);
+    const alreadyPlaced = direction < 0 ? rowIndex === targetIndex - 1 : rowIndex === targetIndex + 1;
+    if (isList && this.listSortSelect?.value !== 'manual' && alreadyPlaced) {
+      // The requested visible move is already stored; only leave automatic sorting.
+      this.setListManualSort();
+      this.refresh({ persist: false });
+      return true;
+    }
+    try {
+      return this.repositionApplication({
+        sourceIndex: rowIndex,
+        targetIndex,
+        placement: direction < 0 ? 'before' : 'after',
+      });
+    } catch {
+      this.showToast('Could not move application. Saved data has been restored.');
+      return false;
+    }
+  },
+
+  repositionApplication({ sourceIndex, targetIndex = null, placement = 'after', statusValue }) {
+    const tracker = this.getTracker();
+    const rows = tracker?.rows;
+    const source = rows?.[sourceIndex];
+
+    if (!Array.isArray(rows) || !Number.isInteger(sourceIndex) || !Array.isArray(source)) return false;
+    if (!['before', 'after'].includes(placement)) return false;
+    if (targetIndex !== null && (!Number.isInteger(targetIndex) || !Array.isArray(rows[targetIndex]))) return false;
+
+    const statusColumn = getKanbanStatusColumn(tracker);
+    const normalizeStatus = value => String(value ?? '').trim().toLowerCase();
+    const rowStatus = row => {
+      const cell = row[statusColumn.index];
+      return normalizeStatus(cell && typeof cell === 'object' ? cell.value : cell);
+    };
+    let nextStatus;
+
+    if (statusValue !== undefined) {
+      if (!statusColumn || typeof statusValue !== 'string') return false;
+      const status = getKanbanColumns(tracker).find(column => (
+        normalizeStatus(column.value) === normalizeStatus(statusValue)
+      ));
+      // Blank remains a valid destination even before a fallback column exists.
+      if (!status && statusValue !== '') return false;
+      nextStatus = status?.value ?? '';
+      if (targetIndex !== null && rowStatus(rows[targetIndex]) !== normalizeStatus(nextStatus)) return false;
+    }
+
+    const statusChanged = nextStatus !== undefined && rowStatus(source) !== normalizeStatus(nextStatus);
+    if (targetIndex === null && nextStatus !== undefined && !statusChanged
+      && rows.findLastIndex(row => rowStatus(row) === normalizeStatus(nextStatus)) === sourceIndex) {
+      return false;
+    }
+
+    const remaining = rows.filter((row, index) => index !== sourceIndex);
+    let insertionIndex = remaining.length;
+
+    if (targetIndex !== null) {
+      if (targetIndex === sourceIndex) return false;
+      insertionIndex = remaining.indexOf(rows[targetIndex]) + (placement === 'after' ? 1 : 0);
+    } else if (nextStatus !== undefined) {
+      const lastDestination = remaining.findLastIndex(row => rowStatus(row) === normalizeStatus(nextStatus));
+      if (lastDestination >= 0) insertionIndex = lastDestination + 1;
+    }
+
+    remaining.splice(insertionIndex, 0, source);
+    const orderChanged = remaining.some((row, index) => row !== rows[index]);
+
+    if (!orderChanged && !statusChanged) return false;
+
+    if (statusChanged) {
+      const cell = source[statusColumn.index];
+      source[statusColumn.index] = {
+        ...(cell && typeof cell === 'object' ? cell : {}),
+        value: normalizeCellValue('select', nextStatus),
+        type: 'select',
+      };
+    }
+    rows.splice(0, rows.length, ...remaining);
+
+    try {
+      if (this.save() === false) {
+        this.reloadStateFromStorage();
+        return false;
+      }
+    } catch (failure) {
+      this.reloadStateFromStorage();
+      throw failure;
+    }
+
+    UIState.activeRow = insertionIndex;
+    UIState.activeCol = null;
+    UIState.activeType = 'row';
+    if (orderChanged) this.setListManualSort();
+    this.refresh({ persist: false });
+    return true;
+  },
+
 showToast(message) {
     const toast = document.getElementById('jubroToast');
 

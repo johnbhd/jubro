@@ -34,6 +34,8 @@ export const boardViewMethods = {
     }
 
     this.viewSelect.value = view;
+    this.kanbanDrag?.cancel();
+    this.listDrag?.cancel();
     this.saveBoardViewPreference();
     this.resetPagination();
     this.updateBoardView();

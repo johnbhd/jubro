@@ -115,7 +115,7 @@ function rejectSave(reason, currentRevision) {
   return false;
 }
 
-function persist(state, { expectedRevision = state?.revision } = {}) {
+function persist(state, { expectedRevision = state?.revision, preserveCloudRevision = false } = {}) {
   if (!state || typeof state !== 'object' || !state.data || typeof state.data !== 'object') {
     return false;
   }
@@ -140,11 +140,18 @@ function persist(state, { expectedRevision = state?.revision } = {}) {
   const nextRevision = Math.max(currentRevision, expectedRevision) + 1;
   const nextState = normalizeState(state, currentOwner, nextRevision);
 
+  // Sync acknowledgements update storage without replacing an open editor's state.
+  if (preserveCloudRevision && currentOwner.ownerType === 'account'
+    && Number.isInteger(current.state.cloudRevision) && current.state.cloudRevision >= 0) {
+    nextState.cloudRevision = current.state.cloudRevision;
+  }
+
   localStorage.setItem(current.key, JSON.stringify(nextState));
   Object.assign(state, {
     ownerType: nextState.ownerType,
     ownerId: nextState.ownerId,
     revision: nextRevision,
+    ...(nextState.cloudRevision !== undefined ? { cloudRevision: nextState.cloudRevision } : {}),
   });
   loadedRevision = nextRevision;
 
@@ -153,7 +160,7 @@ function persist(state, { expectedRevision = state?.revision } = {}) {
 
 export const Storage = {
   save(state) {
-    return persist(state);
+    return persist(state, { preserveCloudRevision: true });
   },
 
   replace(state, expectedRevision = loadedRevision) {

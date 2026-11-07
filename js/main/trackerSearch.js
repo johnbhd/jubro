@@ -48,6 +48,8 @@ rowMatchesSelectFilter(row) {
   },
 
 applySearchFilter() {
+    this.kanbanDrag?.cancel();
+    this.listDrag?.cancel();
     const tracker = this.getTracker();
     const query = this.searchInput?.value.trim().toLowerCase() || '';
     const currentView = this.viewSelect?.value || 'kanban';
@@ -86,6 +88,25 @@ applySearchFilter() {
     } else {
       this.applyPagination(matchedElements);
     }
+
+    const groups = new Map();
+    const positions = new Map();
+    matchedElements.forEach((card) => {
+      if (!card.closest || card.classList.contains('hidden')) return;
+      const group = isKanbanView ? card.closest('.kanban-column') : this.listCards;
+      if (!groups.has(group)) groups.set(group, []);
+      groups.get(group).push(card);
+    });
+    groups.forEach((cards) => {
+      cards.forEach((card, index) => positions.set(card, { index, length: cards.length }));
+    });
+    rowElements.forEach((card) => {
+      const position = positions.get(card);
+      card.querySelectorAll?.('[data-application-move-direction]').forEach((button) => {
+        const target = (position?.index ?? -1) + Number(button.dataset.applicationMoveDirection);
+        button.disabled = !position || target < 0 || target >= position.length;
+      });
+    });
 
     this.noSearchResults?.classList.toggle('hidden', matchedElements.length > 0 || !hasActiveFilter);
   },

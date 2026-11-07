@@ -50,15 +50,15 @@ export const listSortMethods = {
   },
 
   moveListRow(rowIndex, direction) {
-    const tracker = this.getTracker();
-    const orderedRows = this.getSortedListRows(tracker);
-    const currentDisplayIndex = orderedRows.findIndex((item) => item.rowIndex === rowIndex);
-    const target = orderedRows[currentDisplayIndex + direction];
-
-    if (!tracker || !Array.isArray(tracker.rows)) return;
-    if (currentDisplayIndex === -1 || !target) return;
-
-    this.setListManualSort();
-    this.swapRows(rowIndex, target.rowIndex);
+    const row = this.getTracker()?.rows?.[rowIndex];
+    if (this.moveApplicationByDirection(rowIndex, direction)) {
+      const nextIndex = this.getTracker().rows.indexOf(row);
+      const control = direction < 0 ? '.btn-list-move-up' : '.btn-list-move-down';
+      const card = this.listCards.querySelector(`[data-row-index="${nextIndex}"]`);
+      const button = card?.querySelector(control);
+      const focusTarget = button?.disabled ? card.querySelector('.btn-list-edit') : button;
+      focusTarget?.focus();
+      this.showToast('Application order updated.');
+    }
   }
 };

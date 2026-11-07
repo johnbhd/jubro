@@ -1,3 +1,5 @@
+import { getSelectOptionColor } from '../services/statusColors.js';
+
 export function getSafeHttpUrl(value) {
   const source = String(value ?? '').trim();
 
@@ -71,21 +73,12 @@ escapeHtml(value) {
 getDashboardOptions(column) {
     if (!column || !Array.isArray(column.options)) return [];
 
-    return column.options.map((option) => {
-      if (typeof option === 'string') {
-        return {
-          label: option,
-          color: '#6b7280'
-        };
-      }
+    const status = String(column.name || '').trim().toLowerCase() === 'status';
 
-      return {
-        label: option.label || 'Option',
-        color: /^#[0-9a-f]{6}$/i.test(option.color || '')
-          ? option.color
-          : '#6b7280'
-      };
-    });
+    return column.options.map((option) => ({
+      label: typeof option === 'string' ? option : option?.label || 'Option',
+      color: getSelectOptionColor(option, { status }),
+    }));
   },
 
 getContrastColor(hex) {

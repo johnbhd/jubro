@@ -6,6 +6,7 @@ import { trackerDashboardMethods } from './trackerDashboard.js';
 import { trackerSearchMethods } from './trackerSearch.js';
 import { trackerListViewMethods } from './trackerListView.js';
 import { kanbanMethods } from './kanban.js';
+import { statusSettingsMethods } from './statusSettings.js';
 import { trackerKeyboardMethods } from './trackerKeyboard.js';
 import { trackerActionMethods } from './trackerActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
@@ -78,6 +79,7 @@ Object.assign(
   trackerSearchMethods,
   trackerListViewMethods,
   kanbanMethods,
+  statusSettingsMethods,
   trackerKeyboardMethods,
   trackerActionMethods,
   trackerEventMethods

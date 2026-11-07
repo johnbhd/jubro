@@ -1,5 +1,6 @@
 import { normalizeCellValue } from '../services/trackerData.js';
-import { createKanbanDrag } from './kanbanDrag.js';
+import { getSelectOptionColor, STATUS_COLORS } from '../services/statusColors.js';
+import { createApplicationDragHandle, createKanbanDrag } from './kanbanDrag.js';
 
 const DEFAULT_COLUMN_COLOR = '#6b7280';
 
@@ -16,11 +17,7 @@ function normalizeStatus(value) {
 }
 
 function getOptionColor(option) {
-  const color = typeof option === 'object' ? option.color : '';
-
-  return /^#[0-9a-f]{6}$/i.test(color || '')
-    ? color
-    : DEFAULT_COLUMN_COLOR;
+  return getSelectOptionColor(option, { status: true });
 }
 
 function getOptionLabel(option) {
@@ -228,6 +225,28 @@ function createKanbanCardMenu(app, rowIndex, cardLabel) {
   );
 
   menu.append(editButton, deleteButton);
+  for (const [label, direction, icon] of [
+    ['Move up', -1, 'fa-arrow-up'],
+    ['Move down', 1, 'fa-arrow-down'],
+  ]) {
+    const moveButton = createKanbanCardAction(
+      label,
+      icon,
+      'text-gray-700 hover:bg-gray-100',
+      (event) => {
+        event.stopPropagation();
+        closeMenu();
+        const row = app.getTracker().rows[rowIndex];
+        if (app.moveApplicationByDirection(rowIndex, direction)) {
+          app.showToast('Application order updated.');
+          const nextIndex = app.getTracker().rows.indexOf(row);
+          app.kanbanColumns.querySelector(`[data-row-index="${nextIndex}"] [data-kanban-card-menu-toggle]`)?.focus();
+        }
+      },
+    );
+    moveButton.dataset.applicationMoveDirection = String(direction);
+    menu.appendChild(moveButton);
+  }
   toggle.addEventListener('click', (event) => {
     event.stopPropagation();
 
@@ -250,6 +269,7 @@ export const kanbanMethods = {
     if (!this.kanbanColumns) return;
 
     this.kanbanDrag?.destroy();
+    this.kanbanDrag = null;
     this.kanbanColumns.replaceChildren();
 
     if (!tracker || !Array.isArray(tracker.rows)) return;
@@ -285,13 +305,16 @@ export const kanbanMethods = {
 
     groups.forEach((group) => {
       const column = document.createElement('section');
-      column.className = 'kanban-column flex min-w-[17rem] max-w-[21rem] flex-1 flex-col rounded-2xl bg-gray-100 p-3';
+      column.className = 'kanban-column flex min-w-[17rem] max-w-[21rem] flex-1 flex-col rounded-2xl bg-gray-100';
       column.dataset.kanbanStatus = group.value === null ? '' : group.value;
-      column.style.borderTop = `3px solid ${group.color}`;
-      column.style.setProperty('--status-accent', group.color);
+      const color = group.value === ''
+        ? STATUS_COLORS[this.kanbanFallbackColor] || STATUS_COLORS.slate
+        : group.color;
+      column.style.borderTop = `3px solid ${color}`;
+      column.style.setProperty('--status-accent', color);
 
       const header = document.createElement('div');
-      header.className = 'kanban-column-header mb-3 flex items-center justify-between gap-3';
+      header.className = 'kanban-column-header flex items-center justify-between gap-3';
 
       const heading = document.createElement('h2');
       heading.className = 'kanban-column-title min-w-0 truncate text-sm font-semibold text-gray-900';
@@ -301,7 +324,18 @@ export const kanbanMethods = {
       count.className = 'kanban-column-count shrink-0 rounded-full bg-white px-2 py-0.5 text-xs font-medium text-gray-500';
       count.textContent = String(group.rowIndexes.length);
 
-      header.append(heading, count);
+      const dot = document.createElement('span');
+      dot.className = 'kanban-status-dot';
+      dot.setAttribute('aria-hidden', 'true');
+      header.append(dot, heading, count);
+
+      const optionIndex = statusColumn?.column.options?.findIndex((option) => (
+        getOptionLabel(option) === group.value
+      ));
+
+      if ((optionIndex >= 0 || group.value === '') && typeof this.createKanbanStatusMenu === 'function') {
+        header.appendChild(this.createKanbanStatusMenu(group.value === '' ? null : optionIndex));
+      }
       column.appendChild(header);
 
       const cards = document.createElement('div');
@@ -328,12 +362,13 @@ export const kanbanMethods = {
         card.className = 'kanban-card rounded-xl border border-gray-200 bg-white p-4 shadow-sm';
         card.dataset.rowIndex = String(rowIndex);
         card.draggable = false;
-        if (group.value !== null) this.kanbanDrag?.attachCard(card, rowIndex);
+        this.kanbanDrag?.attachCard(card, rowIndex);
 
         const cardLabel = company === '-' ? 'application' : company;
         const titleRow = document.createElement('div');
         titleRow.className = 'flex min-w-0 items-start justify-between gap-2';
         appendText(titleRow, 'min-w-0 flex-1 truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
+        titleRow.appendChild(createApplicationDragHandle(document, cardLabel));
         titleRow.appendChild(createKanbanCardMenu(this, rowIndex, cardLabel));
         card.appendChild(titleRow);
         appendText(card, 'mt-1 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);

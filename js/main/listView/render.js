@@ -1,5 +1,6 @@
 import { clearActiveTarget, setActiveTarget, showMenu } from '../ui.js';
 import { getLinkFavicon } from '../favicon.js';
+import { createApplicationDragHandle, createListDrag } from '../kanbanDrag.js';
 
 export const listRenderMethods = {
   createIcon(iconName) {
@@ -118,6 +119,8 @@ export const listRenderMethods = {
   renderListView(tracker) {
     if (!this.listCards) return;
 
+    this.listDrag?.destroy();
+    this.listDrag = null;
     this.ensureListViewSettingsButton();
     this.ensureListSettingsPopup();
     this.ensureListEditModal();
@@ -135,11 +138,19 @@ export const listRenderMethods = {
     }
 
     const indexes = this.getListColumnIndexes(tracker);
+    this.listDrag = createListDrag(this, tracker);
+    const hint = document.createElement('p');
+    hint.className = 'application-order-hint';
+    hint.textContent = this.listSortSelect?.value === 'manual'
+      ? 'Drag applications to reorder this page.'
+      : 'Choose Manual to reorder.';
+    this.listCards.appendChild(hint);
 
     this.getSortedListRows(tracker).forEach(({ row, rowIndex }) => {
       const article = document.createElement('article');
       article.className = 'list-view-row rounded-md border border-gray-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow';
       article.dataset.rowIndex = String(rowIndex);
+      this.listDrag?.attachCard(article, rowIndex);
       article.addEventListener('pointerenter', () => setActiveTarget(rowIndex, null, 'row'));
       article.addEventListener('click', () => setActiveTarget(rowIndex, null, 'row'));
       article.addEventListener('pointerleave', () => clearActiveTarget(rowIndex, null, 'row'));
@@ -209,6 +220,10 @@ export const listRenderMethods = {
       const infoButton = article.querySelector('.btn-list-info');
       const safeLink = this.getSafeHttpUrl(link);
 
+      if (this.listDrag) {
+        article.querySelector('.btn-list-move-up').before(createApplicationDragHandle(document, titleText));
+      }
+
       dateElement.hidden = !shouldShowDate;
       dateElement.textContent = dateApplied;
       titleElement.textContent = titleText;
@@ -261,6 +276,7 @@ export const listRenderMethods = {
       const moveDownButton = article.querySelector('.btn-list-move-down');
 
       if (moveUpButton) {
+        moveUpButton.dataset.applicationMoveDirection = '-1';
         moveUpButton.disabled = currentDisplayIndex <= 0;
         moveUpButton.addEventListener('click', () => {
           this.moveListRow(rowIndex, -1);
@@ -268,6 +284,7 @@ export const listRenderMethods = {
       }
 
       if (moveDownButton) {
+        moveDownButton.dataset.applicationMoveDirection = '1';
         moveDownButton.disabled = currentDisplayIndex === -1 || currentDisplayIndex >= orderedRows.length - 1;
         moveDownButton.addEventListener('click', () => {
           this.moveListRow(rowIndex, 1);

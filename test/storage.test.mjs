@@ -183,6 +183,19 @@ test('clears only the transferred guest revision', () => {
   assert.equal(Storage.loadGuest().revision, transferredRevision + 1);
 });
 
+test('normal saves preserve a cloud acknowledgement newer than the in-memory snapshot', () => {
+  Storage.useAccountWorkspace('status-user');
+  const state = Storage.load();
+  state.active = '1';
+  state.data = stateWith('Jobs').data;
+  assert.equal(Storage.save(state), true);
+  assert.equal(Storage.updateCloudRevision(1, 0), true);
+  assert.equal(state.cloudRevision, undefined);
+  assert.equal(Storage.save(state), true);
+  assert.equal(Storage.load().cloudRevision, 1);
+  assert.equal(state.cloudRevision, 1);
+});
+
 test('updates cloud base revision without changing local revision', () => {
   Storage.useAccountWorkspace('account-a');
   const state = stateWith('Account');
