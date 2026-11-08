@@ -133,7 +133,7 @@ input:disabled {
 .job-search-selector span:first-child {
   display: inline-block;
   min-width: 0;
-  max-width: calc(100% - 18px);
+  max-width: calc(100% - 22px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -141,7 +141,7 @@ input:disabled {
 
 .job-search-selector span:last-child {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -1129,20 +1129,36 @@ input:disabled {
 
 #btnDashboard {
   background-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 #btnCustomFields {
   background-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#btnDashboard:hover,
+#btnCustomFields:hover {
+  background-color: #f3f4f6;
+  color: #111827;
 }
 
 .dark #btnDashboard {
   background-color: transparent !important;
   color: #e5e7eb !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .dark #btnCustomFields {
   background-color: transparent !important;
   color: #e5e7eb !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dark #btnDashboard:hover,
+.dark #btnCustomFields:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
 }
 
 .dark #boardViewToggle {
@@ -1307,6 +1323,10 @@ input:disabled {
   background-color: #f9fafb !important;
   border-color: #f9fafb !important;
   color: #111827 !important;
+}
+
+.list-panel {
+  display: none !important;
 }
 
 .dark .list-panel,
