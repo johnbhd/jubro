@@ -1,6 +1,7 @@
 import { TrackerApp } from './main/main.js';
 import { authService } from './auth/firebaseAuth.js';
 import { setupStorageNotice } from './storage/storageNotice.js';
+import { initBoardTopNavbar } from './main/boardNav.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupStorageNotice();
 
   if (document.getElementById('appBody')) {
+    initBoardTopNavbar();
     await authService.waitForWorkspace();
     const trackerApp = new TrackerApp();
 

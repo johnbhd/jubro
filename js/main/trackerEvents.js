@@ -15,8 +15,6 @@ export function syncSortSelectWidth(sortSelect) {
 
 export const trackerEventMethods = {
 initEvents() {
-    const btnMenu = document.getElementById('btnMenu');
-    const dropdown = document.getElementById('navDropdown');
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
@@ -39,26 +37,11 @@ initEvents() {
 
     // Sorting remains available, but does not compete with primary navigation.
     
-    // toggle dropdown
-    btnMenu?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdown.classList.toggle('hidden');
-    });
-    
-    // close properly
+    // close menus properly
     document.addEventListener('click', (e) => {
-      if (!dropdown.contains(e.target) && e.target !== btnMenu) {
-        dropdown.classList.add('hidden');
-      }
-
       if (!e.target?.closest?.('[data-kanban-card-menu], [data-kanban-card-menu-toggle]')) {
         closeKanbanCardMenus(this.kanbanColumns);
       }
-    });
-    
-    // prevent closing inside
-    dropdown?.addEventListener('click', (e) => {
-      e.stopPropagation();
     });
     
     // TEMP actions
@@ -110,7 +93,7 @@ initEvents() {
         this.state = nextState;
         await this.syncLocalStateToFirebase();
         this.refresh({ persist: false });
-        dropdown?.classList.add('hidden');
+        document.getElementById('boardTopNavDropdown')?.classList.add('hidden');
       } catch (error) {
         console.error('Jubro tracker import failed:', error);
         window.alert(error.userMessage || 'This file is not a valid Jubro Job Search file.');
@@ -118,17 +101,14 @@ initEvents() {
     });
 
     btnDashboard?.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
       this.openDashboard();
     });
 
     btnCustomFields?.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
       this.toggleCustomizeFields();
     });
 
     btnOpenSearch?.addEventListener('click', () => {
-      dropdown.classList.add('hidden');
       this.openMobileSearch();
     });
 

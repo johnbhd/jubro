@@ -37,6 +37,149 @@
 <body id="appBody" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
   <h1 class="sr-only">Jubro Job Application Board</h1>
   <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
+    <header id="boardTopNavbar" class="board-top-navbar flex items-center justify-between p-3 sm:px-4 sm:py-3 mt-3 sm:mt-4 mb-3 bg-white shadow-sm rounded-md transition-colors">
+      <a href="/" class="flex items-center gap-3 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 group" aria-label="Jubro Home">
+        <img src="/img/jubro.png" alt="Jubro logo" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl" />
+        <div class="flex items-baseline gap-2">
+          <span class="title-head text-2xl font-bold text-gray-900 tracking-tight leading-none">Jubro</span>
+          <span class="text-xs text-gray-400 hidden sm:inline">|</span>
+          <p class="text-xs text-gray-500 hidden sm:inline font-medium">Your job application Board</p>
+        </div>
+      </a>
+      <div id="boardTopNavActions" class="relative flex items-center gap-2">
+        <button
+          id="btnGuestSettings"
+          type="button"
+          class="toolbar-icon-button inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+          aria-label="Jubro settings"
+          title="Settings"
+          aria-haspopup="menu"
+          aria-expanded="false"
+        >
+          <i class="fa-solid fa-gear text-sm sm:text-base"></i>
+        </button>
+
+        <button
+          id="btnUserAccount"
+          type="button"
+          class="hidden inline-flex h-9 sm:h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-2.5 sm:px-3 text-gray-700 shadow-sm transition hover:bg-gray-100 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+          aria-label="Account menu"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          hidden
+        >
+          <i class="fa-solid fa-user text-xs sm:text-sm"></i>
+          <span id="userAccountLabel" class="hidden sm:inline text-xs sm:text-sm font-medium truncate max-w-[120px]">Account</span>
+          <i class="fa-solid fa-chevron-down text-[10px] text-gray-400"></i>
+        </button>
+
+        <div
+          id="boardTopNavDropdown"
+          class="hidden absolute right-0 top-11 sm:top-12 z-50 w-56 sm:w-60 max-w-[calc(100vw-2rem)] rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl text-sm"
+          role="menu"
+          aria-label="Account and settings menu"
+        >
+          <div id="dropdownUserHeader" class="hidden border-b border-gray-100 px-3 py-2.5 mb-1">
+            <div class="flex items-center gap-2.5">
+              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 font-semibold text-xs">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div id="dropdownUserName" class="truncate text-xs sm:text-sm font-semibold text-gray-900">Account</div>
+                <div id="dropdownUserEmail" class="truncate text-[11px] text-gray-500"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-0.5">
+            <a
+              id="btnNavHome"
+              href="/"
+              class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <i class="fa-solid fa-house w-4 text-center text-gray-400"></i>
+              <span>Go to Home</span>
+            </a>
+            <button
+              id="btnNavSettings"
+              type="button"
+              class="hidden flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <i class="fa-solid fa-gear w-4 text-center text-gray-400"></i>
+              <span>Settings</span>
+            </button>
+          </div>
+
+          <div class="my-1 border-t border-gray-100"></div>
+
+          <div class="px-2.5 pt-1 pb-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gray-400" id="themeMenuHeading">Theme</div>
+          <div class="space-y-0.5" role="group" aria-labelledby="themeMenuHeading">
+            <button
+              id="btnThemeLight"
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-sun w-4 text-center text-gray-400"></i>
+                <span>Light</span>
+              </div>
+              <i class="fa-solid fa-check text-xs text-blue-600 theme-check hidden"></i>
+            </button>
+            <button
+              id="btnThemeDark"
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <div class="flex items-center gap-2.5">
+                <i class="fa-solid fa-moon w-4 text-center text-gray-400"></i>
+                <span>Dark</span>
+              </div>
+              <i class="fa-solid fa-check text-xs text-blue-600 theme-check hidden"></i>
+            </button>
+          </div>
+
+          <div class="my-1 border-t border-gray-100"></div>
+
+          <div class="px-2.5 pt-1 pb-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-gray-400" id="backupMenuHeading">Backup</div>
+          <div class="space-y-0.5" role="group" aria-labelledby="backupMenuHeading">
+            <button
+              id="btnImport"
+              type="button"
+              class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <i class="fa-solid fa-file-import w-4 text-center text-gray-400"></i>
+              <span>Import JSON</span>
+            </button>
+            <button
+              id="btnExport"
+              type="button"
+              class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+              role="menuitem"
+            >
+              <i class="fa-solid fa-file-export w-4 text-center text-gray-400"></i>
+              <span>Export JSON</span>
+            </button>
+          </div>
+
+          <div id="dropdownLogoutWrapper" class="hidden border-t border-gray-100 mt-1 pt-1">
+            <button
+              id="btnNavLogout"
+              type="button"
+              class="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs sm:text-sm font-medium text-red-600 hover:bg-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+              role="menuitem"
+            >
+              <i class="fa-solid fa-arrow-right-from-bracket w-4 text-center text-red-500"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
     <header id="appNavbar" class="bg-white shadow-sm rounded-md">
       <div class="job-search-navigation">
         <button id="jobSearchSelector" type="button" popovertarget="jobSearchDropdown" class="job-search-selector" aria-label="Choose Job Search" aria-expanded="false">Job Search ▾</button>
@@ -149,21 +292,6 @@
           <button id="btnAddApplication" type="button" title="Add Application" class="primary-action-button toolbar-icon-button" aria-label="Add Application">
             <i class="fa-solid fa-plus text-xs"></i>
             <span>Add Application</span>
-          </button>
-          <button id="btnMenu" type="button" class="toolbar-icon-button" aria-label="More options" title="More options">
-            <i class="fa-solid fa-ellipsis-vertical"></i>
-          </button>
-        </div>
-      
-        <!-- DROPDOWN -->
-        <div id="navDropdown" class="hidden absolute right-0 mt-1 w-48 bg-white border rounded-md shadow text-sm overflow-hidden">
-          <button id="btnImport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-file-import w-4 text-gray-500"></i>
-            <span>Import JSON</span>
-          </button>
-          <button id="btnExport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-file-export w-4 text-gray-500"></i>
-            <span>Export JSON</span>
           </button>
         </div>
       </div>

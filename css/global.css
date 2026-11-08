@@ -288,7 +288,7 @@ input:disabled {
   }
 
   #appNavbar .job-search-selector {
-    max-width: min(72px, calc(100vw - 318px));
+    max-width: min(100px, calc(100vw - 276px));
     padding: 0 4px;
   }
 }
@@ -1084,8 +1084,9 @@ input:disabled {
   outline-color: #f9fafb !important;
 }
 
+.dark #boardTopNavbar,
 .dark #appNavbar,
-.dark #navDropdown,
+.dark #boardTopNavDropdown,
 .dark #contextMenu {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
@@ -1286,7 +1287,6 @@ input:disabled {
 }
 
 .dark #btnOpenSearch,
-.dark #btnMenu,
 .dark #btnCloseSearch,
 .dark #btnPaginationPrev,
 .dark #btnPaginationNext,
@@ -1300,18 +1300,77 @@ input:disabled {
 }
 
 .dark #btnOpenSearch:hover,
-.dark #btnMenu:hover,
 .dark #btnCloseSearch:hover,
 .dark #btnPaginationPrev:hover,
 .dark #btnPaginationNext:hover,
 .dark #btnClearSelectFilter:hover,
-.dark #navDropdown button:hover,
 .dark #contextMenu button:hover {
   background-color: #374151 !important;
 }
 
 .dark #btnClearSelectFilter {
   background-color: #1f2937 !important;
+}
+
+.dark #boardTopNavbar .title-head {
+  color: #f9fafb !important;
+}
+
+.dark #btnGuestSettings,
+.dark #btnUserAccount {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+#btnGuestSettings.hidden,
+#btnUserAccount.hidden {
+  display: none !important;
+}
+
+.dark #btnGuestSettings:hover,
+.dark #btnUserAccount:hover {
+  background-color: #374151 !important;
+}
+
+.dark #boardTopNavDropdown {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout) {
+  color: #d1d5db !important;
+}
+
+.dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout):hover {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark #boardTopNavDropdown .border-gray-100 {
+  border-color: #374151 !important;
+}
+
+.dark #boardTopNavDropdown #themeMenuHeading,
+.dark #boardTopNavDropdown #backupMenuHeading {
+  color: #9ca3af !important;
+}
+
+.dark #boardTopNavDropdown #dropdownUserName {
+  color: #f9fafb !important;
+}
+
+.dark #boardTopNavDropdown #dropdownUserEmail {
+  color: #9ca3af !important;
+}
+
+.dark #btnNavLogout {
+  color: #f87171 !important;
+}
+
+.dark #btnNavLogout:hover {
+  background-color: rgba(239, 68, 68, 0.15) !important;
 }
 
 .dark #boardPagination button {

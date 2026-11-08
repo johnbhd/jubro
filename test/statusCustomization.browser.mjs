@@ -863,10 +863,10 @@ try {
       && boardFirstApp.getTracker().rows.length === 0;
   `), true, 'Board switcher opens read-only and switches canonical active, URL and search state.');
   assert.equal(await evaluate(`
-    const more = document.getElementById('navDropdown');
+    const more = document.getElementById('boardTopNavDropdown');
     const dashboard = document.getElementById('btnDashboard');
     const before = savedRevision();
-    if (more.contains(dashboard) || more.contains(boardFirstApp.sortSelect)
+    if ((more && more.contains(dashboard)) || (more && more.contains(boardFirstApp.sortSelect))
       || !document.getElementById('searchWrapper').contains(boardFirstApp.sortSelect)) return false;
     dashboard.focus();
     dashboard.click();
@@ -881,7 +881,7 @@ try {
     const field = document.getElementById('selectTextSortWrapper');
     const clear = document.getElementById('btnClearSelectFilter');
     if (getComputedStyle(field).display === 'none' || getComputedStyle(clear).display === 'none'
-      || document.getElementById('navDropdown').contains(field)) return false;
+      || document.getElementById('boardTopNavDropdown')?.contains(field)) return false;
     clear.click();
     return boardFirstApp.sortSelect.value === '' && getComputedStyle(clear).display === 'none'
       && savedRevision() === before;
@@ -900,8 +900,7 @@ try {
           ...document.querySelectorAll('[data-board-view-button]'),
           document.getElementById('btnDashboard'),
           document.getElementById('btnCustomFields'),
-          document.getElementById('btnAddApplication'),
-          document.getElementById('btnMenu')];
+          document.getElementById('btnAddApplication')];
         const rects = controls.map(control => control.getBoundingClientRect());
         const labels = [...document.querySelectorAll('.board-view-button span, #btnDashboard span, #btnAddApplication span')];
         const customFieldsSpan = document.querySelector('#btnCustomFields span');
@@ -1341,6 +1340,55 @@ try {
     await firebase.__emitAuth(null);
     return safe && !document.getElementById('appNavbar').hidden;
   `), true, 'Failed empty account loading never creates data and shows an accessible Retry.');
+  assert.equal(await evaluate(`
+    const firebase = await import('/test/fixtures/firebase.mjs');
+    await firebase.__emitAuth(null);
+    const guestBtn = document.getElementById('btnGuestSettings');
+    const userBtn = document.getElementById('btnUserAccount');
+    const dropdown = document.getElementById('boardTopNavDropdown');
+    const userHeader = document.getElementById('dropdownUserHeader');
+    const logoutWrap = document.getElementById('dropdownLogoutWrapper');
+    const homeLink = document.getElementById('btnNavHome');
+    const topNavbar = document.getElementById('boardTopNavbar');
+    const brandLink = topNavbar.querySelector('a');
+
+    const guestInitialOk = !guestBtn.classList.contains('hidden')
+      && userBtn.classList.contains('hidden')
+      && brandLink.getAttribute('href') === '/'
+      && homeLink.getAttribute('href') === '/'
+      && !document.body.textContent.includes('Back to Home');
+
+    guestBtn.click();
+    const guestOpenOk = !dropdown.classList.contains('hidden')
+      && guestBtn.getAttribute('aria-expanded') === 'true'
+      && userHeader.classList.contains('hidden')
+      && logoutWrap.classList.contains('hidden');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    const guestCloseOk = dropdown.classList.contains('hidden')
+      && guestBtn.getAttribute('aria-expanded') === 'false';
+
+    await firebase.__emitAuth({ uid: 'test-user-123', email: 'jb@example.test', displayName: 'JB Villegas' });
+    const signedInVisibleOk = guestBtn.classList.contains('hidden')
+      && !userBtn.classList.contains('hidden')
+      && document.getElementById('userAccountLabel').textContent === 'JB Villegas';
+
+    userBtn.click();
+    const signedInOpenOk = !dropdown.classList.contains('hidden')
+      && userBtn.getAttribute('aria-expanded') === 'true'
+      && !userHeader.classList.contains('hidden')
+      && document.getElementById('dropdownUserName').textContent === 'JB Villegas'
+      && document.getElementById('dropdownUserEmail').textContent === 'jb@example.test'
+      && !logoutWrap.classList.contains('hidden');
+
+    document.getElementById('btnNavLogout').click();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    const signedOutOk = !guestBtn.classList.contains('hidden')
+      && userBtn.classList.contains('hidden')
+      && dropdown.classList.contains('hidden');
+
+    return guestInitialOk && guestOpenOk && guestCloseOk && signedInVisibleOk && signedInOpenOk && signedOutOk;
+  `), true, 'Board Main Navbar consolidates global actions, toggles guest/signed-in state, and manages accessible menu.');
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));
 } finally {
