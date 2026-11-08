@@ -380,7 +380,7 @@ export const kanbanMethods = {
         const guideMainInfo = document.createElement('div');
         guideMainInfo.className = 'min-w-0 flex-1';
         appendText(guideMainInfo, 'kanban-guide-company block truncate text-sm font-semibold text-gray-900', 'Company Name');
-        appendText(guideMainInfo, 'kanban-guide-position block truncate text-sm text-gray-600', 'Position Role');
+        appendText(guideMainInfo, 'kanban-guide-position mt-0.5 block truncate text-xs text-gray-500', 'Position Role');
         guideHeader.append(guideIcon, guideMainInfo);
         guide.appendChild(guideHeader);
 
@@ -435,23 +435,28 @@ export const kanbanMethods = {
         const cardLabel = company === '-' ? 'application' : company;
 
         const headerRow = document.createElement('div');
-        headerRow.className = 'flex min-w-0 items-start gap-3';
-
-        const faviconEl = createCompanyFaviconElement(link, company === '-' ? '' : company);
-        headerRow.appendChild(faviconEl);
+        headerRow.className = 'flex min-w-0 items-start justify-between gap-2';
 
         const mainInfo = document.createElement('div');
-        mainInfo.className = 'min-w-0 flex-1';
+        mainInfo.className = 'flex min-w-0 flex-1 items-start gap-3';
 
-        const titleRow = document.createElement('div');
-        titleRow.className = 'flex min-w-0 items-start justify-between gap-2';
-        appendText(titleRow, 'min-w-0 flex-1 truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
-        titleRow.appendChild(createApplicationDragHandle(document, cardLabel));
-        titleRow.appendChild(createKanbanCardMenu(this, rowIndex, cardLabel));
-        mainInfo.appendChild(titleRow);
+        const faviconEl = createCompanyFaviconElement(link, company === '-' ? '' : company);
+        mainInfo.appendChild(faviconEl);
 
-        appendText(mainInfo, 'mt-0.5 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);
+        const titleCol = document.createElement('div');
+        titleCol.className = 'min-w-0 flex-1';
+        appendText(titleCol, 'block truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
+        appendText(titleCol, 'mt-0.5 block truncate text-xs text-gray-500', position === '-' ? 'Untitled position' : position);
+        mainInfo.appendChild(titleCol);
+
         headerRow.appendChild(mainInfo);
+
+        const actions = document.createElement('div');
+        actions.className = 'flex shrink-0 items-center -mr-1.5 -mt-1';
+        actions.appendChild(createApplicationDragHandle(document, cardLabel));
+        actions.appendChild(createKanbanCardMenu(this, rowIndex, cardLabel));
+        headerRow.appendChild(actions);
+
         card.appendChild(headerRow);
 
         const meta = document.createElement('div');
