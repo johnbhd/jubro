@@ -1,4 +1,4 @@
-import { getPlatformFavicon, isCircleLogo } from '../favicon.js';
+import { getPlatformFavicon } from '../favicon.js';
 
 export const listBadgeMethods = {
   createFaviconElement(favicon) {
@@ -17,11 +17,10 @@ export const listBadgeMethods = {
       return holder;
     }
 
-    const isCircle = isCircleLogo(favicon.hostname);
     const image = document.createElement('img');
     image.src = favicon.url;
     image.alt = '';
-    image.className = isCircle ? 'h-5 w-5 rounded-full' : 'h-5 w-5 rounded';
+    image.className = 'h-5 w-5 rounded';
     image.loading = 'lazy';
     image.referrerPolicy = 'no-referrer';
     image.addEventListener('error', fallback);
