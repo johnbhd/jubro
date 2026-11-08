@@ -17,7 +17,9 @@ export const applicationFormMethods = {
     ].join('-');
     return this.getTracker().columns.map(column => ({
       type: columnType(column),
-      value: columnType(column) === 'date' ? today : normalizeCellValue(columnType(column), null),
+      value: columnType(column) === 'date' && !['next action date', 'nextactiondate'].includes(columnName(column))
+        ? today
+        : normalizeCellValue(columnType(column), null),
     }));
   },
 

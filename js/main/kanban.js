@@ -1,6 +1,28 @@
 import { normalizeCellValue } from '../services/trackerData.js';
 import { getSelectOptionColor, STATUS_COLORS } from '../services/statusColors.js';
 import { createApplicationDragHandle, createKanbanDrag } from './kanbanDrag.js';
+import { createCompanyFaviconElement } from './favicon.js';
+
+function formatActionDate(value) {
+  if (!value || typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '-') return '';
+  const parts = trimmed.split('-');
+  if (parts.length === 3) {
+    const year = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const day = Number(parts[2]);
+    const date = new Date(year, month, day);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  }
+  const date = new Date(trimmed);
+  if (!Number.isNaN(date.getTime())) {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  return trimmed;
+}
 
 const DEFAULT_COLUMN_COLOR = '#6b7280';
 
@@ -346,10 +368,31 @@ export const kanbanMethods = {
         guide.className = 'kanban-guide-card';
         guide.draggable = false;
         guide.setAttribute('aria-label', 'Example application. Not saved application data.');
+        guide.style.borderLeftColor = color;
+        guide.style.setProperty('--card-status-accent', color);
         appendText(guide, 'kanban-guide-badge', 'EXAMPLE');
-        appendText(guide, 'kanban-guide-company', 'Company Name');
-        appendText(guide, 'kanban-guide-position', 'Position Role');
+
+        const guideHeader = document.createElement('div');
+        guideHeader.className = 'flex min-w-0 items-start gap-3';
+        const guideIcon = document.createElement('span');
+        guideIcon.className = 'kanban-guide-icon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-400 select-none';
+        guideIcon.innerHTML = '<i class="fa-solid fa-briefcase text-xs"></i>';
+        const guideMainInfo = document.createElement('div');
+        guideMainInfo.className = 'min-w-0 flex-1';
+        appendText(guideMainInfo, 'kanban-guide-company block truncate text-sm font-semibold text-gray-900', 'Company Name');
+        appendText(guideMainInfo, 'kanban-guide-position block truncate text-sm text-gray-600', 'Position Role');
+        guideHeader.append(guideIcon, guideMainInfo);
+        guide.appendChild(guideHeader);
+
         appendText(guide, 'kanban-guide-details', 'Application Date · Platform');
+
+        const guideNextAction = document.createElement('div');
+        guideNextAction.className = 'kanban-card-next-action rounded-lg bg-gray-50 p-2 text-xs border border-gray-100';
+        appendText(guideNextAction, 'kanban-next-action-label block text-[11px] font-semibold uppercase tracking-wider text-gray-400', 'Next Action');
+        appendText(guideNextAction, 'kanban-next-action-text mt-0.5 block font-medium text-gray-800', 'Follow up with recruiter');
+        appendText(guideNextAction, 'kanban-next-action-date mt-0.5 block text-xs text-gray-500', 'Next Action Date');
+        guide.appendChild(guideNextAction);
+
         appendText(guide, 'kanban-guide-details', 'Status');
         appendText(guide, 'kanban-guide-position', group.label);
         const explanation = document.createElement('p');
@@ -377,21 +420,39 @@ export const kanbanMethods = {
         const position = this.getCellDisplay(row?.[indexes.position]);
         const date = this.getCellDisplay(row?.[indexes.date]);
         const platform = this.getCellDisplay(row?.[indexes.platform]);
+        const link = indexes.link >= 0 ? this.getCellValue(row?.[indexes.link]) : '';
+        const nextAction = indexes.nextAction >= 0 ? this.getCellDisplay(row?.[indexes.nextAction]) : '-';
+        const nextActionDate = indexes.nextActionDate >= 0 ? this.getCellDisplay(row?.[indexes.nextActionDate]) : '-';
         const card = document.createElement('article');
 
         card.className = 'kanban-card rounded-xl border border-gray-200 bg-white p-4 shadow-sm';
         card.dataset.rowIndex = String(rowIndex);
         card.draggable = false;
+        card.style.borderLeftColor = color;
+        card.style.setProperty('--card-status-accent', color);
         this.kanbanDrag?.attachCard(card, rowIndex);
 
         const cardLabel = company === '-' ? 'application' : company;
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'flex min-w-0 items-start gap-3';
+
+        const faviconEl = createCompanyFaviconElement(link, company === '-' ? '' : company);
+        headerRow.appendChild(faviconEl);
+
+        const mainInfo = document.createElement('div');
+        mainInfo.className = 'min-w-0 flex-1';
+
         const titleRow = document.createElement('div');
         titleRow.className = 'flex min-w-0 items-start justify-between gap-2';
         appendText(titleRow, 'min-w-0 flex-1 truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
         titleRow.appendChild(createApplicationDragHandle(document, cardLabel));
         titleRow.appendChild(createKanbanCardMenu(this, rowIndex, cardLabel));
-        card.appendChild(titleRow);
-        appendText(card, 'mt-1 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);
+        mainInfo.appendChild(titleRow);
+
+        appendText(mainInfo, 'mt-0.5 block truncate text-sm text-gray-600', position === '-' ? 'Untitled position' : position);
+        headerRow.appendChild(mainInfo);
+        card.appendChild(headerRow);
 
         const meta = document.createElement('div');
         meta.className = 'kanban-card-meta mt-3 text-xs text-gray-500';
@@ -407,6 +468,37 @@ export const kanbanMethods = {
         });
 
         if (metadata.length > 0) card.appendChild(meta);
+
+        const hasNextAction = nextAction !== '-';
+        const hasNextActionDate = nextActionDate !== '-';
+        if (hasNextAction || hasNextActionDate) {
+          const nextActionWrapper = document.createElement('div');
+          nextActionWrapper.className = 'kanban-card-next-action mt-3 rounded-lg bg-gray-50 p-2.5 text-xs border border-gray-100';
+
+          const nextActionHeader = document.createElement('div');
+          nextActionHeader.className = 'kanban-next-action-label text-[11px] font-semibold uppercase tracking-wider text-gray-400';
+          nextActionHeader.textContent = 'Next Action';
+          nextActionWrapper.appendChild(nextActionHeader);
+
+          if (hasNextAction) {
+            const textEl = document.createElement('div');
+            textEl.className = 'kanban-next-action-text mt-1 text-sm font-medium text-gray-800 break-words';
+            textEl.textContent = nextAction;
+            nextActionWrapper.appendChild(textEl);
+          }
+
+          if (hasNextActionDate) {
+            const formattedDate = formatActionDate(nextActionDate);
+            if (formattedDate) {
+              const dateEl = document.createElement('div');
+              dateEl.className = 'kanban-next-action-date mt-1 text-xs text-gray-500 font-medium';
+              dateEl.textContent = formattedDate;
+              nextActionWrapper.appendChild(dateEl);
+            }
+          }
+
+          card.appendChild(nextActionWrapper);
+        }
 
         if (statusColumn) {
           const label = document.createElement('label');

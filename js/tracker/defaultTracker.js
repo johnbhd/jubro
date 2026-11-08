@@ -25,7 +25,9 @@ export function createDefaultTracker(id, title = 'Job Applications') {
         ]
       },
       { name: 'Date', type: 'date' },
-      { name: 'Link', type: 'text' }
+      { name: 'Link', type: 'text' },
+      { name: 'Next Action', type: 'text' },
+      { name: 'Next Action Date', type: 'date' }
     ],
     rows: []
   };

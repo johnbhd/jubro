@@ -7,6 +7,8 @@ export const listIndexMethods = {
       status: this.getColumnIndexByNames(tracker, ['status'], 3),
       date: this.getDateColumnIndex(tracker),
       link: this.getColumnIndexByNames(tracker, ['website', 'link', 'url', 'job link'], 5),
+      nextAction: this.getColumnIndexByNames(tracker, ['next action', 'nextaction'], 6),
+      nextActionDate: this.getColumnIndexByNames(tracker, ['next action date', 'nextactiondate'], 7),
       email: this.getColumnIndexByNames(tracker, ['email'], -1),
       location: this.getColumnIndexByNames(tracker, ['location'], -1)
     };
@@ -37,6 +39,8 @@ export const listIndexMethods = {
     if (columnIndex === indexes.status || columnName === 'status') return 'status';
     if (columnIndex === indexes.date || ['date', 'date applied'].includes(columnName)) return 'date';
     if (columnIndex === indexes.link || ['website', 'link', 'url', 'job link'].includes(columnName)) return 'website';
+    if (columnIndex === indexes.nextAction || ['next action', 'nextaction'].includes(columnName)) return 'nextAction';
+    if (columnIndex === indexes.nextActionDate || ['next action date', 'nextactiondate'].includes(columnName)) return 'nextActionDate';
     if (columnIndex === indexes.email || columnName === 'email') return 'email';
     if (columnIndex === indexes.location || columnName === 'location') return 'location';
 

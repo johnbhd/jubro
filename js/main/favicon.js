@@ -26,7 +26,28 @@ function faviconUrl(domain) {
 
 export function getLinkFavicon(link) {
   try {
-    const { hostname } = new URL(link);
+    if (!link || typeof link !== 'string') {
+      return {
+        hostname: '',
+        url: ''
+      };
+    }
+
+    const { hostname, protocol } = new URL(link.trim());
+
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      return {
+        hostname: '',
+        url: ''
+      };
+    }
+
+    if (!hostname) {
+      return {
+        hostname: '',
+        url: ''
+      };
+    }
 
     return {
       hostname,
@@ -38,6 +59,52 @@ export function getLinkFavicon(link) {
       url: ''
     };
   }
+}
+
+export function createCompanyFaviconElement(jobLink, company) {
+  const container = document.createElement('div');
+  container.className = 'kanban-card-favicon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-semibold text-sm select-none overflow-hidden';
+
+  const cleanCompany = String(company || '').trim();
+  const initial = (cleanCompany && cleanCompany !== '-' && cleanCompany !== 'Untitled company')
+    ? cleanCompany.charAt(0).toUpperCase()
+    : '';
+
+  const renderFallback = () => {
+    container.replaceChildren();
+    if (initial) {
+      const span = document.createElement('span');
+      span.textContent = initial;
+      container.appendChild(span);
+    } else {
+      const icon = document.createElement('i');
+      icon.className = 'fa-solid fa-briefcase text-xs text-gray-400';
+      container.appendChild(icon);
+    }
+  };
+
+  const favicon = getLinkFavicon(jobLink);
+  if (!favicon.url) {
+    renderFallback();
+    return container;
+  }
+
+  const image = document.createElement('img');
+  image.src = favicon.url;
+  image.alt = '';
+  image.className = 'h-full w-full object-contain p-1';
+  image.loading = 'lazy';
+  image.referrerPolicy = 'no-referrer';
+  image.addEventListener('error', () => {
+    renderFallback();
+  });
+  container.appendChild(image);
+
+  return container;
+}
+
+export function getJobSiteIcon(jobLink, company) {
+  return createCompanyFaviconElement(jobLink, company);
 }
 
 export function getPlatformFavicon(platform) {

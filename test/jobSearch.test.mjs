@@ -214,7 +214,7 @@ test('first entry creates one empty search and refresh creates no duplicate or r
 test('new tracker preserves schema without creating sample applications', () => {
   const tracker = createDefaultTracker('1');
   assert.deepEqual(tracker.columns.map(column => column.name), [
-    'Company', 'Position', 'Platform', 'Status', 'Date', 'Link',
+    'Company', 'Position', 'Platform', 'Status', 'Date', 'Link', 'Next Action', 'Next Action Date',
   ]);
   assert.deepEqual(tracker.rows, []);
 });

@@ -102,7 +102,7 @@ test('account Add saves one revision and one logical sync without a guide in exp
 test('Add draft has no fake values and opening a draft performs no save', () => {
   const instance = app();
   const draft = instance.createApplicationDraft(new Date(2026, 10, 8, 23, 30));
-  assert.deepEqual(draft.map(cell => cell.value), ['', '', '', '', '2026-11-08', '']);
+  assert.deepEqual(draft.map(cell => cell.value), ['', '', '', '', '2026-11-08', '', '', '']);
   assert.equal(instance.state.revision, 1);
   assert.equal(instance.getTracker().rows.length, 0);
 });
@@ -144,13 +144,50 @@ test('Add preserves custom fields and rejects schema or search changes', () => {
   instance.getTracker().columns.push({ name: 'Remote', type: 'checkbox' });
   const context = instance.captureApplicationContext();
   const draft = instance.createApplicationDraft();
+  const customIndex = instance.getTracker().columns.length - 1;
   draft[0].value = 'Company';
-  draft[6].value = true;
+  draft[customIndex].value = true;
   instance.addApplicationDraft(draft, context);
-  assert.deepEqual(instance.getTracker().rows[0][6], { value: true, type: 'checkbox' });
+  assert.deepEqual(instance.getTracker().rows[0][customIndex], { value: true, type: 'checkbox' });
   const nextContext = instance.captureApplicationContext();
   instance.getTracker().columns[0].name = 'Changed schema';
   assert.throws(() => instance.addApplicationDraft(draft, nextContext), /changed/i);
+});
+
+test('Add saves Next Action and Next Action Date as typed optional data', () => {
+  const instance = app();
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Google';
+  draft[1].value = 'Software Engineer';
+  draft[6].value = 'Follow up with recruiter';
+  draft[7].value = '2026-11-15';
+  assert.equal(instance.addApplicationDraft(draft, context), true);
+  assert.equal(instance.getTracker().rows.length, 1);
+  assert.deepEqual(instance.getTracker().rows[0][6], { value: 'Follow up with recruiter', type: 'text' });
+  assert.deepEqual(instance.getTracker().rows[0][7], { value: '2026-11-15', type: 'date' });
+
+  // Adding with empty Next Action and Next Action Date
+  const nextContext = instance.captureApplicationContext();
+  const draft2 = instance.createApplicationDraft();
+  draft2[0].value = 'Meta';
+  draft2[1].value = 'Product Designer';
+  draft2[6].value = '';
+  draft2[7].value = '';
+  assert.equal(instance.addApplicationDraft(draft2, nextContext), true);
+  assert.equal(instance.getTracker().rows.length, 2);
+  // unshift puts the newest row at index 0
+  assert.deepEqual(instance.getTracker().rows[0][6], { value: '', type: 'text' });
+  assert.deepEqual(instance.getTracker().rows[0][7], { value: '', type: 'date' });
+  assert.deepEqual(instance.getTracker().rows[1][6], { value: 'Follow up with recruiter', type: 'text' });
+  assert.deepEqual(instance.getTracker().rows[1][7], { value: '2026-11-15', type: 'date' });
+
+  // Invalid date for Next Action Date should throw
+  const invalidContext = instance.captureApplicationContext();
+  const draft3 = instance.createApplicationDraft();
+  draft3[0].value = 'Netflix';
+  draft3[7].value = 'not-a-valid-date';
+  assert.throws(() => instance.addApplicationDraft(draft3, invalidContext), /date/i);
 });
 
 test('Add rejected persistence restores canonical rows instead of showing a fake saved card', () => {

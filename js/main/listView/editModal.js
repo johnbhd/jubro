@@ -149,7 +149,9 @@ export const listEditMethods = {
       const name = field.label.trim().toLowerCase();
       input.placeholder = name === 'company' ? 'e.g. Google'
         : ['position', 'role', 'job title'].includes(name) ? 'e.g. Frontend Developer'
-        : name === 'link' ? 'e.g. https://...' : `Enter ${field.label}`;
+        : ['link', 'job link'].includes(name) ? 'https://...'
+        : ['next action', 'nextaction'].includes(name) ? 'e.g. Follow up with recruiter'
+        : `Enter ${field.label}`;
     }
 
     if (type === 'checkbox') {

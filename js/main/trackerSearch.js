@@ -9,7 +9,7 @@ getBoardRowSelector(view = this.viewSelect?.value) {
   },
 
 getSearchColumnIndexes(tracker) {
-    const searchableNames = ['company', 'position', 'status', 'link', 'date applied', 'date'];
+    const searchableNames = ['company', 'position', 'status', 'link', 'date applied', 'date', 'next action', 'nextaction'];
 
     if (!tracker || !Array.isArray(tracker.columns)) return [];
 
