@@ -69,10 +69,31 @@ export const listEditMethods = {
     return Number.isInteger(field.index) ? field.index : -1;
   },
 
-  createListEditInput(field, row) {
+  createListEditInput(field, row, { mode = 'edit' } = {}) {
     const tracker = this.getTracker();
     const value = field.index >= 0 ? this.getCellValue(row[field.index]) : '';
     const type = this.getListEditFieldType(tracker, field);
+
+    if (type === 'select' && mode === 'add') {
+      const label = document.createElement('label');
+      label.textContent = field.label;
+      const select = document.createElement('select');
+      select.className = 'list-edit-control';
+      select.dataset.fieldKey = field.key;
+      const blank = document.createElement('option');
+      blank.value = '';
+      blank.textContent = 'Select';
+      select.appendChild(blank);
+      this.getDashboardOptions(this.getListEditColumn(tracker, field)).forEach(option => {
+        const item = document.createElement('option');
+        item.value = option.label;
+        item.textContent = option.label;
+        select.appendChild(item);
+      });
+      select.value = value || '';
+      label.appendChild(select);
+      return label;
+    }
 
     if (type === 'select') {
       const column = this.getListEditColumn(tracker, field);
@@ -124,6 +145,13 @@ export const listEditMethods = {
     input.className = 'list-edit-control mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400';
     input.dataset.fieldKey = field.key;
 
+    if (mode === 'add' && type === 'text') {
+      const name = field.label.trim().toLowerCase();
+      input.placeholder = name === 'company' ? 'e.g. Google'
+        : ['position', 'role', 'job title'].includes(name) ? 'e.g. Frontend Developer'
+        : name === 'link' ? 'e.g. https://...' : `Enter ${field.label}`;
+    }
+
     if (type === 'checkbox') {
       input.classList.add('h-5', 'w-5');
       input.checked = value === true;
@@ -143,6 +171,12 @@ export const listEditMethods = {
     if (!tracker || !row || !fieldsContainer) return;
 
     this.activeListEditRowIndex = rowIndex;
+    this.activeListEditTarget = {
+      tracker,
+      row,
+      key: this.getActiveTrackerKey?.(),
+      owner: this.captureJobSearchContext?.().owner,
+    };
     this.removeListEditSelectDropdowns();
     fieldsContainer.replaceChildren();
     this.getListEditFields(tracker).forEach((field) => {
@@ -331,6 +365,7 @@ export const listEditMethods = {
 
   closeListEditModal() {
     this.activeListEditRowIndex = null;
+    this.activeListEditTarget = null;
     this.removeListEditSelectDropdowns();
     document.getElementById('listEditModal')?.classList.add('hidden');
   },
@@ -341,6 +376,16 @@ export const listEditMethods = {
     const row = tracker?.rows?.[rowIndex];
 
     if (!tracker || !row) return;
+
+    const target = this.activeListEditTarget;
+    const owner = this.captureJobSearchContext?.().owner;
+    if (target && (target.tracker !== tracker || target.row !== row
+      || target.key !== this.getActiveTrackerKey?.()
+      || target.owner?.ownerType !== owner?.ownerType || target.owner?.ownerId !== owner?.ownerId)) {
+      this.closeListEditModal();
+      this.showToast('Your Job Search changed. Reopen Edit Application.');
+      return;
+    }
 
     const fieldsByKey = new Map(this.getListEditFields(tracker).map((field) => [field.key, field]));
 
@@ -364,7 +409,16 @@ export const listEditMethods = {
       };
     });
 
-    if (this.save() === false) return;
+    try {
+      if (this.save() === false) {
+        this.reloadStateFromStorage();
+        return;
+      }
+    } catch {
+      this.reloadStateFromStorage();
+      this.showToast('Could not save application. Saved data restored.');
+      return;
+    }
 
     this.closeListEditModal();
     this.refresh({ persist: false });

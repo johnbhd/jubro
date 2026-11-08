@@ -277,7 +277,7 @@ export const kanbanMethods = {
     const statusColumn = getKanbanStatusColumn(tracker);
     const { groups } = groupKanbanRows(tracker);
 
-    if (tracker.rows.length === 0) {
+    if (tracker.rows.length === 0 && createConfiguredColumns(statusColumn?.column).length === 0) {
       const emptyState = document.createElement('div');
       emptyState.className = 'rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center shadow-sm';
 
@@ -301,7 +301,7 @@ export const kanbanMethods = {
     }
 
     const statusOptions = getStatusOptions(groups);
-    this.kanbanDrag = createKanbanDrag(this, tracker);
+    this.kanbanDrag = tracker.rows.length > 0 ? createKanbanDrag(this, tracker) : null;
 
     groups.forEach((group) => {
       const column = document.createElement('section');
@@ -341,7 +341,27 @@ export const kanbanMethods = {
       const cards = document.createElement('div');
       cards.className = 'kanban-card-list';
 
-      if (group.rowIndexes.length === 0) {
+      if (tracker.rows.length === 0 && group === groups[0]) {
+        const guide = document.createElement('article');
+        guide.className = 'kanban-guide-card';
+        guide.draggable = false;
+        guide.setAttribute('aria-label', 'Example application. Not saved application data.');
+        appendText(guide, 'kanban-guide-badge', 'EXAMPLE');
+        appendText(guide, 'kanban-guide-company', 'Company Name');
+        appendText(guide, 'kanban-guide-position', 'Position Role');
+        appendText(guide, 'kanban-guide-details', 'Application Date · Platform');
+        appendText(guide, 'kanban-guide-details', 'Status');
+        appendText(guide, 'kanban-guide-position', group.label);
+        const explanation = document.createElement('p');
+        explanation.className = 'kanban-guide-explanation';
+        explanation.textContent = 'This is an example. Add your first application to start tracking your job search.';
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'primary-action-button kanban-guide-add';
+        add.dataset.kanbanAddApplication = 'true';
+        add.textContent = '+ Add Application';
+        cards.append(guide, explanation, add);
+      } else if (group.rowIndexes.length === 0) {
         const empty = document.createElement('p');
         empty.className = 'kanban-column-empty rounded-xl border border-dashed border-gray-300 px-3 py-4 text-center text-xs text-gray-500';
         empty.textContent = 'No applications here yet.';

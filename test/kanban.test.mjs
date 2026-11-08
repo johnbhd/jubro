@@ -320,7 +320,7 @@ test('separates Kanban date and platform metadata', () => {
   }
 });
 
-test('renders the empty tracker Board state with an Add Application action', () => {
+test('empty Board guide lives in first configured status without becoming a real row', () => {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
   const container = new FakeElement('div');
@@ -337,10 +337,19 @@ test('renders the empty tracker Board state with an Add Application action', () 
   };
 
   try {
-    kanbanMethods.renderKanban.call({ kanbanColumns: container }, createTracker({ rows: [] }));
+    const tracker = createTracker({ rows: [] });
+    tracker.columns[1].options[0].label = 'Wishlist';
+    kanbanMethods.renderKanban.call({ kanbanColumns: container }, tracker);
 
-    assert.match(container.textContent, /Your job pipeline is empty/);
+    assert.match(container.children[0].textContent, /EXAMPLE/);
+    assert.match(container.children[0].textContent, /Wishlist/);
+    assert.doesNotMatch(container.children[1].textContent, /EXAMPLE/);
     assert.match(container.textContent, /Add Application/);
+    assert.equal(container.children.length, 3);
+    assert.equal(tracker.rows.length, 0);
+    const guide = container.children[0].children[1].children[0];
+    assert.equal(guide.dataset.rowIndex, undefined);
+    assert.equal(guide.draggable, false);
   } finally {
     globalThis.document = previousDocument;
     globalThis.window = previousWindow;

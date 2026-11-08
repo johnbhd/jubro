@@ -1,0 +1,167 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+
+globalThis.localStorage = {
+  values: new Map(),
+  getItem(key) { return this.values.get(key) ?? null; },
+  setItem(key, value) { this.values.set(key, String(value)); },
+};
+globalThis.document = new EventTarget();
+document.querySelectorAll = () => [];
+document.getElementById = () => null;
+globalThis.window = new EventTarget();
+window.location = { pathname: '/board/', search: '', hash: '' };
+window.history = { replaceState() {} };
+
+const { Storage } = await import('../js/storage/storage.js');
+const { createDefaultTracker } = await import('../js/tracker/defaultTracker.js');
+const { trackerStateMethods } = await import('../js/main/trackerState.js');
+const { jobSearchMethods } = await import('../js/main/jobSearch.js');
+const { jobSearchManagementMethods } = await import('../js/main/jobSearchManagement.js');
+const { applicationFormMethods } = await import('../js/main/applicationForm.js');
+const firebase = await import('https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js');
+
+function app() {
+  const instance = {
+    ...trackerStateMethods,
+    ...jobSearchMethods,
+    ...jobSearchManagementMethods,
+    ...applicationFormMethods,
+    state: Storage.load(),
+    eventsInitialized: true,
+    refresh() {},
+    showToast() {},
+    closeSearchSpecificUI() {},
+    syncs: 0,
+    syncLocalStateToFirebase() { this.syncs += 1; },
+  };
+  instance.resolveBoardSearch();
+  return instance;
+}
+
+test.beforeEach(async () => {
+  await firebase.__emitAuth(null);
+  localStorage.values.clear();
+  Storage.useGuestWorkspace();
+});
+
+test('custom schema without Company or Position accepts meaningful text but not only automatic dates', () => {
+  const instance = app();
+  instance.getTracker().columns = [
+    { name: 'Opportunity', type: 'text' },
+    { name: 'Date', type: 'date' },
+  ];
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  assert.throws(() => instance.addApplicationDraft(draft, context), /description/i);
+  draft[0].value = 'Custom opportunity';
+  assert.equal(instance.addApplicationDraft(draft, context), true);
+  assert.equal(instance.getTracker().rows[0][0].value, 'Custom opportunity');
+});
+
+test('Add thrown persistence restores canonical rows', () => {
+  const instance = app();
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Not saved';
+  const originalSave = localStorage.setItem;
+  localStorage.setItem = () => { throw new Error('Quota exceeded'); };
+  try {
+    assert.equal(instance.addApplicationDraft(draft, context), false);
+    assert.equal(instance.getTracker().rows.length, 0);
+    assert.equal(instance.state.revision, 1);
+  } finally {
+    localStorage.setItem = originalSave;
+  }
+});
+
+test('account Add saves one revision and one logical sync without a guide in exported data', async () => {
+  firebase.__resetFirebase();
+  const user = { uid: 'add-account', email: 'add@example.test' };
+  await firebase.__emitAuth(user);
+  Storage.useAccountWorkspace(user.uid);
+  const instance = app();
+  let pending;
+  instance.syncLocalStateToFirebase = function () {
+    pending = trackerStateMethods.syncLocalStateToFirebase.call(this);
+    return pending;
+  };
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Real Company';
+  instance.addApplicationDraft(draft, context);
+  await pending;
+  assert.equal(Storage.load().revision, 2);
+  assert.equal(firebase.__getWrites().length, 2);
+  const cloudData = JSON.parse(firebase.__getDocument('trackerData/' + user.uid).data);
+  assert.equal(cloudData[instance.state.active].rows.length, 1);
+  assert.equal(cloudData[instance.state.active].rows[0][0].value, 'Real Company');
+  assert.equal(JSON.stringify(cloudData).includes('EXAMPLE'), false);
+});
+
+test('Add draft has no fake values and opening a draft performs no save', () => {
+  const instance = app();
+  const draft = instance.createApplicationDraft(new Date(2026, 10, 8, 23, 30));
+  assert.deepEqual(draft.map(cell => cell.value), ['', '', '', '', '2026-11-08', '']);
+  assert.equal(instance.state.revision, 1);
+  assert.equal(instance.getTracker().rows.length, 0);
+});
+
+test('Add rejects missing identity, invalid date and removed select options without mutation', () => {
+  const instance = app();
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  assert.throws(() => instance.addApplicationDraft(draft, context), /company or position/i);
+  draft[0].value = 'Google';
+  draft[4].value = '2026-02-30';
+  assert.throws(() => instance.addApplicationDraft(draft, context), /date/i);
+  draft[4].value = '';
+  draft[3].value = 'Removed option';
+  assert.throws(() => instance.addApplicationDraft(draft, context), /option/i);
+  assert.equal(instance.getTracker().rows.length, 0);
+  assert.equal(instance.state.revision, 1);
+});
+
+test('Add creates exactly one normalized row using renamed canonical options', () => {
+  const instance = app();
+  instance.getTracker().columns[3].options[0].label = 'Submitted';
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[1].value = 'Frontend developer';
+  draft[3].value = 'Submitted';
+  assert.equal(instance.addApplicationDraft(draft, context), true);
+  assert.equal(instance.state.revision, 2);
+  assert.equal(instance.getTracker().rows.length, 1);
+  assert.equal(instance.getTracker().rows[0][0].value, '');
+  assert.equal(instance.getTracker().rows[0][3].value, 'Submitted');
+  assert.equal(instance.syncs, 2);
+  assert.throws(() => instance.addApplicationDraft(draft, context), /changed/i);
+  assert.equal(instance.getTracker().rows.length, 1);
+});
+
+test('Add preserves custom fields and rejects schema or search changes', () => {
+  const instance = app();
+  instance.getTracker().columns.push({ name: 'Remote', type: 'checkbox' });
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Company';
+  draft[6].value = true;
+  instance.addApplicationDraft(draft, context);
+  assert.deepEqual(instance.getTracker().rows[0][6], { value: true, type: 'checkbox' });
+  const nextContext = instance.captureApplicationContext();
+  instance.getTracker().columns[0].name = 'Changed schema';
+  assert.throws(() => instance.addApplicationDraft(draft, nextContext), /changed/i);
+});
+
+test('Add rejected persistence restores canonical rows instead of showing a fake saved card', () => {
+  const instance = app();
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Not saved';
+  const newer = Storage.load();
+  newer.data[newer.active].title = 'Other tab';
+  Storage.save(newer);
+  assert.equal(instance.addApplicationDraft(draft, context), false);
+  assert.equal(instance.getTracker().rows.length, 0);
+  assert.equal(instance.getTracker().title, 'Other tab');
+});

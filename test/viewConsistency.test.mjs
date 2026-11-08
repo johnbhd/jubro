@@ -91,7 +91,7 @@ test('does not redraw a rejected row move', () => {
   assert.equal(reloadCalls, 1);
 });
 
-test('shows a creation toast after a successful Add Application save', () => {
+test('legacy low-level row creation never inserts fake application identity', () => {
   const tracker = {
     columns: [
       { name: 'Company', type: 'text' },
@@ -126,5 +126,6 @@ test('shows a creation toast after a successful Add Application save', () => {
     true,
   );
   assert.equal(tracker.rows.length, 1);
-  assert.equal(toastMessage, 'New application created.');
+  assert.equal(toastMessage, '');
+  assert.equal(tracker.rows[0][0].value, '');
 });

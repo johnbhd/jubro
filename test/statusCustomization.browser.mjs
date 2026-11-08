@@ -918,6 +918,62 @@ try {
     document.querySelector('dialog[open][data-job-search-action] form').requestSubmit();
     return !managementApp.state.data[copyId] && Boolean(managementApp.getTracker());
   `), true, 'Management dialogs cancel safely, save once, and preserve identities.');
+  assert.equal(await evaluate(`
+    const { Storage } = await import('/js/storage/storage.js');
+    managementApp.changeJobSearch('create', { title: 'Form search' });
+    managementApp.setBoardView('kanban');
+    managementApp.updateStatusOption(0, { label: 'Wishlist' });
+    const before = Storage.load().revision;
+    const guide = document.querySelector('.kanban-guide-card');
+    if (!guide || guide.draggable || guide.querySelector('button, select, [data-row-index]')
+      || !guide.closest('[data-kanban-status="Wishlist"]')
+      || document.querySelector('#listCards [data-row-index]')
+      || managementApp.getTracker().rows.length !== 0
+      || JSON.stringify(managementApp.getTracker()).includes('Company Name')) return false;
+    managementApp.openAddApplication();
+    const form = document.querySelector('[data-add-application][open] form');
+    const company = form.querySelector('[data-field-key="0"]');
+    const position = form.querySelector('[data-field-key="1"]');
+    const status = form.querySelector('[data-field-key="3"]');
+    if (company.value !== '' || position.value !== '' || !company.placeholder || !position.placeholder
+      || ![...status.options].some(option => option.value === 'Wishlist')) return false;
+    company.value = 'Canceled input';
+    form.querySelector('button[type="button"]').click();
+    if (Storage.load().revision !== before || managementApp.getTracker().rows.length !== 0) return false;
+    managementApp.openAddApplication();
+    const next = document.querySelector('[data-add-application][open] form');
+    next.querySelector('[data-field-key="0"]').value = 'Real Company';
+    next.querySelector('[data-field-key="1"]').value = 'Actual Role';
+    next.querySelector('[data-field-key="3"]').value = 'Wishlist';
+    next.requestSubmit();
+    if (managementApp.getTracker().rows.length !== 1 || Storage.load().revision !== before + 1
+      || document.querySelector('.kanban-guide-card')
+      || !document.querySelector('#listCards [data-row-index="0"]').textContent.includes('Real Company')) return false;
+    managementApp.openListEditModal(0);
+    const filled = document.querySelector('#listEditFields [data-field-key="0"]').value === 'Real Company';
+    managementApp.closeListEditModal();
+    managementApp.deleteRowAt(0);
+    return filled && Boolean(document.querySelector('.kanban-guide-card'));
+  `), true, 'Guide stays out of data; Add placeholders/cancel/save and Edit prefill stay correct.');
+  for (const theme of ['dark', 'light']) {
+    for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+      await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      assert.equal(await evaluate(`
+        document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+        managementApp.openAddApplication();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const dialog = document.querySelector('[data-add-application][open]');
+        const bounds = dialog.getBoundingClientRect();
+        return bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0
+          && bounds.bottom <= innerHeight && dialog.scrollWidth <= dialog.clientWidth;
+      `), true, 'Add dialog fits ' + theme + ' ' + width);
+      const shot = await command('browsingContext.captureScreenshot', { context });
+      await writeFile(resolve(artifacts, `${theme}-${width}-add.png`), Buffer.from(shot.data, 'base64'));
+      await evaluate('document.querySelector("[data-add-application][open]").close();');
+      const boardShot = await command('browsingContext.captureScreenshot', { context });
+      await writeFile(resolve(artifacts, `${theme}-${width}-guide.png`), Buffer.from(boardShot.data, 'base64'));
+    }
+  }
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));
 } finally {

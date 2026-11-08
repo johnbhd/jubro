@@ -1702,6 +1702,102 @@ input:disabled {
   padding: 8px 12px;
 }
 
+.application-add-dialog {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 24px;
+  overflow-y: auto;
+  border: 1px solid #9ca3af66;
+  border-radius: 16px;
+  background: #fff;
+  color: #111827;
+}
+
+.application-add-dialog::backdrop {
+  background: #0009;
+}
+
+.application-add-dialog h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.application-add-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.application-add-fields label {
+  display: block;
+  min-width: 0;
+}
+
+.application-add-fields .list-edit-control {
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+.application-add-fields select {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px;
+  border: 1px solid #9ca3af;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.dark .application-add-dialog {
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+.kanban-guide-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px dashed #9ca3af;
+  border-radius: 12px;
+  background: #9ca3af0d;
+  opacity: 0.8;
+}
+
+.kanban-guide-badge {
+  justify-self: start;
+  padding: 3px 7px;
+  border: 1px dashed currentColor;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.kanban-guide-company {
+  font-weight: 600;
+}
+
+.kanban-guide-details,
+.kanban-guide-explanation {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.kanban-guide-add {
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+@media (max-width: 639px) {
+  .application-add-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .job-search-choice {
   display: grid;
   min-width: 0;

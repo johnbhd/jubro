@@ -153,6 +153,9 @@ initEvents() {
     });
 
     document.addEventListener('keydown', (e) => {
+      if (document.querySelector('dialog[open]')) {
+        return;
+      }
       const key = e.key.toLowerCase();
 
       if ((e.ctrlKey || e.metaKey) && key === 'k') {
@@ -242,7 +245,7 @@ initEvents() {
     });
 
     const addApplication = () => {
-      this.addRow({ useJobDefaults: true, insertAtStart: true });
+      this.openAddApplication();
     };
 
     btnAddApplication?.addEventListener('click', addApplication);
@@ -323,7 +326,7 @@ initEvents() {
     const buttonActions = {
       "btn-addRow": (e) => {
         e.preventDefault();
-        this.addRow();
+        this.openAddApplication();
       },
       "btn-copyRow": (e) => {
         e.preventDefault();
