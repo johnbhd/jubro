@@ -83,6 +83,22 @@ test('getLinkFavicon only accepts http and https URLs', () => {
     hostname: '',
     url: '',
   });
+
+  // Normalizes bare domains without https (e.g. github.com)
+  assert.deepEqual(getLinkFavicon('github.com'), {
+    hostname: 'github.com',
+    url: 'https://www.google.com/s2/favicons?domain=github.com&sz=64',
+  });
+
+  assert.deepEqual(getLinkFavicon('github.com/facebook/react'), {
+    hostname: 'github.com',
+    url: 'https://www.google.com/s2/favicons?domain=github.com&sz=64',
+  });
+
+  assert.deepEqual(getLinkFavicon('www.github.com'), {
+    hostname: 'www.github.com',
+    url: 'https://www.google.com/s2/favicons?domain=www.github.com&sz=64',
+  });
 });
 
 test('createCompanyFaviconElement creates img for valid link and falls back on error or missing link', () => {
@@ -116,4 +132,20 @@ test('createCompanyFaviconElement creates img for valid link and falls back on e
   assert.equal(el4.children.length, 1);
   assert.equal(el4.children[0].tagName, 'I');
   assert.ok(el4.children[0].className.includes('fa-briefcase'));
+
+  // Case 5: Bare domain 'github.com' -> gets logo, circular with dark background, not cropped
+  const elGh = createCompanyFaviconElement('github.com', 'GitHub');
+  assert.equal(elGh.children.length, 1);
+  const imgGh = elGh.children[0];
+  assert.equal(imgGh.tagName, 'IMG');
+  assert.equal(imgGh.src, 'https://www.google.com/s2/favicons?domain=github.com&sz=64');
+  assert.ok(imgGh.className.includes('rounded-full'));
+  assert.ok(elGh.className.includes('bg-[#24292e]'));
+
+  // Case 6: Non-circular logo (Google) -> img does NOT have rounded-full (not cropped)
+  const elGoog = createCompanyFaviconElement('google.com', 'Google');
+  const imgGoog = elGoog.children[0];
+  assert.equal(imgGoog.tagName, 'IMG');
+  assert.equal(imgGoog.className.includes('rounded-full'), false);
+  assert.equal(elGoog.className.includes('bg-[#24292e]'), false);
 });

@@ -6,7 +6,15 @@ export function getSafeHttpUrl(value) {
   if (!source) return null;
 
   try {
-    const url = new URL(source);
+    let normalized = source;
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(source)) {
+      const hostPart = source.split('/')[0].split('?')[0].split('#')[0];
+      if (hostPart.includes('.') && !/\s/.test(hostPart)) {
+        normalized = `https://${source}`;
+      }
+    }
+
+    const url = new URL(normalized);
 
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
       return null;

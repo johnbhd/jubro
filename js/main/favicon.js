@@ -7,8 +7,41 @@ const PLATFORM_DOMAINS = {
   'online jobs ph': 'onlinejobs.ph',
   glassdoor: 'glassdoor.com',
   monster: 'monster.com',
+  github: 'github.com',
   'company website': ''
 };
+
+export const CIRCLE_LOGO_DOMAINS = new Set([
+  'github.com',
+  'spotify.com',
+  'reddit.com',
+  'medium.com'
+]);
+
+export function isCircleLogo(domain) {
+  const clean = String(domain || '').toLowerCase().replace(/^www\./, '');
+  return CIRCLE_LOGO_DOMAINS.has(clean)
+    || clean.endsWith('.github.com')
+    || clean.endsWith('.spotify.com')
+    || clean.endsWith('.reddit.com');
+}
+
+export function isDarkCircleLogo(domain) {
+  const clean = String(domain || '').toLowerCase().replace(/^www\./, '');
+  return clean === 'github.com' || clean.endsWith('.github.com');
+}
+
+export function normalizeUrlString(value) {
+  const source = String(value ?? '').trim();
+  if (!source) return '';
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(source)) {
+    const hostPart = source.split('/')[0].split('?')[0].split('#')[0];
+    if (hostPart.includes('.') && !/\s/.test(hostPart)) {
+      return `https://${source}`;
+    }
+  }
+  return source;
+}
 
 function normalizePlatform(value) {
   return String(value || '')
@@ -33,7 +66,8 @@ export function getLinkFavicon(link) {
       };
     }
 
-    const { hostname, protocol } = new URL(link.trim());
+    const normalized = normalizeUrlString(link);
+    const { hostname, protocol } = new URL(normalized);
 
     if (protocol !== 'http:' && protocol !== 'https:') {
       return {
@@ -72,6 +106,7 @@ export function createCompanyFaviconElement(jobLink, company) {
 
   const renderFallback = () => {
     container.replaceChildren();
+    container.className = 'kanban-card-favicon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-semibold text-sm select-none overflow-hidden';
     if (initial) {
       const span = document.createElement('span');
       span.textContent = initial;
@@ -89,10 +124,19 @@ export function createCompanyFaviconElement(jobLink, company) {
     return container;
   }
 
+  const isCircle = isCircleLogo(favicon.hostname);
+  const isDarkCircle = isDarkCircleLogo(favicon.hostname);
+
+  if (isDarkCircle) {
+    container.className = 'kanban-card-favicon flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#24292e] bg-[#24292e] text-white font-semibold text-sm select-none overflow-hidden';
+  }
+
   const image = document.createElement('img');
   image.src = favicon.url;
   image.alt = '';
-  image.className = 'h-full w-full object-contain p-1';
+  image.className = isCircle
+    ? 'h-full w-full object-contain p-1 rounded-full'
+    : 'h-full w-full object-contain p-1';
   image.loading = 'lazy';
   image.referrerPolicy = 'no-referrer';
   image.addEventListener('error', () => {
