@@ -1248,6 +1248,23 @@ try {
           && document.documentElement.scrollWidth <= innerWidth
           && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
       `), true, 'Static landing preview fits ' + theme + ' ' + width);
+      if (width < 1024) {
+        const mobileNav = await evaluate(`
+          const menuBtn = document.getElementById('btnMobileMenu');
+          if (menuBtn && menuBtn.getAttribute('aria-expanded') !== 'true') {
+            menuBtn.click();
+            await new Promise(resolve => requestAnimationFrame(resolve));
+          }
+          const btnSignIn = document.getElementById('btnSignIn');
+          const btnOpenModal = document.getElementById('btnOpenModal');
+          const signInRect = btnSignIn.getBoundingClientRect();
+          const openRect = btnOpenModal.getBoundingClientRect();
+          const isFullWidth = Math.abs(signInRect.width - openRect.width) <= 2;
+          menuBtn.click();
+          return { isFullWidth, signInWidth: signInRect.width, openWidth: openRect.width };
+        `);
+        assert.equal(mobileNav.isFullWidth, true, 'Mobile nav sign in button is full width ' + theme + ' ' + width + ': ' + JSON.stringify(mobileNav));
+      }
       if (width >= 1024) {
         const navigation = await evaluate(`
           const navbar = document.getElementById('siteNavbar');

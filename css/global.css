@@ -1498,6 +1498,20 @@ input:disabled {
     left: 0 !important;
     right: 0 !important;
   }
+
+  .site-navbar #mobileTrackerMenu #navbarGuest,
+  .site-navbar #mobileTrackerMenu #navbarGuest #btnSignIn,
+  .site-navbar #mobileTrackerMenu #navbarAuthenticated,
+  .site-navbar #mobileTrackerMenu #navbarAuthenticated #btnAccount,
+  .site-navbar #mobileTrackerMenu #navbarAuthLoading,
+  .site-navbar #mobileTrackerMenu #btnOpenModal {
+    width: 100% !important;
+  }
+
+  .site-navbar #mobileTrackerMenu #navbarGuest:not(.hidden),
+  .site-navbar #mobileTrackerMenu #navbarAuthenticated:not(.hidden) {
+    display: flex !important;
+  }
 }
 
 @media (max-width: 639px) {
