@@ -2,6 +2,17 @@ import { closeMenu } from './ui.js';
 import { closeKanbanCardMenus } from './kanban.js';
 import { Storage } from '../storage/storage.js';
 
+export function syncSortSelectWidth(sortSelect) {
+  if (!sortSelect) return;
+  const widths = {
+    'date-desc': '86px',
+    'date-asc': '82px',
+    '': '84px',
+    'select-text': '106px',
+  };
+  sortSelect.style.width = widths[sortSelect.value] || '96px';
+}
+
 export const trackerEventMethods = {
 initEvents() {
     const btnMenu = document.getElementById('btnMenu');
@@ -278,7 +289,10 @@ initEvents() {
       this.applySearchFilter();
     });
 
+    syncSortSelectWidth(sortSelect);
+
     sortSelect?.addEventListener('change', () => {
+      syncSortSelectWidth(sortSelect);
       this.resetPagination();
       this.updateSelectTextSortVisibility();
       this.refresh({ persist: false });
@@ -351,5 +365,9 @@ initEvents() {
       const el = document.getElementById(id);
       if (el) el.addEventListener('click', (e) => action(e));
     });
+  },
+
+  syncSortSelectWidth(sortSelect = this.sortSelect) {
+    syncSortSelectWidth(sortSelect);
   }
 };

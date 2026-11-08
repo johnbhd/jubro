@@ -132,6 +132,7 @@ updateSelectTextSortVisibility() {
 clearSelectFilter() {
     if (this.sortSelect) {
       this.sortSelect.value = '';
+      this.syncSortSelectWidth?.(this.sortSelect);
     }
 
     if (this.selectValueFilterSelect) {

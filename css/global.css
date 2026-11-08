@@ -13,6 +13,29 @@ input:disabled {
   cursor: not-allowed;
 }
 
+.board-view-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  background: transparent;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.board-view-button:hover:not(.is-active) {
+  color: #111827;
+  background-color: #e5e7eb;
+}
+
 .board-view-button.is-active {
   background: #111827 !important;
   color: #ffffff !important;
@@ -71,6 +94,7 @@ input:disabled {
 
 .board-toolbar-actions {
   flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .board-toolbar-actions-row {
@@ -82,22 +106,34 @@ input:disabled {
 
 .job-search-navigation {
   min-width: 0;
-  flex: 1 1 140px;
+  flex: 0 1 auto;
 }
 
 #appNavbar .job-search-selector {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 6px;
   min-width: 40px;
-  min-height: 40px;
-  width: 100%;
-  padding: 6px;
+  height: 40px;
+  width: auto;
+  max-width: 220px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: left;
+}
+
+@media (min-width: 1280px) {
+  #appNavbar .job-search-selector {
+    max-width: 280px;
+  }
 }
 
 .job-search-selector span:first-child {
+  display: inline-block;
   min-width: 0;
+  max-width: calc(100% - 18px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -105,6 +141,8 @@ input:disabled {
 
 .job-search-selector span:last-child {
   flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1;
 }
 
 .toolbar-icon-button {
@@ -132,10 +170,13 @@ input:disabled {
 
 #boardViewToggle {
   display: inline-flex;
+  align-items: center;
   flex: 0 0 auto;
   padding: 2px;
-  border-radius: 10px;
-  background: #9ca3af22;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f3f4f6;
+  box-sizing: border-box;
 }
 
 .board-search {
@@ -145,29 +186,68 @@ input:disabled {
 
 .search-discovery-group {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  height: 40px;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #9ca3af55;
-  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
   background: #f3f4f6;
+  box-sizing: border-box;
 }
 
 #searchInputWrapper {
   flex: 1 1 auto;
   min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
-#jobSearchInput,
-#sortSelect {
+#jobSearchInput {
+  height: 100%;
+  width: 100%;
+  padding-top: 0;
+  padding-bottom: 0;
   background: transparent;
   outline: none;
+  border: none;
+  font-size: 13px;
+  line-height: 38px;
+  box-sizing: border-box;
+}
+
+.sort-control-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+  border-left: 1px solid #d1d5db;
+  box-sizing: border-box;
+}
+
+.sort-control-wrapper i {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 #sortSelect {
-  width: 110px;
-  border-left: 1px solid #9ca3af55;
+  height: 100%;
+  min-width: 82px;
+  max-width: 120px;
+  padding: 0 24px 0 10px;
+  background: transparent;
+  outline: none;
+  border: none;
   border-radius: 0;
+  font-size: 13px;
+  line-height: 38px;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 .search-filter-controls {
@@ -186,7 +266,12 @@ input:disabled {
 }
 
 .dark .search-discovery-group {
+  border-color: #374151;
   background: #111827;
+}
+
+.dark .sort-control-wrapper {
+  border-left-color: #374151;
 }
 
 @media (max-width: 767px) {
@@ -199,6 +284,11 @@ input:disabled {
   #appNavbar .toolbar-icon-button {
     width: 40px;
     padding: 0;
+  }
+
+  #appNavbar .job-search-selector {
+    max-width: min(120px, calc(100vw - 265px));
+    padding: 0 6px;
   }
 }
 
@@ -227,7 +317,7 @@ input:disabled {
 @media (min-width: 768px) {
   #appNavbar {
     gap: 8px;
-    padding: 12px;
+    padding: 10px 12px;
   }
 
   .board-toolbar-actions-row {
@@ -236,9 +326,13 @@ input:disabled {
 }
 
 @media (min-width: 1024px) {
+  #appNavbar {
+    gap: 12px;
+  }
+
   .board-search {
     display: block;
-    flex: 1 1 440px;
+    flex: 0 1 400px;
     max-width: 440px;
     min-width: 212px;
   }
@@ -246,6 +340,13 @@ input:disabled {
   #btnOpenSearch,
   #btnCloseSearch {
     display: none;
+  }
+}
+
+@media (min-width: 1440px) {
+  .board-search {
+    flex: 0 1 420px;
+    max-width: 460px;
   }
 }
 
@@ -1028,22 +1129,24 @@ input:disabled {
 }
 
 .dark #boardViewToggle {
-  border-color: #374151 !important;
+  border: 1px solid #374151 !important;
   background-color: #1f2937 !important;
 }
 
 .dark .board-view-button {
-  color: #d1d5db !important;
+  color: #9ca3af !important;
+  background: transparent !important;
 }
 
-.dark .board-view-button:hover {
+.dark .board-view-button:hover:not(.is-active) {
   background-color: #374151 !important;
-  color: #ffffff !important;
+  color: #f9fafb !important;
 }
 
 .dark .board-view-button.is-active {
   background-color: #f9fafb !important;
   color: #111827 !important;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
 }
 
 .dark .primary-action-button {
@@ -1828,11 +1931,8 @@ input:disabled {
 }
 /* Board workspace identity stays separate from status and application menus. */
 .job-search-selector {
-  min-height: 44px;
+  min-height: 40px;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-weight: 600;
   text-align: left;
 }
