@@ -1325,6 +1325,11 @@ input:disabled {
   color: #111827 !important;
 }
 
+#listHeaderCard,
+section > .list-panel {
+  display: none !important;
+}
+
 .dark .list-panel,
 .dark .list-view-row,
 .dark .list-panel .border-gray-100,
