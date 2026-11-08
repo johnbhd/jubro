@@ -1312,6 +1312,46 @@ input:disabled {
   background-color: #1f2937 !important;
 }
 
+#boardTopNavbar {
+  overflow: visible;
+}
+
+#boardTopNavActions {
+  position: relative;
+}
+
+#boardTopNavDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 16rem;
+  max-width: calc(100vw - 2rem);
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+}
+
+#boardTopNavDropdown [role="menuitem"] {
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+#boardTopNavDropdown .hidden,
+#boardTopNavDropdown [hidden],
+#boardTopNavDropdown .theme-check.hidden {
+  display: none !important;
+}
+
+#boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout):hover {
+  background-color: #f3f4f6;
+}
+
+#boardTopNavDropdown #btnNavLogout:hover {
+  background-color: #fef2f2;
+}
+
 .dark #boardTopNavbar .title-head {
   color: #f9fafb !important;
 }
@@ -1337,15 +1377,28 @@ input:disabled {
   background-color: #1f2937 !important;
   border-color: #374151 !important;
   color: #f9fafb !important;
+  box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.5), 0 10px 15px -5px rgba(0, 0, 0, 0.4) !important;
 }
 
 .dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout) {
-  color: #d1d5db !important;
+  color: #e5e7eb !important;
 }
 
 .dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout):hover {
   background-color: #374151 !important;
-  color: #f9fafb !important;
+  color: #ffffff !important;
+}
+
+.dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout) i.fa-solid:not(.theme-check) {
+  color: #9ca3af !important;
+}
+
+.dark #boardTopNavDropdown [role="menuitem"]:not(#btnNavLogout):hover i.fa-solid:not(.theme-check) {
+  color: #d1d5db !important;
+}
+
+.dark #boardTopNavDropdown .theme-check {
+  color: #60a5fa !important;
 }
 
 .dark #boardTopNavDropdown .border-gray-100 {
@@ -1363,6 +1416,11 @@ input:disabled {
 
 .dark #boardTopNavDropdown #dropdownUserEmail {
   color: #9ca3af !important;
+}
+
+.dark #boardTopNavDropdown #dropdownUserHeader .bg-gray-100 {
+  background-color: #374151 !important;
+  color: #d1d5db !important;
 }
 
 .dark #btnNavLogout {
