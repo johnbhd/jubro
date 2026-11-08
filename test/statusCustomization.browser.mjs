@@ -941,6 +941,13 @@ try {
         document.getElementById('jobSearchSelector').click();
         await nextFrame();
         const menu = document.getElementById('jobSearchDropdown');
+        // Native popover toggle events are queued tasks, not animation-frame callbacks.
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          const rect = menu.getBoundingClientRect();
+          if (document.getElementById('jobSearchSelector').getAttribute('aria-expanded') === 'true'
+            && rect.left >= 0 && rect.right <= innerWidth) break;
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
         const bounds = menu.getBoundingClientRect();
         const fits = bounds.left >= 0 && bounds.right <= innerWidth
           && document.documentElement.scrollWidth <= innerWidth;
@@ -954,12 +961,64 @@ try {
           dialog.close();
         }
         return { fits: fits && dialogFits, left: bounds.left, right: bounds.right,
-          leftStyle: menu.style.left, open: menu.matches(':popover-open'),
+          leftStyle: menu.style.left,
           page: document.documentElement.scrollWidth, viewport: innerWidth };
       `);
       assert.equal(geometry.fits, true, 'Job Search menu fits ' + theme + ' ' + width + ': ' + JSON.stringify(geometry));
     }
   }
+  await command('browsingContext.setViewport', { context, viewport: { width: 1440, height: 900 }, devicePixelRatio: 1 });
+  await command('browsingContext.activate', { context });
+  const searchPoint = await evaluate(`
+    for (let attempt = 0; attempt < 30 && document.querySelector('dialog[data-job-search-action]'); attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    }
+    document.activeElement.blur();
+    boardFirstApp.closeMobileSearch();
+    boardFirstApp.searchInput.value = 'Keep this search';
+    window.resizeRevision = savedRevision();
+    const rect = boardFirstApp.searchInput.getBoundingClientRect();
+    return { x: Math.round(rect.left + 50), y: Math.round(rect.top + rect.height / 2) };
+  `);
+  await command('input.performActions', {
+    context,
+    actions: [{
+      type: 'pointer',
+      id: 'search-focus',
+      parameters: { pointerType: 'mouse' },
+      actions: [
+        { type: 'pointerMove', ...searchPoint },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerUp', button: 0 },
+      ],
+    }],
+  });
+  await command('input.releaseActions', { context });
+  assert.equal(await evaluate('return document.activeElement === boardFirstApp.searchInput;'), true,
+    'Trusted mouse input focuses desktop Search.');
+  await command('browsingContext.setViewport', { context, viewport: { width: 390, height: 900 }, devicePixelRatio: 1 });
+  const resizedSearch = await evaluate(`
+    await nextFrame();
+    const input = boardFirstApp.searchInput;
+    return { width: input.getBoundingClientRect().width, focused: document.activeElement === input,
+      expanded: document.getElementById('btnOpenSearch').getAttribute('aria-expanded'),
+      query: input.value, readOnly: savedRevision() === resizeRevision,
+      wrapper: boardFirstApp.searchWrapper.className, focus: document.activeElement.id };
+  `);
+  assert.equal(resizedSearch.width >= 100 && resizedSearch.focused && resizedSearch.expanded === 'true'
+    && resizedSearch.query === 'Keep this search' && resizedSearch.readOnly, true,
+    'Focused desktop Search stays usable when resizing to mobile: ' + JSON.stringify(resizedSearch));
+  const expandedSearchShot = await command('browsingContext.captureScreenshot', { context });
+  await writeFile(resolve(artifacts, 'search-resized-390.png'), Buffer.from(expandedSearchShot.data, 'base64'));
+  await command('browsingContext.setViewport', { context, viewport: { width: 1440, height: 900 }, devicePixelRatio: 1 });
+  await command('browsingContext.setViewport', { context, viewport: { width: 430, height: 900 }, devicePixelRatio: 1 });
+  assert.equal(await evaluate(`
+    await nextFrame();
+    const fits = boardFirstApp.searchInput.getBoundingClientRect().width >= 100
+      && boardFirstApp.searchInput.value === 'Keep this search' && savedRevision() === resizeRevision;
+    boardFirstApp.closeMobileSearch();
+    return fits;
+  `), true, 'Expanded Search survives desktop/mobile resizing without workspace writes.');
   await command('browsingContext.navigate', { context, url: origin + '/trackers/?tracker=other', wait: 'complete' });
   let redirected = false;
   for (let attempt = 0; attempt < 30; attempt += 1) {
@@ -1054,6 +1113,13 @@ try {
       await writeFile(resolve(artifacts, `${theme}-${width}-guide.png`), Buffer.from(boardShot.data, 'base64'));
     }
   }
+  await evaluate(`
+    const { Storage } = await import('/js/storage/storage.js');
+    const state = Storage.load();
+    state.data[state.active].title = 'Private user Job Search';
+    state.data[state.active].rows = [['Private Company', 'Private Position', '', 'Wishlist', '', '']];
+    Storage.save(state);
+  `);
   await command('browsingContext.navigate', { context, url: origin + '/', wait: 'complete' });
   assert.equal(await evaluate(`
     await window.jubroComponentsReady;
@@ -1063,20 +1129,85 @@ try {
       && !document.querySelector('a[href^="/trackers"]')
       && document.querySelector('#how-it-works').textContent.includes('Open Jubro');
   `), true, 'Landing and shared navigation open Board without tracker management wording.');
+  assert.deepEqual(await evaluate(`
+    const navigation = document.querySelector('nav[aria-label="Primary navigation"]');
+    return [...navigation.querySelectorAll('a')].map(link => link.textContent.trim());
+  `), ['Home', 'Features', 'How It Works', 'About'], 'Public navigation has exactly four informational links.');
+  assert.equal(await evaluate(`
+    const preview = document.getElementById('homePreviewRows');
+    const featureLink = document.querySelector('[data-nav-link="features"]');
+    window.marketingPreview = () => ({
+      title: document.getElementById('homePreviewBoardTitle').textContent.trim(),
+      count: document.getElementById('homePreviewBoardEntries').textContent.trim(),
+      rows: [...preview.children].map(card => ({
+        title: card.querySelector('[data-preview-title]').textContent.trim(),
+        subtitle: card.querySelector('[data-preview-subtitle]').textContent.trim(),
+        status: card.querySelector('[data-preview-status]').textContent.trim(),
+        visible: getComputedStyle(card).display !== 'none',
+      })),
+      url: document.getElementById('homePreviewBoardLink').getAttribute('href'),
+    });
+    const expected = {
+      title: 'My Job Search', count: '3 applications', rows: [
+        { title: 'Google', subtitle: 'Frontend Developer', status: 'Applied', visible: true },
+        { title: 'Canva', subtitle: 'UI Designer', status: 'Interview', visible: true },
+        { title: 'Microsoft', subtitle: 'Software Engineer', status: 'Offer', visible: true },
+      ], url: '/board/',
+    };
+    window.staticMarketingSnapshot = JSON.stringify(expected);
+    const { Storage } = await import('/js/storage/storage.js');
+    const before = JSON.stringify(Storage.load());
+    document.dispatchEvent(new Event('tracker:sync-complete'));
+    document.dispatchEvent(new Event('tracker:sync-error'));
+    return JSON.stringify(marketingPreview()) === staticMarketingSnapshot
+      && JSON.stringify(Storage.load()) === before
+      && Boolean(document.querySelector(featureLink.hash))
+      && !preview.textContent.includes('Private');
+  `), true, 'Static demo never renders private data or changes on sync events.');
   assert.equal(await evaluate(`
     const firebase = await import('/test/fixtures/firebase.mjs');
     const { firebaseTrackerSync } = await import('/js/storage/firebaseTrackerSync.js');
     const load = firebaseTrackerSync.loadFirebaseState;
     firebaseTrackerSync.loadFirebaseState = async () => { throw new Error('Account temporarily unavailable'); };
     await firebase.__emitAuth({ uid: 'landing-unavailable', email: 'landing@example.test' });
-    const cleared = document.getElementById('homePreviewBoardTitle').textContent === 'Your Job Search'
-      && document.getElementById('homePreviewBoardEntries').textContent === '0 applications'
-      && document.getElementById('homePreviewBoardLink').pathname === '/board/'
-      && !document.querySelector('#homePreviewRows > div:not(.hidden)');
+    const unchanged = JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
     firebaseTrackerSync.loadFirebaseState = load;
     await firebase.__emitAuth(null);
-    return cleared;
-  `), true, 'Failed account loading clears the previous workspace landing preview.');
+    return unchanged && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
+  `), true, 'Account loading failure and logout cannot change static marketing content.');
+  for (const theme of ['dark', 'light']) {
+    for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+      await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      assert.equal(await evaluate(`
+        document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const preview = document.getElementById('homePreviewRows');
+        const rect = preview.getBoundingClientRect();
+        return rect.left >= 0 && rect.right <= innerWidth
+          && document.documentElement.scrollWidth <= innerWidth
+          && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
+      `), true, 'Static landing preview fits ' + theme + ' ' + width);
+      if (width >= 1024) {
+        const navigation = await evaluate(`
+          const navbar = document.getElementById('siteNavbar');
+          navbar.classList.add('is-scrolled');
+          navbar.classList.remove('is-hidden');
+          await Promise.all(navbar.getAnimations().map(animation => animation.finished));
+          const controls = [...navbar.querySelectorAll('nav a'),
+            document.getElementById('btnOpenModal'), document.getElementById('btnSignIn'),
+            document.getElementById('btnGuestTheme')];
+          const rects = controls.map(control => control.getBoundingClientRect()).sort((a, b) => a.left - b.left);
+          return { fits: rects.every((rect, index) => rect.width > 0 && rect.left >= 0 && rect.right <= innerWidth
+            && (index === 0 || rect.left >= rects[index - 1].right - 1)),
+            rects: rects.map(rect => ({ left: rect.left, right: rect.right })) };
+        `);
+        assert.equal(navigation.fits, true, 'Scrolled public navigation fits ' + theme + ' ' + width + ': ' + JSON.stringify(navigation));
+      }
+      await evaluate('document.getElementById("homePreviewRows").scrollIntoView({ block: "center" });');
+      const previewShot = await command('browsingContext.captureScreenshot', { context });
+      await writeFile(resolve(artifacts, `${theme}-${width}-marketing.png`), Buffer.from(previewShot.data, 'base64'));
+    }
+  }
   await command('browsingContext.navigate', { context, url: origin + '/board/?tracker=other', wait: 'complete' });
   assert.equal(await evaluate(`
     const { authService } = await import('/js/auth/firebaseAuth.js');

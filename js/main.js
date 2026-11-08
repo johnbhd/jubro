@@ -1,4 +1,3 @@
-import { Storage } from './storage/storage.js';
 import { setupStorageNotice } from './storage/storageNotice.js';
 
 const THEME_KEY = 'jubro_theme';
@@ -170,159 +169,6 @@ function setupActiveNavigation() {
   });
 }
 
-function getBoardUrl(trackerId) {
-  const query = `tracker=${encodeURIComponent(trackerId)}`;
-
-  if (window.location.pathname.includes('/pages/')) {
-    return `./board.html?${query}`;
-  }
-
-  return `/board/?${query}`;
-}
-
-function getStatusValue(cell) {
-  return String(typeof cell === 'object' ? cell.value : cell || '').trim().toLowerCase();
-}
-
-function getCellValue(row, index) {
-  const cell = row?.[index];
-  return typeof cell === 'object' ? cell.value : cell;
-}
-
-function getColumnIndex(tracker, names, fallbackIndex) {
-  const wantedNames = names.map((name) => name.toLowerCase());
-  const index = tracker?.columns?.findIndex((column) => {
-    const columnName = String(typeof column === 'object' ? column.name : column || '').trim().toLowerCase();
-    return wantedNames.includes(columnName);
-  });
-
-  return index >= 0 ? index : fallbackIndex;
-}
-
-function getStatusClasses(status) {
-  const normalized = String(status || '').trim().toLowerCase();
-
-  if (normalized === 'applied') {
-    return 'rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700';
-  }
-
-  if (normalized === 'interview') {
-    return 'rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700';
-  }
-
-  if (normalized === 'rejected') {
-    return 'rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700';
-  }
-
-  return 'rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700';
-}
-
-function updateHomepagePreviewRows(tracker) {
-  const previewRows = document.querySelectorAll('#homePreviewRows > div');
-  if (!previewRows.length) return;
-
-  const rows = Array.isArray(tracker?.rows) ? tracker.rows.slice(0, 3) : [];
-  const companyIndex = getColumnIndex(tracker, ['company'], 0);
-  const positionIndex = getColumnIndex(tracker, ['position', 'role', 'job title'], 1);
-  const platformIndex = getColumnIndex(tracker, ['platform', 'source', 'location'], 2);
-  const statusIndex = getColumnIndex(tracker, ['status'], 3);
-
-  previewRows.forEach((card, index) => {
-    const row = rows[index];
-    const title = card.querySelector('[data-preview-title]');
-    const subtitle = card.querySelector('[data-preview-subtitle]');
-    const status = card.querySelector('[data-preview-status]');
-
-    card.classList.toggle('hidden', !row);
-    if (!row) return;
-
-    const company = getCellValue(row, companyIndex) || 'Unknown company';
-    const position = getCellValue(row, positionIndex) || 'Untitled position';
-    const platform = getCellValue(row, platformIndex) || 'No platform';
-    const statusText = getCellValue(row, statusIndex) || 'Pending';
-
-    title.textContent = position;
-    subtitle.textContent = `${company} - ${platform}`;
-    status.textContent = statusText;
-    status.className = getStatusClasses(statusText);
-  });
-}
-
-function updateHomepageStats() {
-  const activeTrackerCount = document.getElementById('homeActiveTrackerCount');
-  const totalApplications = document.getElementById('homeTotalApplications');
-  const appliedCount = document.getElementById('homeAppliedCount');
-  const interviewCount = document.getElementById('homeInterviewCount');
-  const rejectedCount = document.getElementById('homeRejectedCount');
-  const previewBoardTitle = document.getElementById('homePreviewBoardTitle');
-  const previewBoardEntries = document.getElementById('homePreviewBoardEntries');
-  const previewBoardLink = document.getElementById('homePreviewBoardLink');
-
-  if (!activeTrackerCount && !totalApplications && !previewBoardTitle) return;
-
-  const state = Storage.load();
-  const trackerEntries = Object.entries(state.data || {});
-  const trackers = trackerEntries.map(([, tracker]) => tracker);
-  const activeTrackerId = state.active && state.data?.[state.active]
-    ? state.active
-    : trackerEntries
-        .map(([id]) => id)
-        .sort((a, b) => {
-          const aNumber = Number(a);
-          const bNumber = Number(b);
-
-          if (Number.isFinite(aNumber) && Number.isFinite(bNumber)) {
-            return bNumber - aNumber;
-          }
-
-          return String(b).localeCompare(String(a));
-        })[0];
-  const activeTracker = activeTrackerId ? state.data[activeTrackerId] : null;
-  const rows = trackers.flatMap((tracker) => Array.isArray(tracker.rows) ? tracker.rows : []);
-  const statusCounts = rows.reduce((counts, row) => {
-    const status = getStatusValue(row?.[3]);
-    if (status) counts[status] = (counts[status] || 0) + 1;
-    return counts;
-  }, {});
-
-  if (activeTrackerCount) {
-    activeTrackerCount.textContent = `${trackers.length} Active`;
-  }
-
-  if (totalApplications) {
-    totalApplications.textContent = String(rows.length);
-  }
-
-  if (appliedCount) {
-    appliedCount.textContent = String(statusCounts.applied || 0);
-  }
-
-  if (interviewCount) {
-    interviewCount.textContent = String(statusCounts.interview || 0);
-  }
-
-  if (rejectedCount) {
-    rejectedCount.textContent = String(statusCounts.rejected || 0);
-  }
-
-  if (previewBoardTitle) {
-    previewBoardTitle.textContent = activeTracker?.title || 'Your Job Search';
-  }
-
-  if (previewBoardEntries) {
-    const count = Array.isArray(activeTracker?.rows) ? activeTracker.rows.length : 0;
-    previewBoardEntries.textContent = `${count} ${count === 1 ? 'application' : 'applications'}`;
-  }
-
-  if (previewBoardLink) {
-    previewBoardLink.href = activeTrackerId
-      ? getBoardUrl(activeTrackerId)
-      : '/board/';
-  }
-
-  updateHomepagePreviewRows(activeTracker);
-}
-
 async function setupAuth() {
   try {
     const [{ Auth }, { authService }] = await Promise.all([
@@ -357,10 +203,7 @@ const componentsReady = new Promise((resolve) => {
     if (document.getElementById('homeBody')) {
       initHomepage()
         .catch((error) => console.error(error))
-        .finally(() => {
-          updateHomepageStats();
-          resolve();
-        });
+        .finally(resolve);
       return;
     }
 
@@ -372,6 +215,3 @@ const componentsReady = new Promise((resolve) => {
 });
 
 window.jubroComponentsReady = componentsReady;
-
-document.addEventListener('tracker:sync-complete', updateHomepageStats);
-document.addEventListener('tracker:sync-error', updateHomepageStats);

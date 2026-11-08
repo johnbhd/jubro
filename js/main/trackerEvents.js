@@ -115,6 +115,13 @@ initEvents() {
       this.openMobileSearch();
     });
 
+    const keepSearchOpen = () => {
+      this.searchWrapper.classList.add('is-open');
+      btnOpenSearch?.setAttribute('aria-expanded', 'true');
+    };
+    this.searchWrapper?.addEventListener('focusin', keepSearchOpen);
+    this.searchWrapper?.addEventListener('pointerdown', keepSearchOpen);
+
     btnCloseSearch?.addEventListener('click', () => {
       this.closeMobileSearch();
     });
