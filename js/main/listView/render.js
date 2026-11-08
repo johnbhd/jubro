@@ -138,12 +138,15 @@ export const listRenderMethods = {
 
     const indexes = this.getListColumnIndexes(tracker);
     this.listDrag = createListDrag(this, tracker);
-    const hint = document.createElement('p');
-    hint.className = 'application-order-hint';
-    hint.textContent = this.listSortSelect?.value === 'manual'
-      ? 'Drag applications to reorder this page.'
+    const hintText = this.listSortSelect?.value === 'manual'
+      ? ''
       : 'Choose Manual to reorder.';
-    this.listCards.appendChild(hint);
+    if (hintText) {
+      const hint = document.createElement('p');
+      hint.className = 'application-order-hint';
+      hint.textContent = hintText;
+      this.listCards.appendChild(hint);
+    }
 
     this.getSortedListRows(tracker).forEach(({ row, rowIndex }) => {
       const article = document.createElement('article');
