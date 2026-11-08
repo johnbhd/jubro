@@ -37,11 +37,11 @@ class FirebaseAuthService {
     this.syncPromise = null;
     this.initialWorkspacePromise = null;
     this.conflictResolver = ({ localTracker, firebaseTracker }) => window.confirm(
-      `"${localTracker?.title || 'Untitled tracker'}" differs from the account copy `
-      + `"${firebaseTracker?.title || 'Untitled tracker'}". Replace the account copy with this local tracker?`
+      `"${localTracker?.title || 'Untitled Job Search'}" differs from the account copy `
+      + `"${firebaseTracker?.title || 'Untitled Job Search'}". Replace the account copy with this Job Search?`
     );
     this.guestTransferResolver = () => window.confirm(
-      'This browser has guest trackers and this account already has tracker data. Bring the guest trackers into this account?'
+      'This browser has guest Job Searches and this account already has saved Job Searches. Bring the guest Job Searches into this account?'
     );
   }
 

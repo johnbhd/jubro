@@ -78,7 +78,7 @@ export const jobSearchMethods = {
         }
       });
       panel.append(message, retry);
-      this.appBody.appendChild(panel);
+      (this.boardWorkspace?.parentElement || this.appBody).appendChild(panel);
     }
     panel.hidden = false;
   },
@@ -101,12 +101,16 @@ export const jobSearchMethods = {
     this.currentPage = 1;
     this.kanbanFallbackColor = undefined;
     for (const control of [this.searchInput, this.listSearchInput, this.selectValueFilterSelect]) {
-      if (control) control.value = '';
+      if (control) {
+        control.value = '';
+      }
     }
   },
 
   switchJobSearch(key) {
-    if (!this.state.data[key] || this.state.active === key) return false;
+    if (!this.state.data[key] || this.state.active === key) {
+      return false;
+    }
     this.closeSearchSpecificUI();
     this.state.active = key;
     try {
@@ -127,7 +131,9 @@ export const jobSearchMethods = {
   renderJobSearchSelector() {
     const trigger = document.getElementById('jobSearchSelector');
     const menu = document.getElementById('jobSearchDropdown');
-    if (!trigger || !menu) return;
+    if (!trigger || !menu) {
+      return;
+    }
     trigger.textContent = `${this.getTracker()?.title || 'Job Search'} ▾`;
     menu.replaceChildren();
     Object.entries(this.state.data).forEach(([key, tracker]) => {
@@ -164,18 +170,31 @@ export const jobSearchMethods = {
     }
     if (!this.jobSearchSelectorBound) {
       this.jobSearchSelectorBound = true;
+      const positionMenu = () => {
+        if (!menu.matches(':popover-open')) {
+          return;
+        }
+        const bounds = trigger.getBoundingClientRect();
+        menu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - menu.offsetWidth - 8))}px`;
+        menu.style.top = `${bounds.bottom + 6}px`;
+        menu.style.maxHeight = `${Math.max(44, window.innerHeight - bounds.bottom - 14)}px`;
+      };
+      window.addEventListener('resize', () => requestAnimationFrame(positionMenu));
       menu.addEventListener('toggle', event => {
         trigger.setAttribute('aria-expanded', String(event.newState === 'open'));
         if (event.newState === 'open') {
-          const bounds = trigger.getBoundingClientRect();
-          menu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - menu.offsetWidth - 8))}px`;
-          menu.style.top = `${bounds.bottom + 6}px`;
+          positionMenu();
+          requestAnimationFrame(positionMenu);
           menu.querySelector('button')?.focus();
         }
       });
       menu.addEventListener('keydown', event => {
-        if (event.key === 'Escape') trigger.focus();
-        if (!['ArrowDown', 'ArrowUp'].includes(event.key)) return;
+        if (event.key === 'Escape') {
+          trigger.focus();
+        }
+        if (!['ArrowDown', 'ArrowUp'].includes(event.key)) {
+          return;
+        }
         event.preventDefault();
         const buttons = [...menu.querySelectorAll('button')];
         const index = buttons.indexOf(document.activeElement);

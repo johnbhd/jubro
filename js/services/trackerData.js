@@ -127,15 +127,15 @@ function normalizeColumn(column, { strict = false } = {}) {
       };
     }
 
-    fail('Each column must be an object or a legacy primitive column name.', 'A tracker column is invalid.');
+    fail('Each column must be an object or a legacy primitive column name.', 'A Job Search field is invalid.');
   }
 
   if (Array.isArray(column)) {
-    fail('Each column must be an object.', 'A tracker column is invalid.');
+    fail('Each column must be an object.', 'A Job Search field is invalid.');
   }
 
   if (typeof column.name !== 'string') {
-    fail('Each column must have a text name.', 'A tracker column name is invalid.');
+    fail('Each column must have a text name.', 'A Job Search field name is invalid.');
   }
 
   const type = column.type === undefined ? 'text' : column.type;
@@ -168,7 +168,7 @@ function normalizeCell(cell, columnType, { strict = false } = {}) {
 
   if (isPlainObject(cell)) {
     if (!Object.prototype.hasOwnProperty.call(cell, 'value')) {
-      fail('Each cell object must contain a value.', 'A tracker cell is invalid.');
+      fail('Each cell object must contain a value.', 'A Job Search value is invalid.');
     }
 
     value = cell.value;
@@ -187,7 +187,7 @@ function normalizeCell(cell, columnType, { strict = false } = {}) {
 
 export function normalizeImportedTracker(tracker, { fallbackId = null } = {}) {
   if (!isPlainObject(tracker)) {
-    fail('Each tracker must be an object.', 'A tracker in this file is invalid.');
+    fail('Each tracker must be an object.', 'A Job Search in this file is invalid.');
   }
 
   const sourceId = tracker.id === undefined || tracker.id === null
@@ -195,31 +195,31 @@ export function normalizeImportedTracker(tracker, { fallbackId = null } = {}) {
     : tracker.id;
 
   if (typeof sourceId !== 'string' && typeof sourceId !== 'number') {
-    fail('Tracker IDs must be text or numbers.', 'A tracker ID is invalid.');
+    fail('Tracker IDs must be text or numbers.', 'A Job Search ID is invalid.');
   }
 
   const id = String(sourceId);
 
   if (!id) {
-    fail('Tracker IDs must not be empty.', 'A tracker ID is missing.');
+    fail('Tracker IDs must not be empty.', 'A Job Search ID is missing.');
   }
 
   if (typeof tracker.title !== 'string') {
-    fail('Tracker titles must be text.', 'A tracker title is invalid.');
+    fail('Tracker titles must be text.', 'A Job Search title is invalid.');
   }
 
   if (!Array.isArray(tracker.columns)) {
-    fail('Tracker columns must be an array.', 'Tracker columns are invalid.');
+    fail('Tracker columns must be an array.', 'Job Search fields are invalid.');
   }
 
   if (!Array.isArray(tracker.rows)) {
-    fail('Tracker rows must be an array.', 'Tracker rows are invalid.');
+    fail('Tracker rows must be an array.', 'Job Search applications are invalid.');
   }
 
   const columns = tracker.columns.map((column) => normalizeColumn(column, { strict: true }));
   const rows = tracker.rows.map((row) => {
     if (!Array.isArray(row)) {
-      fail('Each tracker row must be an array.', 'A tracker row is invalid.');
+      fail('Each tracker row must be an array.', 'An application row is invalid.');
     }
 
     if (row.length > columns.length) {
@@ -243,11 +243,11 @@ export function normalizeImportedTracker(tracker, { fallbackId = null } = {}) {
 
 export function normalizeSingleTrackerImport(input) {
   if (!isPlainObject(input)) {
-    fail('Single tracker import must be an object.', 'This file is not a valid Jubro tracker file.');
+    fail('Single tracker import must be an object.', 'This file is not a valid Jubro Job Search file.');
   }
 
   if (!Array.isArray(input.columns) || !Array.isArray(input.rows)) {
-    fail('Single tracker imports require columns and rows arrays.', 'This file is not a valid Jubro tracker file.');
+    fail('Single tracker imports require columns and rows arrays.', 'This file is not a valid Jubro Job Search file.');
   }
 
   const tracker = normalizeImportedTracker({
@@ -291,7 +291,7 @@ export function normalizeFullBackupImport(input) {
 
   if (input.active !== null && input.active !== undefined
     && typeof input.active !== 'string' && typeof input.active !== 'number') {
-    fail('The active tracker reference must be text or null.', 'The active tracker reference is invalid.');
+    fail('The active tracker reference must be text or null.', 'The active Job Search reference is invalid.');
   }
 
   const requestedActive = input.active === null || input.active === undefined

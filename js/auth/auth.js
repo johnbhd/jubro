@@ -501,21 +501,21 @@ export class Auth {
               <div class="max-w-2xl space-y-6">
                 <div>
                   <h3 class="text-lg font-semibold text-gray-900">Data Management</h3>
-                  <p class="mt-1 text-sm leading-6 text-gray-500">Manage a copy of your tracker data or clear it from Jubro.</p>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Manage a copy of your Job Search data or clear it from Jubro.</p>
                 </div>
 
                 <div class="space-y-3">
                   <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h4 class="text-sm font-semibold text-gray-900">Export your data</h4>
-                      <p class="mt-1 text-sm leading-6 text-gray-500">Download a backup of all your trackers and applications.</p>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Download a backup of all your Job Searches and applications.</p>
                     </div>
                     <button id="btnExportJubroData" type="button" aria-describedby="settingsDataMessage" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:opacity-60">Export Data</button>
                   </div>
                   <div class="settings-action-row flex flex-col gap-4 rounded-2xl border border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h4 class="text-sm font-semibold text-gray-900">Import Data</h4>
-                      <p class="mt-1 text-sm leading-6 text-gray-500">Import your copy of your saved trackers and applications.</p>
+                      <p class="mt-1 text-sm leading-6 text-gray-500">Import your copy of your saved Job Searches and applications.</p>
                     </div>
                     <button id="btnImportJubroData" type="button" aria-describedby="settingsDataMessage" class="inline-flex shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 disabled:cursor-not-allowed disabled:opacity-60">Import Data</button>
                   </div>
@@ -536,7 +536,7 @@ export class Auth {
               <div class="max-w-2xl space-y-6">
                 <div>
                   <h3 class="text-lg font-semibold text-gray-900">Privacy</h3>
-                  <p class="mt-1 text-sm leading-6 text-gray-500">Learn how Jubro handles your account and tracker information.</p>
+                  <p class="mt-1 text-sm leading-6 text-gray-500">Learn how Jubro handles your account and Job Search information.</p>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-2">
@@ -613,7 +613,7 @@ export class Auth {
         </header>
 
         <div class="p-5 sm:p-7">
-          <p id="delete-account-dialog-description" class="text-sm leading-6 text-gray-600">This will permanently delete your Jubro account and all saved trackers and applications. This action cannot be undone.</p>
+          <p id="delete-account-dialog-description" class="text-sm leading-6 text-gray-600">This will permanently delete your Jubro account and all saved Job Searches and applications. This action cannot be undone.</p>
 
           <section id="deleteAccountStepWarning" class="mt-6">
             <div class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800">
@@ -871,7 +871,7 @@ export class Auth {
     const state = Storage.load();
 
     if (!state || typeof state !== 'object' || !state.data || typeof state.data !== 'object') {
-      throw new Error('Unable to read Jubro tracker data.');
+      throw new Error('Unable to read Jubro Job Search data.');
     }
 
     return state;
@@ -919,7 +919,7 @@ export class Auth {
       const trackerCount = Object.keys(state.data).length;
       const message = trackerCount
         ? 'Your Jubro backup is ready to download.'
-        : 'No trackers were found. An empty Jubro backup was downloaded.';
+        : 'No Job Searches were found. An empty Jubro backup was downloaded.';
 
       this.showDataMessage(message, 'success');
     } catch (error) {
@@ -971,7 +971,7 @@ export class Auth {
 
       const trackerCount = Object.keys(importedState.data).length;
       const confirmed = window.confirm(
-        `Import ${trackerCount} tracker${trackerCount === 1 ? '' : 's'} and replace your current Jubro data?`
+        `Import ${trackerCount} Job Search${trackerCount === 1 ? '' : 'es'} and replace your current Jubro data?`
       );
 
       if (!confirmed) {
@@ -1010,7 +1010,7 @@ export class Auth {
       }
 
       this.showDataMessage(
-        `Imported ${trackerCount} tracker${trackerCount === 1 ? '' : 's'} successfully.`,
+        `Imported ${trackerCount} Job Search${trackerCount === 1 ? '' : 'es'} successfully.`,
         'success'
       );
     } catch (error) {
@@ -1028,7 +1028,7 @@ export class Auth {
     if (this.deleteDataInProgress) return;
 
     const confirmed = window.confirm(
-      'Delete all Jubro trackers and applications? This cannot be undone.'
+      'Delete all Jubro Job Searches and applications? This cannot be undone.'
     );
 
     if (!confirmed) {
@@ -1400,7 +1400,7 @@ export class Auth {
     div.innerHTML = `
       <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
         <h2 id="syncConflictTitle" class="text-xl font-semibold text-gray-900">
-          Tracker already exists
+          Job Search already exists
         </h2>
 
         <p id="syncConflictText" class="mt-3 leading-7 text-gray-600"></p>
@@ -1432,12 +1432,12 @@ export class Auth {
   }
 
   confirmTrackerOverwrite({ localTracker, firebaseTracker }) {
-    const localTitle = localTracker?.title || 'Untitled tracker';
+    const localTitle = localTracker?.title || 'Untitled Job Search';
     const cloudTitle = firebaseTracker?.title || localTitle;
 
     return this.presentSyncChoice({
-      title: 'Tracker already exists',
-      text: `"${localTitle}" already exists in your account as "${cloudTitle}", but the entries do not match. Replace the account tracker with this local tracker?`,
+      title: 'Job Search already exists',
+      text: `"${localTitle}" already exists in your account as "${cloudTitle}", but the applications do not match. Replace the account Job Search with this Job Search?`,
       cancelLabel: 'Keep Account',
       confirmLabel: 'Replace Account'
     });
@@ -1448,10 +1448,10 @@ export class Auth {
     const accountCount = Object.keys(accountState?.data || {}).length;
 
     return this.presentSyncChoice({
-      title: 'Guest trackers found',
-      text: `This browser has ${guestCount} guest tracker${guestCount === 1 ? '' : 's'}, and your account has ${accountCount}. Bring the guest trackers into this account?`,
+      title: 'Guest Job Searches found',
+      text: `This browser has ${guestCount} guest Job Search${guestCount === 1 ? '' : 'es'}, and your account has ${accountCount}. Bring the guest Job Searches into this account?`,
       cancelLabel: 'Keep Account Only',
-      confirmLabel: 'Bring Guest Trackers'
+      confirmLabel: 'Bring Guest Job Searches'
     });
   }
 

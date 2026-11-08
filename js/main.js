@@ -258,7 +258,7 @@ function updateHomepageStats() {
   const previewBoardEntries = document.getElementById('homePreviewBoardEntries');
   const previewBoardLink = document.getElementById('homePreviewBoardLink');
 
-  if (!activeTrackerCount && !totalApplications) return;
+  if (!activeTrackerCount && !totalApplications && !previewBoardTitle) return;
 
   const state = Storage.load();
   const trackerEntries = Object.entries(state.data || {});
@@ -290,7 +290,7 @@ function updateHomepageStats() {
   }
 
   if (totalApplications) {
-    totalApplications.textContent = String(trackers.length);
+    totalApplications.textContent = String(rows.length);
   }
 
   if (appliedCount) {
@@ -306,12 +306,12 @@ function updateHomepageStats() {
   }
 
   if (previewBoardTitle) {
-    previewBoardTitle.textContent = activeTracker?.title || 'No board yet';
+    previewBoardTitle.textContent = activeTracker?.title || 'Your Job Search';
   }
 
   if (previewBoardEntries) {
     const count = Array.isArray(activeTracker?.rows) ? activeTracker.rows.length : 0;
-    previewBoardEntries.textContent = `${count} ${count === 1 ? 'entry' : 'entries'}`;
+    previewBoardEntries.textContent = `${count} ${count === 1 ? 'application' : 'applications'}`;
   }
 
   if (previewBoardLink) {
@@ -372,3 +372,6 @@ const componentsReady = new Promise((resolve) => {
 });
 
 window.jubroComponentsReady = componentsReady;
+
+document.addEventListener('tracker:sync-complete', updateHomepageStats);
+document.addEventListener('tracker:sync-error', updateHomepageStats);

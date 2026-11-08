@@ -89,7 +89,7 @@ try {
         return;
       }
       let path = resolve(root, `.${decodeURIComponent(pathname)}`);
-      if (!path.startsWith(`${root}/`)) throw new Error('Invalid path');
+      if (path !== root && !path.startsWith(`${root}/`)) throw new Error('Invalid path');
       if ((await stat(path)).isDirectory()) path = resolve(path, 'index.html');
       let data = await readFile(path);
       if (extname(path) === '.js') {
@@ -974,6 +974,84 @@ try {
       await writeFile(resolve(artifacts, `${theme}-${width}-guide.png`), Buffer.from(boardShot.data, 'base64'));
     }
   }
+  await command('browsingContext.navigate', { context, url: origin + '/', wait: 'complete' });
+  assert.equal(await evaluate(`
+    await window.jubroComponentsReady;
+    const primary = [...document.querySelectorAll('a.theme-create-button')];
+    return primary.length > 0 && primary.every(link => link.pathname === '/board/'
+      && link.textContent.trim() === 'Open Jubro')
+      && !document.querySelector('a[href^="/trackers"]')
+      && document.querySelector('#how-it-works').textContent.includes('Open Jubro');
+  `), true, 'Landing and shared navigation open Board without tracker management wording.');
+  assert.equal(await evaluate(`
+    const firebase = await import('/test/fixtures/firebase.mjs');
+    const { firebaseTrackerSync } = await import('/js/storage/firebaseTrackerSync.js');
+    const load = firebaseTrackerSync.loadFirebaseState;
+    firebaseTrackerSync.loadFirebaseState = async () => { throw new Error('Account temporarily unavailable'); };
+    await firebase.__emitAuth({ uid: 'landing-unavailable', email: 'landing@example.test' });
+    const cleared = document.getElementById('homePreviewBoardTitle').textContent === 'Your Job Search'
+      && document.getElementById('homePreviewBoardEntries').textContent === '0 applications'
+      && document.getElementById('homePreviewBoardLink').pathname === '/board/'
+      && !document.querySelector('#homePreviewRows > div:not(.hidden)');
+    firebaseTrackerSync.loadFirebaseState = load;
+    await firebase.__emitAuth(null);
+    return cleared;
+  `), true, 'Failed account loading clears the previous workspace landing preview.');
+  await command('browsingContext.navigate', { context, url: origin + '/board/?tracker=other', wait: 'complete' });
+  assert.equal(await evaluate(`
+    const { authService } = await import('/js/auth/firebaseAuth.js');
+    const { JSONService } = await import('/js/services/jsonService.js');
+    const { Storage } = await import('/js/storage/storage.js');
+    await authService.waitForWorkspace();
+    const before = Storage.load().revision;
+    const payload = {
+      columns: [{ name: 'Company', type: 'text' }, { name: 'Status', type: 'select', options: ['Imported'] }],
+      rows: [['Imported Company', 'Imported']],
+    };
+    JSONService.prototype.chooseJsonFile = async () => new File([JSON.stringify(payload)], 'search.json', { type: 'application/json' });
+    window.confirm = () => true;
+    window.importAlerts = [];
+    window.alert = message => importAlerts.push(message);
+    document.getElementById('btnImport').click();
+    for (let attempt = 0; attempt < 30 && Storage.load().revision === before; attempt += 1) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    const saved = Storage.load();
+    return saved.revision === before + 1 && saved.data.other.rows[0][0].value === 'Imported Company'
+      && document.getElementById('jobSearchSelector').textContent.includes('Other search')
+      && document.querySelector('.kanban-card').textContent.includes('Imported Company')
+      && importAlerts.length === 0;
+  `), true, 'Existing Board import validates and refreshes one canonical search.');
+  assert.equal(await evaluate(`
+    const { JSONService } = await import('/js/services/jsonService.js');
+    const { Storage } = await import('/js/storage/storage.js');
+    let resume;
+    JSONService.prototype.chooseJsonFile = () => new Promise(resolve => { resume = resolve; });
+    document.getElementById('btnImport').click();
+    document.getElementById('jobSearchSelector').click();
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    document.querySelector('#jobSearchDropdown [aria-current="false"]').click();
+    const before = JSON.stringify(Storage.load());
+    resume(new File([JSON.stringify({ columns: [{ name: 'Company', type: 'text' }], rows: [['Wrong search']] })], 'stale.json'));
+    await new Promise(resolve => setTimeout(resolve, 150));
+    return JSON.stringify(Storage.load()) === before && importAlerts.length > 0;
+  `), true, 'An import started in a previous search cannot overwrite the new active search.');
+  assert.equal(await evaluate(`
+    const firebase = await import('/test/fixtures/firebase.mjs');
+    const { Storage } = await import('/js/storage/storage.js');
+    const { firebaseTrackerSync } = await import('/js/storage/firebaseTrackerSync.js');
+    const load = firebaseTrackerSync.loadFirebaseState;
+    firebaseTrackerSync.loadFirebaseState = async () => { throw new Error('Account temporarily unavailable'); };
+    await firebase.__emitAuth({ uid: 'unavailable-account', email: 'unavailable@example.test' });
+    const panel = document.getElementById('workspaceRetry');
+    const rect = panel.getBoundingClientRect();
+    const safe = Object.keys(Storage.load().data).length === 0 && !panel.hidden
+      && document.getElementById('appNavbar').hidden && panel.querySelector('button').textContent === 'Retry'
+      && rect.left >= 0 && rect.right <= innerWidth;
+    firebaseTrackerSync.loadFirebaseState = load;
+    await firebase.__emitAuth(null);
+    return safe && !document.getElementById('appNavbar').hidden;
+  `), true, 'Failed empty account loading never creates data and shows an accessible Retry.');
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));
 } finally {

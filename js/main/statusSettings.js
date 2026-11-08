@@ -306,7 +306,7 @@ export const statusSettingsMethods = {
         if (this.getTracker() !== tracker
           || getKanbanStatusColumn(tracker)?.column.options !== options
           || (!fallback && options[optionIndex] !== option)) {
-          throw new Error('The tracker changed. Close this dialog and reopen the status menu.');
+          throw new Error('The Job Search changed. Close this dialog and reopen the status menu.');
         }
 
         const changes = mode === 'rename' ? { label: input.value } : { color: selectedColor };
@@ -322,7 +322,7 @@ export const statusSettingsMethods = {
         }
         const saved = this.updateStatusOption(optionIndex, changes);
         if (!saved && this.getTracker() !== tracker) {
-          throw new Error('Your data changed. The saved tracker has been reloaded.');
+          throw new Error('Your data changed. The saved Job Search has been reloaded.');
         }
         dialog.close();
       } catch (failure) {

@@ -1,5 +1,6 @@
 import { closeMenu } from './ui.js';
 import { closeKanbanCardMenus } from './kanban.js';
+import { Storage } from '../storage/storage.js';
 
 export const trackerEventMethods = {
 initEvents() {
@@ -68,16 +69,22 @@ initEvents() {
 
     btnImport?.addEventListener('click', async () => {
       try {
+        const importContext = this.captureJobSearchContext();
         const data = await this.jsonService.import();
 
         if (!data) return;
 
-        const trackerKey = this.getActiveTrackerKey();
+        this.assertJobSearchContext(importContext);
+        const trackerKey = importContext.key;
+
+        if (trackerKey !== this.getActiveTrackerKey()) {
+          throw new Error('Your Job Search changed. Reopen Import.');
+        }
 
         if (!trackerKey) return;
 
         const confirmed = window.confirm(
-          'Replace this tracker with the imported data?'
+          'Replace this Job Search with the imported data?'
         );
 
         if (!confirmed) return;
@@ -102,7 +109,7 @@ initEvents() {
         dropdown?.classList.add('hidden');
       } catch (error) {
         console.error('Jubro tracker import failed:', error);
-        window.alert(error.userMessage || 'This file is not a valid Jubro tracker file.');
+        window.alert(error.userMessage || 'This file is not a valid Jubro Job Search file.');
       }
     });
 
