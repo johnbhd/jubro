@@ -145,7 +145,8 @@ refresh({ persist = true } = {}) {
     this.renderListView(tracker);
     this.updateListFilterChipStyles();
     this.updateBoardView();
-    this.titleInput.value = tracker.title;
+    if (this.titleInput) this.titleInput.value = tracker.title;
+    this.renderJobSearchSelector?.();
     this.applySearchFilter();
     if (this.dashboardModal && !this.dashboardModal.classList.contains('hidden')) {
       this.renderDashboard();

@@ -23,6 +23,16 @@ initEvents() {
     const selectTextSortSelect = document.getElementById('selectTextSortSelect');
     const selectValueFilterSelect = document.getElementById('selectValueFilterSelect');
     const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
+
+    // Sorting remains available, but does not compete with primary navigation.
+    for (const control of [
+      sortSelect?.parentElement,
+      this.selectTextSortWrapper,
+      this.selectValueFilterWrapper,
+      btnClearSelectFilter,
+    ]) {
+      if (control && dropdown) dropdown.prepend(control);
+    }
     
     // toggle dropdown
     btnMenu?.addEventListener('click', (e) => {
@@ -179,7 +189,7 @@ initEvents() {
       }
     });
     
-    this.titleInput.addEventListener('input', (e) => {
+    this.titleInput?.addEventListener('input', (e) => {
       const tracker = this.getTracker();
 
       if (!tracker) return;
@@ -191,11 +201,11 @@ initEvents() {
       this.scheduleTitleSync();
     });
 
-    this.titleInput.addEventListener('blur', () => {
+    this.titleInput?.addEventListener('blur', () => {
       this.flushScheduledTitleSync();
     });
 
-    this.titleInput.addEventListener('keydown', (e) => {
+    this.titleInput?.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' || e.shiftKey || e.target.tagName === 'TEXTAREA') return;
 
       e.preventDefault();

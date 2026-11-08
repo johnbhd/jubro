@@ -1,5 +1,9 @@
 {
   "outputDirectory": ".",
+  "redirects": [
+    { "source": "/trackers", "destination": "/board/", "permanent": false },
+    { "source": "/trackers/", "destination": "/board/", "permanent": false }
+  ],
   "rewrites": [
     {
       "source": "/terms",

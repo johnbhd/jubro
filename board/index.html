@@ -39,15 +39,8 @@
   <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
     <header id="appNavbar" class="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3 bg-white shadow-sm sticky top-0 z-10 rounded-md sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)_minmax(0,1fr)] lg:gap-4">
       <div class="flex min-w-0 items-center gap-2">
-        <a href="/trackers" class="shrink-0 text-gray-600" aria-label="Back to home">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
-        <input
-          id="trackerTitleInput"
-          type="text"
-          class="min-w-0 flex-1 truncate text-lg font-semibold bg-transparent border-b border-transparent focus:border-gray-300 outline-none"
-          aria-label="Tracker title"
-        />
+        <button id="jobSearchSelector" type="button" popovertarget="jobSearchDropdown" class="job-search-selector" aria-label="Choose Job Search" aria-expanded="false">Job Search ▾</button>
+        <div id="jobSearchDropdown" popover="auto" aria-label="Job Searches" class="job-search-dropdown"></div>
       </div>
       <div
         id="searchWrapper"

@@ -22,6 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     await authService.waitForWorkspace();
     const trackerApp = new TrackerApp();
 
+    document.addEventListener('tracker:sync-complete', () => {
+      trackerApp.reloadStateFromStorage({ ignoreURL: true });
+    });
+
     authService.onAuthChange(() => {
       trackerApp.reloadStateFromStorage();
     });

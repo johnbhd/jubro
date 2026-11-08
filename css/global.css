@@ -1652,3 +1652,104 @@ input:disabled {
 .dark #settingsModal .text-green-700 {
   color: #86efac !important;
 }
+/* Board workspace identity stays separate from status and application menus. */
+.job-search-selector {
+  min-height: 44px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  text-align: left;
+}
+
+.job-search-dropdown {
+  position: fixed;
+  margin: 0;
+  width: min(360px, calc(100vw - 16px));
+  max-height: min(70vh, 600px);
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 12px 32px #0003;
+}
+
+.job-search-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.job-search-choice {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 4px;
+  padding: 12px;
+  text-align: left;
+}
+
+.job-search-choice span {
+  overflow-wrap: anywhere;
+}
+
+.job-search-choice small {
+  color: #6b7280;
+}
+
+.job-search-new {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 12px;
+  border-top: 1px solid #9ca3af;
+  text-align: left;
+}
+
+.job-search-selector:focus-visible,
+.job-search-dropdown button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+.job-search-dropdown button:hover {
+  background: #9ca3af22;
+}
+
+.dark .job-search-dropdown {
+  background: #1f2937;
+  color: #f9fafb;
+  border-color: #4b5563;
+}
+
+.dark .job-search-choice small {
+  color: #d1d5db;
+}
+
+.workspace-retry {
+  margin: 4rem auto;
+  padding: 24px;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
+  #appNavbar > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  #appNavbar .board-toolbar-actions {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
+
+  #appNavbar .board-toolbar-actions-row {
+    justify-content: flex-end;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}

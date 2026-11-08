@@ -317,7 +317,7 @@ function updateHomepageStats() {
   if (previewBoardLink) {
     previewBoardLink.href = activeTrackerId
       ? getBoardUrl(activeTrackerId)
-      : '/trackers';
+      : '/board/';
   }
 
   updateHomepagePreviewRows(activeTracker);

@@ -10,6 +10,7 @@ import { statusSettingsMethods } from './statusSettings.js';
 import { trackerKeyboardMethods } from './trackerKeyboard.js';
 import { trackerActionMethods } from './trackerActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
+import { jobSearchMethods } from './jobSearch.js';
 
 export class TrackerApp {
   constructor() {
@@ -54,16 +55,13 @@ export class TrackerApp {
     this.currentPage = 1;
     this.activeListFilters = {};
 
-    const route = this.applyTrackerRoute();
-
-    if (route.status === 'invalid' || !route.key) {
-      this.redirectToTrackers();
+    if (!this.canOpenWorkspace() || !this.resolveBoardSearch()) {
+      this.showWorkspaceRetry();
       return;
     }
 
-    this.ensureCanonicalTrackerURL(route.key);
-
     this.initEvents();
+    this.eventsInitialized = true;
     this.restoreBoardViewPreference();
     this.restoreListSortPreference();
     this.refresh({ persist: false });
@@ -82,5 +80,6 @@ Object.assign(
   statusSettingsMethods,
   trackerKeyboardMethods,
   trackerActionMethods,
-  trackerEventMethods
+  trackerEventMethods,
+  jobSearchMethods
 );

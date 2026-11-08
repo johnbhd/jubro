@@ -108,6 +108,7 @@ try {
   await new Promise((accept) => server.listen(0, '127.0.0.1', accept));
   const origin = `http://127.0.0.1:${server.address().port}`;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
+  if (!process.env.JUBRO_ENTRY_ONLY) {
   await evaluate(`
     localStorage.clear();
     localStorage.setItem('flextracker_data', JSON.stringify({
@@ -580,14 +581,11 @@ try {
     submitDialog();
     const result = savedRevision() === before + 1
       && statusApp.getTracker().columns[2].options[0].label === 'Submitted'
-      && document.querySelector('dialog[open] [role="alert"]').textContent.includes('reloaded');
-    document.querySelector('dialog[open]').close();
+      && !document.querySelector('dialog[open]');
     await nextFrame();
     openAction(0, 'Rename status');
     statusApp.reloadStateFromStorage();
-    submitDialog();
-    const replaced = document.querySelector('dialog[open] [role="alert"]').textContent.includes('tracker changed');
-    document.querySelector('dialog[open]').close();
+    const replaced = !document.querySelector('dialog[open]');
     await nextFrame();
     return result && replaced;
   `), true, 'Stale saves and replaced tracker snapshots must not rename stored statuses.');
@@ -825,8 +823,66 @@ try {
       { label: 'Interview', color: 'green' },
     ],
   }, 'Reload preserves shared application order and customized status options.');
+  }
+  if (process.env.JUBRO_ENTRY_ONLY) {
+    await command('browsingContext.navigate', { context, url: origin + '/board/', wait: 'complete' });
+  }
+  assert.equal(await evaluate(`
+    const { TrackerApp } = await import('/js/main/main.js');
+    const { Storage } = await import('/js/storage/storage.js');
+    const { createDefaultTracker } = await import('/js/tracker/defaultTracker.js');
+    const state = Storage.load();
+    state.data.other = createDefaultTracker('other', 'Other search');
+    Storage.save(state);
+    window.boardFirstApp = new TrackerApp();
+    window.savedRevision = () => Storage.load().revision;
+    window.nextFrame = () => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const before = savedRevision();
+    const trigger = document.getElementById('jobSearchSelector');
+    trigger.click();
+    await nextFrame();
+    const menu = document.getElementById('jobSearchDropdown');
+    const counts = [...menu.querySelectorAll('small')].map(node => node.textContent);
+    const readOnly = savedRevision() === before && counts.includes('0 applications')
+      && menu.querySelectorAll('[aria-current="true"]').length === 1;
+    boardFirstApp.searchInput.value = 'Google';
+    boardFirstApp.currentPage = 4;
+    menu.hidePopover();
+    boardFirstApp.switchJobSearch('other');
+    return readOnly && savedRevision() === before + 1
+      && boardFirstApp.state.active === 'other'
+      && location.search === '?tracker=other'
+      && boardFirstApp.searchInput.value === '' && boardFirstApp.currentPage === 1
+      && boardFirstApp.getTracker().rows.length === 0;
+  `), true, 'Board switcher opens read-only and switches canonical active, URL and search state.');
+  for (const theme of ['dark', 'light']) {
+    for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+      await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      const geometry = await evaluate(`
+        document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+        document.getElementById('jobSearchSelector').click();
+        await nextFrame();
+        const menu = document.getElementById('jobSearchDropdown');
+        const bounds = menu.getBoundingClientRect();
+        const fits = bounds.left >= 0 && bounds.right <= innerWidth
+          && document.documentElement.scrollWidth <= innerWidth;
+        menu.hidePopover();
+        return { fits, left: bounds.left, right: bounds.right, page: document.documentElement.scrollWidth, viewport: innerWidth };
+      `);
+      assert.equal(geometry.fits, true, 'Job Search menu fits ' + theme + ' ' + width + ': ' + JSON.stringify(geometry));
+    }
+  }
+  await command('browsingContext.navigate', { context, url: origin + '/trackers/?tracker=other', wait: 'complete' });
+  let redirected = false;
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    redirected = await evaluate('return location.pathname === "/board/" && location.search === "?tracker=other";');
+    if (redirected) break;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  assert.equal(redirected, true,
+    'Legacy static route redirects without losing explicit selection.');
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, mouseDropCompleted, browserInputChecks: 4, errors }));
+  console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));
 } finally {
   socket?.close();
   server?.close();

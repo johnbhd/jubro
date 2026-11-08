@@ -184,7 +184,28 @@ redirectToTrackers() {
       : '/trackers';
   },
 
-reloadStateFromStorage() {
+reloadStateFromStorage({ ignoreURL = false } = {}) {
+    if (this.resolveBoardSearch) {
+      const owner = Storage.getCurrentOwner();
+      const changedOwner = this.state?.ownerType !== owner.ownerType || this.state?.ownerId !== owner.ownerId;
+      this.closeSearchSpecificUI();
+      this.state = this.initializeState();
+      if (!this.canOpenWorkspace() || !this.resolveBoardSearch({ ignoreURL: ignoreURL || changedOwner })) {
+        this.showWorkspaceRetry();
+        return;
+      }
+      document.getElementById('workspaceRetry')?.setAttribute('hidden', '');
+      this.boardWorkspace?.removeAttribute('hidden');
+      document.getElementById('appNavbar')?.removeAttribute('hidden');
+      if (!this.eventsInitialized) {
+        this.initEvents();
+        this.eventsInitialized = true;
+        this.restoreBoardViewPreference();
+        this.restoreListSortPreference();
+      }
+      this.refresh({ persist: false });
+      return;
+    }
     this.state = this.initializeState();
     const route = this.applyTrackerRoute();
 

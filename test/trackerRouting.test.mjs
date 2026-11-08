@@ -223,7 +223,7 @@ test('canonicalizes a missing tracker query without saving workspace data', () =
   assert.equal(windowTarget.replacedPath, '/board/?tracker=1');
 });
 
-test('invalid Board target redirects before rendering or saving', () => {
+test('invalid Board target recovers to saved active without saving application contents', () => {
   firebase.__resetFirebase();
   globalThis.localStorage.clear();
   Storage.useGuestWorkspace();
@@ -238,11 +238,18 @@ test('invalid Board target redirects before rendering or saving', () => {
   windowTarget.location.pathname = '/board/';
   windowTarget.location.href = 'https://example.test/board/?tracker=missing';
 
-  new TrackerApp();
+  const app = {
+    ...trackerStateMethods,
+    ...TrackerApp.prototype,
+    state: Storage.load(),
+    showToast() {},
+  };
+  app.resolveBoardSearch = TrackerApp.prototype.resolveBoardSearch;
+  assert.equal(app.resolveBoardSearch(), true);
 
   const storedState = Storage.load();
 
-  assert.equal(windowTarget.location.href, '/trackers');
+  assert.equal(windowTarget.replacedPath, '/board/?tracker=1');
   assert.equal(storedState.active, '1');
   assert.equal(storedState.revision, 1);
   assert.deepEqual(firebase.__getWrites(), []);
