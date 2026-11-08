@@ -898,10 +898,15 @@ try {
         const controls = [selector,
           ...(innerWidth < 1024 ? [document.getElementById('btnOpenSearch')] : []),
           ...document.querySelectorAll('[data-board-view-button]'),
-          document.getElementById('btnDashboard'), document.getElementById('btnAddApplication'),
+          document.getElementById('btnDashboard'),
+          document.getElementById('btnCustomFields'),
+          document.getElementById('btnAddApplication'),
           document.getElementById('btnMenu')];
         const rects = controls.map(control => control.getBoundingClientRect());
         const labels = [...document.querySelectorAll('.board-view-button span, #btnDashboard span, #btnAddApplication span')];
+        const customFieldsSpan = document.querySelector('#btnCustomFields span');
+        const customFieldsLabelOk = customFieldsSpan
+          && (getComputedStyle(customFieldsSpan).display !== 'none') === (innerWidth >= 1024);
         const fits = rects.every(rect => rect.width >= 40 && rect.height >= 40
           && rect.left >= 0 && rect.right <= innerWidth)
           && Math.max(...rects.map(rect => rect.top)) - Math.min(...rects.map(rect => rect.top)) <= 4
@@ -929,10 +934,10 @@ try {
             && Math.abs(input.top - selector.getBoundingClientRect().top) < 4
             && getComputedStyle(document.getElementById('btnClearSelectFilter')).display === 'none';
         }
-        return { fits, correctLabels, search, readOnly: savedRevision() === before,
+        return { fits, correctLabels, customFieldsLabelOk, search, readOnly: savedRevision() === before,
           sizes: rects.map(rect => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height })) };
       `);
-      assert.equal(toolbar.fits && toolbar.correctLabels && toolbar.search && toolbar.readOnly, true,
+      assert.equal(toolbar.fits && toolbar.correctLabels && toolbar.customFieldsLabelOk && toolbar.search && toolbar.readOnly, true,
         'Compact accessible toolbar ' + theme + ' ' + width + ': ' + JSON.stringify(toolbar));
       const toolbarShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-toolbar.png`), Buffer.from(toolbarShot.data, 'base64'));
@@ -967,6 +972,62 @@ try {
       assert.equal(geometry.fits, true, 'Job Search menu fits ' + theme + ' ' + width + ': ' + JSON.stringify(geometry));
     }
   }
+  assert.equal(await evaluate(`
+    const before = savedRevision();
+    const btnCustomFields = document.getElementById('btnCustomFields');
+    const oldSettingsBtn = document.getElementById('btnListViewSettings');
+    const popup = document.getElementById('listSettingsPopup');
+
+    // 1. Initially closed, old button absent
+    const initialOk = !oldSettingsBtn
+      && btnCustomFields.getAttribute('aria-expanded') === 'false'
+      && (!popup || popup.classList.contains('hidden'));
+
+    // 2. Open from Board view
+    btnCustomFields.click();
+    await nextFrame();
+    const popupEl = document.getElementById('listSettingsPopup');
+    const openInBoard = Boolean(popupEl && !popupEl.classList.contains('hidden')
+      && btnCustomFields.getAttribute('aria-expanded') === 'true');
+
+    // 3. Escape key closes and restores focus
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await nextFrame();
+    const closedOnEscape = Boolean(popupEl && popupEl.classList.contains('hidden')
+      && btnCustomFields.getAttribute('aria-expanded') === 'false'
+      && document.activeElement === btnCustomFields);
+
+    // 4. Switch to List view
+    document.querySelector('[data-board-view-button="list"]').click();
+    await nextFrame();
+    const noListBtn = !document.getElementById('btnListViewSettings');
+
+    // 5. Open from List view
+    btnCustomFields.click();
+    await nextFrame();
+    const openInList = Boolean(popupEl && !popupEl.classList.contains('hidden')
+      && btnCustomFields.getAttribute('aria-expanded') === 'true');
+
+    // 6. Close via Close button
+    document.getElementById('btnCloseListSettings').click();
+    await nextFrame();
+    const closedOnBtn = Boolean(popupEl && popupEl.classList.contains('hidden')
+      && btnCustomFields.getAttribute('aria-expanded') === 'false');
+
+    // 7. Safety: opening and switching job search closes the modal
+    btnCustomFields.click();
+    await nextFrame();
+    boardFirstApp.closeSearchSpecificUI();
+    const closedOnSwitch = Boolean(popupEl && popupEl.classList.contains('hidden')
+      && btnCustomFields.getAttribute('aria-expanded') === 'false');
+
+    // Restore board view
+    document.querySelector('[data-board-view-button="kanban"]').click();
+    await nextFrame();
+
+    return initialOk && openInBoard && closedOnEscape && noListBtn && openInList && closedOnBtn && closedOnSwitch
+      && savedRevision() === before;
+  `), true, 'Custom Fields opens and closes reliably from Board and List views with zero writes.');
   await command('browsingContext.setViewport', { context, viewport: { width: 1440, height: 900 }, devicePixelRatio: 1 });
   await command('browsingContext.activate', { context });
   const searchPoint = await evaluate(`

@@ -65,20 +65,10 @@ export const listSettingsMethods = {
   },
 
   ensureListViewSettingsButton() {
-    if (!this.listSortSelect || document.getElementById('btnListViewSettings')) return;
-
-    const button = document.createElement('button');
-    button.id = 'btnListViewSettings';
-    button.type = 'button';
-    button.className = 'list-settings-trigger inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-white';
-    button.setAttribute('aria-label', 'View settings');
-    button.innerHTML = '<i class="fa-solid fa-sliders text-xs"></i>';
-    button.addEventListener('click', (event) => {
-      event.stopPropagation();
-      this.toggleListSettingsPopup(button);
-    });
-
-    this.listSortSelect.insertAdjacentElement('afterend', button);
+    const existing = document.getElementById('btnListViewSettings');
+    if (existing) {
+      existing.remove();
+    }
   },
 
   ensureListSettingsPopup() {
@@ -139,20 +129,25 @@ export const listSettingsMethods = {
     document.getElementById('btnListSettingsAddBottom')?.addEventListener('click', () => this.showInlineAddField());
     document.getElementById('btnListSettingsEdit')?.addEventListener('click', () => this.setListSettingsMode('edit'));
     document.getElementById('btnListSettingsDelete')?.addEventListener('click', () => this.setListSettingsMode('delete'));
-    document.getElementById('btnCloseListSettings')?.addEventListener('click', () => this.closeListSettingsPopup());
+    document.getElementById('btnCloseListSettings')?.addEventListener('click', () => this.closeCustomizeFields());
     document.getElementById('btnResetListSettings')?.addEventListener('click', () => this.resetListViewSettings());
     document.getElementById('listInlineAddFieldForm')?.addEventListener('submit', (event) => {
       event.preventDefault();
       this.addListFieldFromInlineForm();
     });
+    document.getElementById('listSettingsPopup')?.addEventListener('click', (event) => {
+      if (event.target === event.currentTarget) {
+        this.closeCustomizeFields();
+      }
+    });
     document.addEventListener('click', (event) => {
       const popup = document.getElementById('listSettingsPopup');
-      const button = document.getElementById('btnListViewSettings');
+      const trigger = document.getElementById('btnCustomFields');
 
       if (!popup || popup.classList.contains('hidden')) return;
-      if (popup.contains(event.target) || button?.contains(event.target)) return;
+      if (popup.contains(event.target) || trigger?.contains(event.target)) return;
 
-      this.closeListSettingsPopup();
+      this.closeCustomizeFields();
     });
   },
 
@@ -488,19 +483,40 @@ export const listSettingsMethods = {
     this.refreshListSettingsAfterSchemaChange();
   },
 
-  toggleListSettingsPopup(anchor) {
+  openCustomizeFields() {
     this.ensureListSettingsPopup();
     this.renderListSettingsToggles();
-
     const popup = document.getElementById('listSettingsPopup');
+    const trigger = document.getElementById('btnCustomFields');
     if (!popup) return;
+    popup.classList.remove('hidden');
+    popup.classList.add('flex');
+    trigger?.setAttribute('aria-expanded', 'true');
+    document.getElementById('btnCloseListSettings')?.focus();
+  },
 
-    if (popup.classList.contains('hidden')) {
-      popup.classList.remove('hidden');
-      popup.classList.add('flex');
-    } else {
-      this.closeListSettingsPopup();
+  closeCustomizeFields() {
+    const popup = document.getElementById('listSettingsPopup');
+    const wasOpen = popup && !popup.classList.contains('hidden');
+    this.closeListSettingsPopup();
+    const trigger = document.getElementById('btnCustomFields');
+    trigger?.setAttribute('aria-expanded', 'false');
+    if (wasOpen) {
+      trigger?.focus();
     }
+  },
+
+  toggleCustomizeFields() {
+    const popup = document.getElementById('listSettingsPopup');
+    if (popup && !popup.classList.contains('hidden')) {
+      this.closeCustomizeFields();
+    } else {
+      this.openCustomizeFields();
+    }
+  },
+
+  toggleListSettingsPopup(anchor) {
+    this.toggleCustomizeFields();
   },
 
   closeListSettingsPopup() {
@@ -508,5 +524,7 @@ export const listSettingsMethods = {
 
     popup?.classList.add('hidden');
     popup?.classList.remove('flex');
+    const trigger = document.getElementById('btnCustomFields');
+    trigger?.setAttribute('aria-expanded', 'false');
   }
 };

@@ -20,6 +20,7 @@ initEvents() {
     const btnImport = document.getElementById('btnImport');
     const btnExport = document.getElementById('btnExport');
     const btnDashboard = document.getElementById('btnDashboard');
+    const btnCustomFields = document.getElementById('btnCustomFields');
     const btnAddApplication = document.getElementById('btnAddApplication');
     const btnCloseDashboard = document.getElementById('btnCloseDashboard');
     const btnOpenSearch = document.getElementById('btnOpenSearch');
@@ -121,6 +122,11 @@ initEvents() {
       this.openDashboard();
     });
 
+    btnCustomFields?.addEventListener('click', () => {
+      dropdown.classList.add('hidden');
+      this.toggleCustomizeFields();
+    });
+
     btnOpenSearch?.addEventListener('click', () => {
       dropdown.classList.add('hidden');
       this.openMobileSearch();
@@ -200,6 +206,7 @@ initEvents() {
       if (e.key === 'Escape') {
         this.closeMobileSearch();
         this.closeDashboard();
+        this.closeCustomizeFields?.();
         closeKanbanCardMenus(this.kanbanColumns);
       }
     });

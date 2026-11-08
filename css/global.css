@@ -277,6 +277,7 @@ input:disabled {
 @media (max-width: 767px) {
   .board-view-button span,
   #btnDashboard span,
+  #btnCustomFields span,
   #btnAddApplication span {
     display: none;
   }
@@ -287,12 +288,16 @@ input:disabled {
   }
 
   #appNavbar .job-search-selector {
-    max-width: min(120px, calc(100vw - 265px));
-    padding: 0 6px;
+    max-width: min(72px, calc(100vw - 318px));
+    padding: 0 4px;
   }
 }
 
 @media (max-width: 1023px) {
+  #btnCustomFields span {
+    display: none;
+  }
+
   .board-search.is-open {
     display: block;
     position: absolute;
@@ -1123,7 +1128,16 @@ input:disabled {
   background-color: transparent;
 }
 
+#btnCustomFields {
+  background-color: transparent;
+}
+
 .dark #btnDashboard {
+  background-color: transparent !important;
+  color: #e5e7eb !important;
+}
+
+.dark #btnCustomFields {
   background-color: transparent !important;
   color: #e5e7eb !important;
 }

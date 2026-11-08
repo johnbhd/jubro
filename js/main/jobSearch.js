@@ -88,6 +88,7 @@ export const jobSearchMethods = {
     this.listDrag?.destroy();
     this.closeListEditModal?.();
     this.closeDashboard?.();
+    this.closeCustomizeFields?.();
     this.cancelScheduledTitleSync();
     this.closeMobileSearch?.();
     closeMenu();

@@ -121,7 +121,6 @@ export const listRenderMethods = {
 
     this.listDrag?.destroy();
     this.listDrag = null;
-    this.ensureListViewSettingsButton();
     this.ensureListSettingsPopup();
     this.ensureListEditModal();
     this.ensureListInfoModal();
