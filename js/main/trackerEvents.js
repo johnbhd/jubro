@@ -26,14 +26,6 @@ initEvents() {
     const btnClearSelectFilter = document.getElementById('btnClearSelectFilter');
 
     // Sorting remains available, but does not compete with primary navigation.
-    for (const control of [
-      sortSelect?.parentElement,
-      this.selectTextSortWrapper,
-      this.selectValueFilterWrapper,
-      btnClearSelectFilter,
-    ]) {
-      if (control && dropdown) dropdown.prepend(control);
-    }
     
     // toggle dropdown
     btnMenu?.addEventListener('click', (e) => {
@@ -124,11 +116,6 @@ initEvents() {
     });
 
     btnCloseSearch?.addEventListener('click', () => {
-      if (this.sortSelect?.value === 'select-text') {
-        this.clearSelectFilter();
-        return;
-      }
-
       this.closeMobileSearch();
     });
 

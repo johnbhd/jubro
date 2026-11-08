@@ -118,8 +118,6 @@ updateSelectTextSortVisibility() {
     const shouldShow = this.sortSelect?.value === 'select-text';
     this.selectTextSortWrapper.classList.toggle('hidden', !shouldShow);
     this.selectValueFilterWrapper?.classList.toggle('hidden', !shouldShow);
-    this.btnCloseSearch?.classList.toggle('hidden', !shouldShow);
-    this.btnCloseSearch?.classList.toggle('inline-flex', shouldShow);
     this.btnClearSelectFilter?.classList.toggle('hidden', !shouldShow);
     this.btnClearSelectFilter?.classList.toggle('inline-flex', shouldShow);
 

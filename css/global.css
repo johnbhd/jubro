@@ -53,6 +53,11 @@ input:disabled {
 }
 
 #appNavbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 8px;
   isolation: isolate;
   position: sticky;
   top: 0;
@@ -65,14 +70,183 @@ input:disabled {
 }
 
 .board-toolbar-actions {
-  max-width: 100%;
-  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .board-toolbar-actions-row {
-  max-width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 2px;
+}
+
+.job-search-navigation {
+  min-width: 0;
+  flex: 1 1 140px;
+}
+
+#appNavbar .job-search-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 40px;
+  min-height: 40px;
+  width: 100%;
+  padding: 6px;
+}
+
+.job-search-selector span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-search-selector span:last-child {
+  flex-shrink: 0;
+}
+
+.toolbar-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.toolbar-icon-button:hover:not(.primary-action-button) {
+  background-color: #9ca3af22;
+}
+
+.toolbar-icon-button:focus-visible,
+.search-discovery-group:focus-within {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+#boardViewToggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 10px;
+  background: #9ca3af22;
+}
+
+.board-search {
+  display: none;
+  min-width: 0;
+}
+
+.search-discovery-group {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #9ca3af55;
+  border-radius: 10px;
+  background: #f3f4f6;
+}
+
+#searchInputWrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#jobSearchInput,
+#sortSelect {
+  background: transparent;
+  outline: none;
+}
+
+#sortSelect {
+  width: 110px;
+  border-left: 1px solid #9ca3af55;
+  border-radius: 0;
+}
+
+.search-filter-controls {
+  display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-filter-controls > .hidden {
+  display: none;
+}
+
+.search-filter-controls:has(> :not(.hidden)) {
+  margin-top: 8px;
+}
+
+.dark .search-discovery-group {
+  background: #111827;
+}
+
+@media (max-width: 767px) {
+  .board-view-button span,
+  #btnDashboard span,
+  #btnAddApplication span {
+    display: none;
+  }
+
+  #appNavbar .toolbar-icon-button {
+    width: 40px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 1023px) {
+  .board-search.is-open {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: 8px;
+    border-radius: 0 0 8px 8px;
+    background: inherit;
+    box-shadow: 0 2px 3px #00000015;
+  }
+
+  #appNavbar:has(.board-search.is-open) {
+    margin-bottom: 60px;
+  }
+
+  #appNavbar:has(.board-search.is-open .search-filter-controls > :not(.hidden)) {
+    margin-bottom: 108px;
+  }
+}
+
+@media (min-width: 768px) {
+  #appNavbar {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .board-toolbar-actions-row {
+    gap: 4px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .board-search {
+    display: block;
+    flex: 1 1 440px;
+    max-width: 440px;
+    min-width: 212px;
+  }
+
+  #btnOpenSearch,
+  #btnCloseSearch {
+    display: none;
+  }
 }
 
 .kanban-view {
@@ -543,7 +717,7 @@ input:disabled {
 
 @media (max-width: 420px) {
   #searchInputWrapper {
-    min-width: 9.5rem;
+    min-width: 0;
   }
 
   #jobSearchInput {
@@ -1848,21 +2022,6 @@ input:disabled {
   margin: 4rem auto;
   padding: 24px;
   text-align: center;
-}
-
-@media (max-width: 1023px) {
-  #appNavbar > :first-child {
-    grid-column: 1 / -1;
-  }
-
-  #appNavbar .board-toolbar-actions {
-    grid-column: 1 / -1;
-    justify-self: stretch;
-  }
-
-  #appNavbar .board-toolbar-actions-row {
-    justify-content: flex-end;
-  }
 }
 
 [hidden] {

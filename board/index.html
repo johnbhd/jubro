@@ -37,120 +37,122 @@
 <body id="appBody" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
   <h1 class="sr-only">Jubro Job Application Board</h1>
   <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
-    <header id="appNavbar" class="relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 p-3 bg-white shadow-sm sticky top-0 z-10 rounded-md sm:p-4 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,32rem)_minmax(0,1fr)] lg:gap-4">
-      <div class="flex min-w-0 items-center gap-2">
+    <header id="appNavbar" class="bg-white shadow-sm rounded-md">
+      <div class="job-search-navigation">
         <button id="jobSearchSelector" type="button" popovertarget="jobSearchDropdown" class="job-search-selector" aria-label="Choose Job Search" aria-expanded="false">Job Search ▾</button>
         <div id="jobSearchDropdown" popover="auto" aria-label="Job Searches" class="job-search-dropdown"></div>
       </div>
       <div
         id="searchWrapper"
-        class="relative hidden w-full min-w-0 gap-2 overflow-x-auto max-lg:absolute max-lg:inset-0 max-lg:z-20 max-lg:items-center max-lg:bg-white max-lg:p-3 lg:flex"
+        class="board-search"
       >
-        <!-- SEARCH -->
-        <div
-          id="searchInputWrapper"
-          class="relative min-w-[12rem] flex-1"
-        >
-          <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
-
-          <input
-            id="jobSearchInput"
-            type="text"
-            placeholder="Search applications..."
-            class="h-10 w-full rounded-full bg-gray-100 py-2 pl-10 pr-11 text-sm outline-none focus:bg-gray-50"
-          />
-        </div>
-
-        <!-- SORT -->
-        <div class="relative shrink-0">
-          <i
-            class="fa-solid fa-arrow-down-wide-short pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400"
-          ></i>
-
-          <select
-            id="sortSelect"
-            class="cursor-pointer h-10 w-[86px] appearance-none rounded-full bg-gray-100 pl-8 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[90px]"
-            aria-label="Sort applications by date"
+        <div class="search-discovery-group">
+          <!-- SEARCH -->
+          <div
+            id="searchInputWrapper"
+            class="relative"
           >
-            <option value="date-desc">New</option>
-            <option value="date-asc">Old</option>
-            <option value="select-text">Select</option>
-          </select>
+            <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400"></i>
 
-          <i
-            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-          ></i>
+            <input
+              id="jobSearchInput"
+              type="text"
+              aria-label="Search applications"
+              placeholder="Search applications..."
+              class="h-10 w-full py-2 pl-10 text-sm"
+            />
+          </div>
+
+          <!-- SORT -->
+          <div class="relative shrink-0">
+            <select
+              id="sortSelect"
+              class="h-10 appearance-none pl-3 pr-7 text-sm text-gray-700"
+              aria-label="Sort applications"
+            >
+              <option value="date-desc">Newest</option>
+              <option value="date-asc">Oldest</option>
+              <option value="">Manual</option>
+              <option value="select-text">Select field</option>
+            </select>
+
+            <i
+              class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+            ></i>
+          </div>
+
+          <!-- CLOSE -->
+          <button id="btnCloseSearch" type="button" class="toolbar-icon-button" aria-label="Close search" title="Close search">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
         </div>
 
-        <!-- TEXT FILTER -->
-        <div id="selectTextSortWrapper" class="relative hidden shrink-0">
-          <select
-            id="selectTextSortSelect"
-            class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
-            aria-label="Select text column"
-          ></select>
+        <div class="search-filter-controls">
+          <!-- TEXT FILTER -->
+          <div id="selectTextSortWrapper" class="relative hidden shrink-0">
+            <select
+              id="selectTextSortSelect"
+              class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
+              aria-label="Select text column"
+            ></select>
 
-          <i
-            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-          ></i>
+            <i
+              class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+            ></i>
+          </div>
+
+          <!-- VALUE FILTER -->
+          <div id="selectValueFilterWrapper" class="relative hidden shrink-0">
+            <select
+              id="selectValueFilterSelect"
+              class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
+              aria-label="Select option value"
+            ></select>
+
+            <i
+              class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
+            ></i>
+          </div>
+
+          <button id="btnClearSelectFilter" type="button" class="hidden toolbar-icon-button" aria-label="Clear field filter" title="Clear field filter">
+            <i class="fa-solid fa-filter-circle-xmark"></i>
+          </button>
         </div>
-
-        <!-- VALUE FILTER -->
-        <div id="selectValueFilterWrapper" class="relative hidden shrink-0">
-          <select
-            id="selectValueFilterSelect"
-            class="cursor-pointer h-10 w-[92px] appearance-none rounded-full bg-gray-100 px-3 pr-7 text-sm text-gray-700 outline-none transition focus:bg-gray-50 sm:w-[95px]"
-            aria-label="Select option value"
-          ></select>
-
-          <i
-            class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400"
-          ></i>
-        </div>
-
-        <!-- CLOSE -->
-        <button
-          id="btnCloseSearch"
-          type="button"
-          class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-          aria-label="Close search"
-        >
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
       </div>
-      <div class="board-toolbar-actions relative justify-self-end">
-        <div class="board-toolbar-actions-row flex flex-nowrap items-center justify-center gap-1 sm:gap-2">
-          <button id="btnOpenSearch" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-gray-700 lg:hidden" aria-label="Open search">
+      <div class="board-toolbar-actions relative">
+        <div class="board-toolbar-actions-row">
+          <button id="btnOpenSearch" type="button" class="toolbar-icon-button" aria-label="Open search" title="Search applications" aria-controls="searchWrapper" aria-expanded="false">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
           <select id="boardViewSelect" class="hidden" aria-label="Board view" tabindex="-1">
             <option value="kanban">Board</option>
             <option value="list">List</option>
           </select>
-          <div id="boardViewToggle" class="inline-flex shrink-0 flex-nowrap items-center gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1" role="group" aria-label="Board view">
-            <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="kanban" aria-label="Board view" aria-pressed="true">
+          <div id="boardViewToggle" role="group" aria-label="Board view">
+            <button type="button" class="board-view-button toolbar-icon-button" data-board-view-button="kanban" aria-label="Board view" title="Board" aria-pressed="true">
               <i class="fa-solid fa-table-columns"></i>
               <span>Board</span>
             </button>
-            <button type="button" class="board-view-button inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-sm text-gray-600 transition hover:bg-white hover:text-gray-950 sm:h-9 sm:px-3" data-board-view-button="list" aria-label="List view" aria-pressed="false">
+            <button type="button" class="board-view-button toolbar-icon-button" data-board-view-button="list" aria-label="List view" title="List" aria-pressed="false">
               <i class="fa-solid fa-list-ul"></i>
               <span>List</span>
             </button>
           </div>
-          <button id="btnAddApplication" type="button" title="Add Application" class="primary-action-button inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500" aria-label="Add Application">
-            <i class="fa-solid fa-plus text-xs"></i>
+          <button id="btnDashboard" type="button" class="toolbar-icon-button" aria-label="Dashboard" title="Dashboard" aria-haspopup="dialog" aria-expanded="false" aria-controls="dashboardModal">
+            <i class="fa-solid fa-chart-simple"></i>
+            <span>Dashboard</span>
           </button>
-          <button id="btnMenu" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-lg hover:bg-gray-100 text-xl" aria-label="More options">
+          <button id="btnAddApplication" type="button" title="Add Application" class="primary-action-button toolbar-icon-button" aria-label="Add Application">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Add Application</span>
+          </button>
+          <button id="btnMenu" type="button" class="toolbar-icon-button" aria-label="More options" title="More options">
             <i class="fa-solid fa-ellipsis-vertical"></i>
           </button>
         </div>
       
         <!-- DROPDOWN -->
         <div id="navDropdown" class="hidden absolute right-0 mt-1 w-48 bg-white border rounded-md shadow text-sm overflow-hidden">
-          <button id="btnDashboard" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
-            <i class="fa-solid fa-chart-simple w-4 text-gray-500"></i>
-            <span>Dashboard</span>
-          </button>
           <button id="btnImport" type="button" class="flex w-full items-center gap-2 px-4 py-2 text-left hover:bg-gray-100">
             <i class="fa-solid fa-file-import w-4 text-gray-500"></i>
             <span>Import JSON</span>
@@ -265,12 +267,12 @@
     aria-atomic="true"
   ></div>
 
-  <div id="dashboardModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
+  <div id="dashboardModal" role="dialog" aria-modal="true" aria-labelledby="dashboardTitle" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
     <div class="mx-auto my-4 max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:my-8 sm:max-h-[calc(100vh-4rem)] sm:p-6">
       <div class="mb-4">
         <div class="flex items-start justify-between gap-5 sm:items-center">
           <!-- Left side -->
-          <h2 class="shrink-0 text-xl font-semibold">Dashboard</h2>
+          <h2 id="dashboardTitle" class="shrink-0 text-xl font-semibold">Dashboard</h2>
 
           <!-- Right side: filters + X -->
           <div class="flex min-w-0 flex-1 items-center justify-end gap-3">

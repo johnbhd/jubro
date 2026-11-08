@@ -178,10 +178,18 @@ openDashboard() {
 
     this.renderDashboard();
     this.dashboardModal.classList.remove('hidden');
+    document.getElementById('btnDashboard')?.setAttribute('aria-expanded', 'true');
+    document.getElementById('btnCloseDashboard')?.focus();
   },
 
 closeDashboard() {
+    const wasOpen = this.dashboardModal && !this.dashboardModal.classList.contains('hidden');
     this.dashboardModal?.classList.add('hidden');
+    const trigger = document.getElementById('btnDashboard');
+    trigger?.setAttribute('aria-expanded', 'false');
+    if (wasOpen) {
+      trigger?.focus();
+    }
   },
 
 updateDashboardRangeVisibility() {

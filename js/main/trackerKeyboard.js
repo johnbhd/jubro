@@ -2,19 +2,18 @@ import { closeMenu, UIState } from './ui.js';
 
 export const trackerKeyboardMethods = {
 openMobileSearch() {
-    this.searchWrapper?.classList.remove('hidden');
-    this.searchWrapper?.classList.add('flex');
-    this.btnCloseSearch?.classList.remove('hidden');
-    this.btnCloseSearch?.classList.add('inline-flex');
+    this.searchWrapper?.classList.add('is-open');
+    document.getElementById('btnOpenSearch')?.setAttribute('aria-expanded', 'true');
     this.searchInput?.focus();
   },
 
 closeMobileSearch() {
-    this.searchWrapper?.classList.add('hidden');
-    this.searchWrapper?.classList.remove('flex');
-    if (this.sortSelect?.value !== 'select-text') {
-      this.btnCloseSearch?.classList.add('hidden');
-      this.btnCloseSearch?.classList.remove('inline-flex');
+    const wasOpen = this.searchWrapper?.classList.contains('is-open');
+    this.searchWrapper?.classList.remove('is-open');
+    const trigger = document.getElementById('btnOpenSearch');
+    trigger?.setAttribute('aria-expanded', 'false');
+    if (wasOpen && window.matchMedia('(max-width: 1023px)').matches) {
+      trigger?.focus();
     }
   },
 

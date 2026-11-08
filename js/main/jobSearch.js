@@ -134,7 +134,12 @@ export const jobSearchMethods = {
     if (!trigger || !menu) {
       return;
     }
-    trigger.textContent = `${this.getTracker()?.title || 'Job Search'} ▾`;
+    const label = document.createElement('span');
+    label.textContent = this.getTracker()?.title || 'Job Search';
+    const chevron = document.createElement('span');
+    chevron.textContent = '▾';
+    chevron.setAttribute('aria-hidden', 'true');
+    trigger.replaceChildren(label, chevron);
     menu.replaceChildren();
     Object.entries(this.state.data).forEach(([key, tracker]) => {
       const row = document.createElement('div');

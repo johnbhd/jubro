@@ -98,6 +98,13 @@ try {
           '/test/fixtures/firebase.mjs',
         ));
       }
+      if (extname(path) === '.html') {
+        // Marketing fonts must not make fixture-only checks depend on Google responding.
+        data = Buffer.from(data.toString().replace(
+          /@import url\('https:\/\/fonts\.googleapis\.com\/[^']*'\);/g,
+          '',
+        ));
+      }
       response.setHeader('Content-Type', extname(path) === '.mjs' ? 'text/javascript' : types[extname(path)] || 'application/octet-stream');
       response.end(data);
     } catch {
@@ -855,9 +862,80 @@ try {
       && boardFirstApp.searchInput.value === '' && boardFirstApp.currentPage === 1
       && boardFirstApp.getTracker().rows.length === 0;
   `), true, 'Board switcher opens read-only and switches canonical active, URL and search state.');
+  assert.equal(await evaluate(`
+    const more = document.getElementById('navDropdown');
+    const dashboard = document.getElementById('btnDashboard');
+    const before = savedRevision();
+    if (more.contains(dashboard) || more.contains(boardFirstApp.sortSelect)
+      || !document.getElementById('searchWrapper').contains(boardFirstApp.sortSelect)) return false;
+    dashboard.focus();
+    dashboard.click();
+    const opened = !boardFirstApp.dashboardModal.classList.contains('hidden');
+    document.getElementById('btnCloseDashboard').click();
+    return opened && document.activeElement === dashboard && savedRevision() === before;
+  `), true, 'Dashboard is direct navigation; Search owns Sort; modal restores focus without writes.');
+  assert.equal(await evaluate(`
+    const before = savedRevision();
+    boardFirstApp.sortSelect.value = 'select-text';
+    boardFirstApp.sortSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    const field = document.getElementById('selectTextSortWrapper');
+    const clear = document.getElementById('btnClearSelectFilter');
+    if (getComputedStyle(field).display === 'none' || getComputedStyle(clear).display === 'none'
+      || document.getElementById('navDropdown').contains(field)) return false;
+    clear.click();
+    return boardFirstApp.sortSelect.value === '' && getComputedStyle(clear).display === 'none'
+      && savedRevision() === before;
+  `), true, 'Select-field filters stay with Search and clear to Manual without writes.');
   for (const theme of ['dark', 'light']) {
     for (const width of [390, 430, 768, 1024, 1440, 1920]) {
       await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      const toolbar = await evaluate(`
+        document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+        boardFirstApp.closeMobileSearch();
+        const selector = document.getElementById('jobSearchSelector');
+        selector.querySelector('span').textContent = 'A very long internship and full-time Job Search title';
+        await nextFrame();
+        const controls = [selector,
+          ...(innerWidth < 1024 ? [document.getElementById('btnOpenSearch')] : []),
+          ...document.querySelectorAll('[data-board-view-button]'),
+          document.getElementById('btnDashboard'), document.getElementById('btnAddApplication'),
+          document.getElementById('btnMenu')];
+        const rects = controls.map(control => control.getBoundingClientRect());
+        const labels = [...document.querySelectorAll('.board-view-button span, #btnDashboard span, #btnAddApplication span')];
+        const fits = rects.every(rect => rect.width >= 40 && rect.height >= 40
+          && rect.left >= 0 && rect.right <= innerWidth)
+          && Math.max(...rects.map(rect => rect.top)) - Math.min(...rects.map(rect => rect.top)) <= 4
+          && document.documentElement.scrollWidth <= innerWidth;
+        const correctLabels = labels.length === 4 && labels.every(label =>
+          (getComputedStyle(label).display !== 'none') === (innerWidth >= 768));
+        const before = savedRevision();
+        let search = true;
+        if (innerWidth < 1024) {
+          const trigger = document.getElementById('btnOpenSearch');
+          trigger.click();
+          await nextFrame();
+          const input = document.getElementById('jobSearchInput').getBoundingClientRect();
+          const sort = document.getElementById('sortSelect').getBoundingClientRect();
+          search = input.width >= 100 && sort.width >= 80 && sort.right <= innerWidth
+            && input.top >= selector.getBoundingClientRect().bottom
+            && trigger.getAttribute('aria-expanded') === 'true';
+          document.getElementById('jobSearchInput').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+          search = search && document.activeElement === trigger
+            && trigger.getAttribute('aria-expanded') === 'false';
+        } else {
+          const input = document.getElementById('jobSearchInput').getBoundingClientRect();
+          const sort = document.getElementById('sortSelect').getBoundingClientRect();
+          search = input.width >= 100 && sort.width >= 80 && Math.abs(input.top - sort.top) < 2
+            && Math.abs(input.top - selector.getBoundingClientRect().top) < 4
+            && getComputedStyle(document.getElementById('btnClearSelectFilter')).display === 'none';
+        }
+        return { fits, correctLabels, search, readOnly: savedRevision() === before,
+          sizes: rects.map(rect => ({ x: rect.x, y: rect.y, width: rect.width, height: rect.height })) };
+      `);
+      assert.equal(toolbar.fits && toolbar.correctLabels && toolbar.search && toolbar.readOnly, true,
+        'Compact accessible toolbar ' + theme + ' ' + width + ': ' + JSON.stringify(toolbar));
+      const toolbarShot = await command('browsingContext.captureScreenshot', { context });
+      await writeFile(resolve(artifacts, `${theme}-${width}-toolbar.png`), Buffer.from(toolbarShot.data, 'base64'));
       const geometry = await evaluate(`
         document.documentElement.classList.toggle('dark', ${theme === 'dark'});
         document.getElementById('jobSearchSelector').click();
@@ -875,7 +953,9 @@ try {
           dialogFits = rect.left >= 0 && rect.right <= innerWidth;
           dialog.close();
         }
-        return { fits: fits && dialogFits, left: bounds.left, right: bounds.right, page: document.documentElement.scrollWidth, viewport: innerWidth };
+        return { fits: fits && dialogFits, left: bounds.left, right: bounds.right,
+          leftStyle: menu.style.left, open: menu.matches(':popover-open'),
+          page: document.documentElement.scrollWidth, viewport: innerWidth };
       `);
       assert.equal(geometry.fits, true, 'Job Search menu fits ' + theme + ' ' + width + ': ' + JSON.stringify(geometry));
     }
