@@ -867,7 +867,15 @@ try {
         const fits = bounds.left >= 0 && bounds.right <= innerWidth
           && document.documentElement.scrollWidth <= innerWidth;
         menu.hidePopover();
-        return { fits, left: bounds.left, right: bounds.right, page: document.documentElement.scrollWidth, viewport: innerWidth };
+        let dialogFits = true;
+        if (boardFirstApp.openJobSearchDialog) {
+          boardFirstApp.openJobSearchDialog('create');
+          const dialog = document.querySelector('dialog[open][data-job-search-action]');
+          const rect = dialog.getBoundingClientRect();
+          dialogFits = rect.left >= 0 && rect.right <= innerWidth;
+          dialog.close();
+        }
+        return { fits: fits && dialogFits, left: bounds.left, right: bounds.right, page: document.documentElement.scrollWidth, viewport: innerWidth };
       `);
       assert.equal(geometry.fits, true, 'Job Search menu fits ' + theme + ' ' + width + ': ' + JSON.stringify(geometry));
     }
@@ -881,6 +889,35 @@ try {
   }
   assert.equal(redirected, true,
     'Legacy static route redirects without losing explicit selection.');
+  assert.equal(await evaluate(`
+    const { TrackerApp } = await import('/js/main/main.js');
+    const { Storage } = await import('/js/storage/storage.js');
+    window.managementApp = new TrackerApp();
+    const before = Storage.load().revision;
+    managementApp.openJobSearchDialog('create');
+    document.querySelector('dialog[open][data-job-search-action] input').value = 'Canceled';
+    document.querySelector('dialog[open][data-job-search-action] button[type="button"]').click();
+    if (Storage.load().revision !== before) return false;
+    managementApp.openJobSearchDialog('create');
+    document.querySelector('dialog[open][data-job-search-action] input').value = 'Internship Search';
+    document.querySelector('dialog[open][data-job-search-action] form').requestSubmit();
+    if (managementApp.getTracker().title !== 'Internship Search'
+      || managementApp.getTracker().rows.length !== 0 || Storage.load().revision !== before + 1) return false;
+    const id = managementApp.state.active;
+    managementApp.openJobSearchDialog('rename', id);
+    document.querySelector('dialog[open][data-job-search-action] input').value = 'Renamed Search';
+    document.querySelector('dialog[open][data-job-search-action] form').requestSubmit();
+    if (managementApp.state.active !== id || managementApp.getTracker().title !== 'Renamed Search') return false;
+    managementApp.changeJobSearch('duplicate', { key: id });
+    const copyId = managementApp.state.active;
+    if (copyId === id || managementApp.getTracker().title !== 'Renamed Search (copy)') return false;
+    managementApp.openJobSearchDialog('delete', copyId);
+    document.querySelector('dialog[open][data-job-search-action] button[type="button"]').click();
+    if (!managementApp.state.data[copyId]) return false;
+    managementApp.openJobSearchDialog('delete', copyId);
+    document.querySelector('dialog[open][data-job-search-action] form').requestSubmit();
+    return !managementApp.state.data[copyId] && Boolean(managementApp.getTracker());
+  `), true, 'Management dialogs cancel safely, save once, and preserve identities.');
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));
 } finally {

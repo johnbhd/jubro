@@ -11,6 +11,7 @@ import { trackerKeyboardMethods } from './trackerKeyboard.js';
 import { trackerActionMethods } from './trackerActions.js';
 import { trackerEventMethods } from './trackerEvents.js';
 import { jobSearchMethods } from './jobSearch.js';
+import { jobSearchManagementMethods } from './jobSearchManagement.js';
 
 export class TrackerApp {
   constructor() {
@@ -81,5 +82,6 @@ Object.assign(
   trackerKeyboardMethods,
   trackerActionMethods,
   trackerEventMethods,
-  jobSearchMethods
+  jobSearchMethods,
+  jobSearchManagementMethods
 );
