@@ -189,8 +189,7 @@ function setupFaqAccordion() {
       content.classList.toggle('hidden', !nextState);
 
       if (icon) {
-        icon.classList.toggle('fa-plus', !nextState);
-        icon.classList.toggle('fa-minus', nextState);
+        icon.classList.toggle('rotate-180', nextState);
       }
     });
   });

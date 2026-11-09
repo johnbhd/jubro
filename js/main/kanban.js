@@ -521,7 +521,7 @@ export const kanbanMethods = {
 
         if (showEmploymentType || showWorkSetup) {
           const pills = document.createElement('div');
-          pills.className = 'kanban-card-pills mt-2.5 flex flex-wrap items-center gap-1.5';
+          pills.className = 'kanban-card-pills mt-3 flex flex-wrap items-center gap-1.5';
 
           if (showEmploymentType) {
             const pill = document.createElement('span');

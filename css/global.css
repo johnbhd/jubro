@@ -665,6 +665,10 @@ input:disabled {
   outline: 2px solid #3b82f6;
 }
 
+.kanban-card-pills {
+  margin-top: 12px;
+}
+
 /* Kanban card pill badges */
 .kanban-pill {
   display: inline-flex;
@@ -2739,6 +2743,35 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 #homeBody .faq-item button {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+
+#homeBody .faq-icon-badge {
+  background-color: #f1f5f9;
+  color: #64748b;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.dark #homeBody .faq-icon-badge {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+#homeBody [data-faq-trigger][aria-expanded="true"] .faq-icon-badge {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.dark #homeBody [data-faq-trigger][aria-expanded="true"] .faq-icon-badge {
+  background-color: #1e3a8a !important;
+  color: #60a5fa !important;
+}
+
+#homeBody [data-faq-icon] {
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#homeBody [data-faq-trigger][aria-expanded="true"] [data-faq-icon] {
+  transform: rotate(180deg);
 }
 
 .dark #homeBody :is(h1, h2, h3, h4) {
