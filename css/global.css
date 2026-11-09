@@ -1462,6 +1462,11 @@ section > .list-panel {
   background-color: #000000 !important;
 }
 
+.favicon-holder.favicon-holder-onlinejobs,
+.dark .favicon-holder.favicon-holder-onlinejobs {
+  background-color: #ffffff !important;
+}
+
 .dark .select-placeholder-display {
   background-color: #ffffff !important;
   border-color: #ffffff !important;
@@ -2371,6 +2376,15 @@ section > .list-panel {
 #homeBody .landing-phone-visual {
   width: 208px;
   max-width: 100%;
+}
+
+#homeBody .landing-benefits {
+  display: grid;
+  gap: 14px;
+}
+
+#homeBody .landing-final-cta .theme-create-button {
+  padding-inline: 32px;
 }
 
 #homeBody .landing-phone-visual img,

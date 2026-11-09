@@ -41,7 +41,14 @@ export const listBadgeMethods = {
     badge.style.color = textColor;
 
     if (['platform', 'source'].includes(columnName)) {
-      badge.appendChild(this.createFaviconElement(getPlatformFavicon(value)));
+      const favicon = getPlatformFavicon(value);
+      const icon = this.createFaviconElement(favicon);
+
+      if (favicon.hostname === 'onlinejobs.ph') {
+        icon.className += ' favicon-holder-onlinejobs';
+      }
+
+      badge.appendChild(icon);
     }
 
     const label = document.createElement('span');

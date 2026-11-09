@@ -8,6 +8,7 @@ class FakeElement {
     this.classList = new Set();
     this.className = '';
     this.listeners = {};
+    this.style = {};
     this.src = '';
     this.alt = '';
     this._textContent = '';
@@ -42,6 +43,31 @@ globalThis.document = {
 };
 
 const { getLinkFavicon, createCompanyFaviconElement } = await import('../js/main/favicon.js');
+const { listBadgeMethods } = await import('../js/main/listView/badges.js');
+
+test('only OnlineJobs.ph platform badges receive a white favicon circle', () => {
+  const context = {
+    ...listBadgeMethods,
+    isUsefulListValue: Boolean,
+    getOptionColor: () => '#334155',
+    getContrastColor: () => '#ffffff',
+    normalizeText: value => value.toLowerCase(),
+    getColumnName: column => column.name,
+    getSafeHttpUrl: value => value,
+  };
+
+  for (const platform of ['OnlineJobs.ph', 'Online Jobs PH', 'LinkedIn', 'Indeed']) {
+    const badge = context.createListBadgeElement({ name: 'Platform' }, platform);
+    assert.equal(
+      badge.children[0].className.includes('favicon-holder-onlinejobs'),
+      platform.startsWith('Online'),
+      platform,
+    );
+  }
+
+  const applicationLink = context.createFaviconElement(getLinkFavicon('https://onlinejobs.ph'));
+  assert.equal(applicationLink.className, 'favicon-holder');
+});
 
 test('getLinkFavicon only accepts http and https URLs', () => {
   assert.deepEqual(getLinkFavicon('https://google.com/jobs/123'), {

@@ -1251,7 +1251,22 @@ try {
         const phoneCap = innerWidth < 640 ? 208 : innerWidth < 1024 ? 240 : 280;
         const about = document.querySelector('#about > div');
         const columns = getComputedStyle(about).gridTemplateColumns.split(' ').length;
+        const benefits = document.querySelector('.landing-benefits');
+        const benefitRows = [...benefits.children].map(item => item.getBoundingClientRect());
+        const cta = getComputedStyle(document.querySelector('.landing-final-cta .theme-create-button'));
+        const onlineJobs = document.createElement('span');
+        const otherPlatform = document.createElement('span');
+        onlineJobs.className = 'favicon-holder favicon-holder-onlinejobs';
+        otherPlatform.className = 'favicon-holder';
+        document.body.append(onlineJobs, otherPlatform);
+        const faviconColorsMatch = getComputedStyle(onlineJobs).backgroundColor === 'rgb(255, 255, 255)'
+          && getComputedStyle(otherPlatform).backgroundColor === 'rgb(0, 0, 0)';
+        onlineJobs.remove();
+        otherPlatform.remove();
         return rect.left >= 0 && rect.right <= innerWidth
+          && faviconColorsMatch
+          && benefitRows.slice(1).every((row, index) => Math.abs(row.top - benefitRows[index].bottom - 14) < 1)
+          && parseFloat(cta.paddingLeft) >= 32 && parseFloat(cta.paddingRight) >= 32
           && rect.width <= 1120 && rect.width > 0
           && document.querySelectorAll('img[src="/img/hero.png"]').length === 1
           && Boolean(heroImg.closest('#heroSection'))
