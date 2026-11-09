@@ -2,6 +2,7 @@ import { authService } from "./firebaseAuth.js";
 import { Message } from "./message.js";
 import { Storage } from "../storage/storage.js";
 import { JSONService } from "../services/jsonService.js";
+import { finishSignIn, logoutAndRedirect } from './authNavigation.js';
 import {
   dispatchTrackerSyncError,
   firebaseTrackerSync,
@@ -23,6 +24,7 @@ export class Auth {
     this.deleteDataInProgress = false;
     this.deleteAccountInProgress = false;
     this.deleteAccountSucceeded = false;
+    this.authActionInProgress = false;
     this.jsonService = new JSONService();
     this.init();
   }
@@ -346,8 +348,12 @@ export class Auth {
   }
 
   async logout() {
-    await authService.logout();
-    this.dropdown.classList.add('hidden');
+    try {
+      await logoutAndRedirect();
+      this.dropdown.classList.add('hidden');
+    } catch (error) {
+      this.message.show('Unable to sign out. Please try again.');
+    }
   }
 
   createSettingsModal() {
@@ -1425,17 +1431,21 @@ export class Auth {
   }
 
   async submit() {
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value.trim();
-  const confirm = document.getElementById('authConfirmPassword').value.trim();
+    if (this.authActionInProgress) {
+      return;
+    }
 
-  this.message.clear();
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    const confirm = document.getElementById('authConfirmPassword').value.trim();
+    this.message.clear();
 
-  if (!email || !password) {
-    return this.message.show('Fill all fields');
-  }
+    if (!email || !password) {
+      return this.message.show('Fill all fields');
+    }
 
-  try {
+    this.authActionInProgress = true;
+    try {
       if (this.mode === 'register') {
         if (password !== confirm) {
           return this.message.show('Passwords do not match');
@@ -1443,29 +1453,34 @@ export class Auth {
   
         await authService.register(email, password);
         this.message.show('Account created!', 'success');
+        setTimeout(() => this.close(), 1000);
       } else {
         await authService.login(email, password);
-        this.message.show('Logged in successfully!', 'success');
+        this.close();
+        finishSignIn();
       }
-  
-      setTimeout(() => this.close(), 1000);
-  
     } catch (err) {
       this.message.show(this.getFriendlyAuthError(err.code));
+    } finally {
+      this.authActionInProgress = false;
     }
   }
-  
+
   async googleLogin() {
+    if (this.authActionInProgress) {
+      return;
+    }
+
     this.message.clear();
-  
+    this.authActionInProgress = true;
     try {
       await authService.loginWithGoogle();
-      this.message.show('Logged in with Google!', 'success');
-  
-      setTimeout(() => this.close(), 1000);
-  
+      this.close();
+      finishSignIn();
     } catch (err) {
       this.message.show(this.getFriendlyAuthError(err.code));
+    } finally {
+      this.authActionInProgress = false;
     }
   }
 

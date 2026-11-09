@@ -2,6 +2,7 @@
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
+// Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -119,11 +120,16 @@ try {
   const origin = `http://127.0.0.1:${server.address().port}`;
   const focusedOnly = process.env.JUBRO_LANDING_ONLY
     || process.env.JUBRO_SURFACES_ONLY
-    || process.env.JUBRO_TRANSFER_ONLY;
+    || process.env.JUBRO_TRANSFER_ONLY
+    || process.env.JUBRO_AUTH_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
     await verifyGuestTransfer({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_AUTH_ONLY) {
+    const { verifyAuthNavigation } = await import('./authNavigation.browser.mjs');
+    await verifyAuthNavigation({ command, evaluate, context, origin, artifacts });
   }
   if (process.env.JUBRO_SURFACES_ONLY) {
     const { verifyWorkspaceSurfaces } = await import('./workspaceSurfaces.browser.mjs');
@@ -1540,6 +1546,7 @@ try {
     entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY),
     surfacesOnly: Boolean(process.env.JUBRO_SURFACES_ONLY),
     transferOnly: Boolean(process.env.JUBRO_TRANSFER_ONLY),
+    authOnly: Boolean(process.env.JUBRO_AUTH_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

@@ -1,6 +1,7 @@
 import { closeMenu, UIState } from './ui.js';
 import { normalizeCellValue } from '../services/trackerData.js';
 import { getKanbanColumns, getKanbanStatusColumn } from './kanban.js';
+import { showToast as presentToast } from '../toast.js';
 
 export const trackerActionMethods = {
   moveApplicationByDirection(rowIndex, direction) {
@@ -115,17 +116,7 @@ export const trackerActionMethods = {
   },
 
 showToast(message) {
-    const toast = document.getElementById('jubroToast');
-
-    if (!toast) return;
-
-    toast.textContent = message;
-    toast.classList.remove('hidden');
-
-    clearTimeout(this.toastTimeout);
-    this.toastTimeout = setTimeout(() => {
-      toast.classList.add('hidden');
-    }, 2600);
+    presentToast(message);
   },
 
 refresh({ persist = true } = {}) {

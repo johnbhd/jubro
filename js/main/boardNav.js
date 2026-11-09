@@ -1,4 +1,5 @@
 import { authService } from '../auth/firebaseAuth.js';
+import { logoutAndRedirect } from '../auth/authNavigation.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -96,7 +97,7 @@ export function initBoardTopNavbar() {
   btnNavLogout?.addEventListener('click', async () => {
     closeDropdown();
     try {
-      await authService.logout();
+      await logoutAndRedirect();
     } catch (error) {
       console.error('Logout failed:', error);
     }

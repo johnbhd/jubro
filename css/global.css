@@ -59,6 +59,55 @@ input:disabled {
   color: #ffffff;
 }
 
+.jubro-toast.jubro-toast-success {
+  position: fixed;
+  z-index: 100;
+  top: calc(env(safe-area-inset-top, 0px) + 10rem);
+  right: 24px;
+  bottom: auto;
+  left: auto;
+  max-width: calc(100vw - 32px);
+  padding: 12px 16px;
+  border: 1px solid #d9dee7;
+  border-left: 3px solid #15803d;
+  border-radius: 12px;
+  background-color: #ffffff;
+  color: #172033;
+  text-align: left;
+  transform: none;
+  box-shadow: 0 4px 12px rgb(23 32 51 / 0.08);
+}
+
+.jubro-toast-success:not(.hidden) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jubro-toast-icon {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.dark .jubro-toast.jubro-toast-success {
+  border-color: #374151;
+  border-left-color: #86efac;
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+.dark .jubro-toast-icon {
+  color: #86efac;
+}
+
+@media (max-width: 767px) {
+  .jubro-toast.jubro-toast-success {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
 #boardWorkspace .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
@@ -2463,7 +2512,40 @@ html:not(.dark) #homeBody footer {
 }
 
 html:not(.dark) #homeBody .site-navbar {
+  width: calc(100% - 32px);
+  max-width: 1376px;
+  padding: 10px 18px;
+  border-color: #d9dee7;
   border-radius: 1.375rem;
+  box-shadow: 0 2px 6px rgb(23 32 51 / 0.04);
+}
+
+@media (min-width: 640px) {
+  html:not(.dark) #homeBody .site-navbar {
+    width: calc(100% - 48px);
+    padding: 12px 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html:not(.dark) #homeBody .site-navbar {
+    width: calc(100% - 64px);
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  html:not(.dark) #homeBody .site-navbar {
+    column-gap: 12px;
+  }
+
+  html:not(.dark) #homeBody .site-navbar nav a {
+    padding-inline: 10px;
+  }
+
+  html:not(.dark) #homeBody .site-navbar :is(#btnOpenModal, #btnSignIn, #btnAccount) {
+    padding-inline: 12px;
+  }
 }
 
 html:not(.dark) #homeBody #mobileTrackerMenu,

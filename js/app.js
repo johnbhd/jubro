@@ -2,6 +2,7 @@ import { TrackerApp } from './main/main.js';
 import { authService } from './auth/firebaseAuth.js';
 import { setupStorageNotice } from './storage/storageNotice.js';
 import { initBoardTopNavbar } from './main/boardNav.js';
+import { showFlashToast } from './toast.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initBoardTopNavbar();
     await authService.waitForWorkspace();
     const trackerApp = new TrackerApp();
+    showFlashToast();
 
     document.addEventListener('tracker:sync-complete', () => {
       trackerApp.reloadStateFromStorage({ ignoreURL: true });

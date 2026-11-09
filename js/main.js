@@ -1,4 +1,5 @@
 import { setupStorageNotice } from './storage/storageNotice.js';
+import { showFlashToast } from './toast.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -196,6 +197,7 @@ async function initHomepage() {
   syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
   setupStorageNotice();
   await setupAuth();
+  showFlashToast();
 }
 
 const componentsReady = new Promise((resolve) => {
