@@ -40,6 +40,11 @@ export const listBadgeMethods = {
     badge.style.backgroundColor = color;
     badge.style.color = textColor;
 
+    if (columnName === 'status') {
+      badge.className += ' list-status-badge';
+      badge.style.setProperty('--badge-accent', color);
+    }
+
     if (['platform', 'source'].includes(columnName)) {
       const favicon = getPlatformFavicon(value);
       const icon = this.createFaviconElement(favicon);

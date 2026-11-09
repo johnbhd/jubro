@@ -8,7 +8,11 @@ class FakeElement {
     this.classList = new Set();
     this.className = '';
     this.listeners = {};
-    this.style = {};
+    this.style = {
+      setProperty(name, value) {
+        this[name] = value;
+      },
+    };
     this.src = '';
     this.alt = '';
     this._textContent = '';
@@ -67,6 +71,24 @@ test('only OnlineJobs.ph platform badges receive a white favicon circle', () => 
 
   const applicationLink = context.createFaviconElement(getLinkFavicon('https://onlinejobs.ph'));
   assert.equal(applicationLink.className, 'favicon-holder');
+});
+
+test('status badges expose their existing accent without changing platform badges', () => {
+  const context = {
+    ...listBadgeMethods,
+    isUsefulListValue: Boolean,
+    getOptionColor: () => '#3b82f6',
+    getContrastColor: () => '#ffffff',
+    normalizeText: value => value.toLowerCase(),
+    getColumnName: column => column.name,
+  };
+  const badge = context.createListBadgeElement({ name: 'Status' }, 'Submitted');
+  assert.equal(badge.className.includes('list-status-badge'), true);
+  assert.equal(badge.style['--badge-accent'], '#3b82f6');
+  assert.equal(badge.style.backgroundColor, '#3b82f6');
+  assert.equal(badge.textContent, 'Submitted');
+  const other = context.createListBadgeElement({ name: 'Priority' }, 'High');
+  assert.equal(other.className.includes('list-status-badge'), false);
 });
 
 test('getLinkFavicon only accepts http and https URLs', () => {

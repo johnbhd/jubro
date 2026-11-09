@@ -2304,6 +2304,149 @@ section > .list-panel {
   display: none !important;
 }
 
+/* Light workspace hierarchy; dark mode keeps its existing overrides. */
+html:not(.dark) #appBody {
+  --bg-app: #eef1f5;
+  --bg-surface: #f8f9fb;
+  --bg-subtle: #f4f6f8;
+  --bg-card: #ffffff;
+  --border-default: #d9dee7;
+  --border-subtle: #e3e7ed;
+  --text-primary: #172033;
+  --text-secondary: #6b7280;
+  --text-muted: #667085;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  scrollbar-color: #a3adbc var(--bg-app);
+}
+
+html:not(.dark) #appBody :is(#boardTopNavbar, #appNavbar, #listView aside) {
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 1px var(--border-default);
+}
+
+html:not(.dark) #appBody :is(.job-search-selector, #boardViewToggle, .search-discovery-group) {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-default);
+}
+
+html:not(.dark) #appBody .toolbar-icon-button:not(.primary-action-button) {
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--border-default);
+}
+
+html:not(.dark) #appBody :is(#btnCancelListEdit, #btnResetListSettings,
+  .status-dialog-actions button:not(.primary-action-button)) {
+  background-color: var(--bg-surface);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+html:not(.dark) #appBody .kanban-column {
+  background-color: color-mix(in srgb, var(--status-accent, #64748b) 4%, var(--bg-surface));
+  border-color: var(--border-default);
+  border-top-color: var(--status-accent, #64748b);
+}
+
+html:not(.dark) #appBody .kanban-column-header {
+  background-color: color-mix(in srgb, var(--status-accent, #64748b) 10%, var(--bg-surface));
+  border-bottom-color: var(--border-default);
+}
+
+html:not(.dark) #appBody :is(.kanban-card, .list-view-row) {
+  background-color: var(--bg-card);
+  border-top-color: var(--border-default);
+  border-right-color: var(--border-default);
+  border-bottom-color: var(--border-default);
+  box-shadow: 0 1px 2px rgb(23 32 51 / 0.04);
+}
+
+html:not(.dark) #appBody .list-view-row {
+  border-left-color: var(--border-default);
+}
+
+html:not(.dark) #appBody :is(.kanban-column-empty, #listCards > .border-dashed) {
+  background-color: rgb(255 255 255 / 0.35);
+  border-color: #d5dae2;
+  color: var(--text-secondary);
+}
+
+html:not(.dark) #appBody :is(.kanban-card-next-action, .list-settings-field-row, .list-info-field) {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-subtle);
+}
+
+html:not(.dark) #appBody :is(.list-edit-control, .list-settings-control, #listSearchInput,
+  #listSortSelect, .kanban-card select, .status-dialog input, #dashboardModal input, #dashboardModal select) {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+html:not(.dark) #appBody :is(input, textarea)::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+html:not(.dark) #appBody :is(input, select, textarea, .list-edit-select-trigger):focus-visible {
+  border-color: #2563eb;
+  outline: 2px solid rgb(37 99 235 / 0.25);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+html:not(.dark) #appBody .list-filter-chip {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+}
+
+html:not(.dark) #appBody .list-filter-chip:is(:hover, .is-active) {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+  color: #ffffff;
+}
+
+html:not(.dark) #appBody .list-filter-count {
+  background-color: color-mix(in srgb, var(--chip-color) 15%, white);
+  color: color-mix(in srgb, var(--chip-color) 40%, black);
+}
+
+html:not(.dark) #appBody .list-status-badge {
+  background-color: color-mix(in srgb, var(--badge-accent) 14%, white) !important;
+  color: color-mix(in srgb, var(--badge-accent) 40%, black) !important;
+}
+
+html:not(.dark) #appBody :is(.list-edit-dialog, .list-settings-dialog, .status-dialog,
+  .job-search-dropdown, .kanban-status-menu, .kanban-card-menu, .list-edit-select-dropdown,
+  #boardTopNavDropdown, #contextMenu) {
+  background-color: var(--bg-card);
+  border-color: var(--border-default);
+  color: var(--text-primary);
+  box-shadow: 0 6px 18px rgb(23 32 51 / 0.1);
+}
+
+html:not(.dark) #appBody #dashboardModal > div {
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 0 1px var(--border-default);
+}
+
+html:not(.dark) #appBody :is(#dashboardCards > div, #dashboardCharts > div > div) {
+  background-color: var(--bg-card);
+}
+
+html:not(.dark) #appBody #dashboardCards p {
+  color: var(--text-primary) !important;
+}
+
+html:not(.dark) #appBody :is(.text-gray-900, .text-gray-800, .kanban-column-title) {
+  color: var(--text-primary);
+}
+
+html:not(.dark) #appBody :is(.text-gray-500, .text-gray-400) {
+  color: var(--text-secondary);
+}
+
 /* Keep landing layout independent of generated utility availability. */
 html:not(.dark) #homeBody {
   --landing-page: #f4f5f7;
