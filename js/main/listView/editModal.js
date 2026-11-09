@@ -76,9 +76,14 @@ export const listEditMethods = {
 
     if (type === 'select' && mode === 'add') {
       const label = document.createElement('label');
-      label.textContent = field.label;
+      label.className = 'block';
+
+      const labelText = document.createElement('span');
+      labelText.className = 'text-sm font-medium text-gray-700';
+      labelText.textContent = field.label;
+
       const select = document.createElement('select');
-      select.className = 'list-edit-control';
+      select.className = 'list-edit-control mt-1 h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 outline-none focus:border-gray-400';
       select.dataset.fieldKey = field.key;
       const blank = document.createElement('option');
       blank.value = '';
@@ -91,7 +96,7 @@ export const listEditMethods = {
         select.appendChild(item);
       });
       select.value = value || '';
-      label.appendChild(select);
+      label.append(labelText, select);
       return label;
     }
 
@@ -166,6 +171,7 @@ export const listEditMethods = {
   },
 
   openListEditModal(rowIndex) {
+    this.ensureListEditModal();
     const tracker = this.getTracker();
     const row = tracker?.rows?.[rowIndex];
     const fieldsContainer = document.getElementById('listEditFields');
@@ -274,6 +280,24 @@ export const listEditMethods = {
 
       const renderOptions = () => {
         optionsContainer.innerHTML = '';
+
+        const clearRow = document.createElement('div');
+        clearRow.className = 'list-edit-select-option flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50';
+
+        const clearButton = document.createElement('button');
+        clearButton.type = 'button';
+        clearButton.textContent = 'None';
+        clearButton.className = 'min-w-0 flex-1 cursor-pointer truncate text-left italic text-gray-500 hover:text-gray-900';
+
+        clearButton.addEventListener('click', (event) => {
+          event.stopPropagation();
+          valueInput.value = '';
+          updateTrigger();
+          this.closeListEditSelectDropdowns();
+        });
+
+        clearRow.appendChild(clearButton);
+        optionsContainer.appendChild(clearRow);
 
         column.options.forEach((option, optionIndex) => {
           const optionRow = document.createElement('div');

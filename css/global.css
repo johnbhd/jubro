@@ -1774,6 +1774,14 @@ section > .list-panel {
   background-color: rgb(127 29 29 / 0.35);
 }
 
+.dark .list-edit-select-option .text-gray-500 {
+  color: #9ca3af;
+}
+
+.dark .list-edit-select-option .hover\:text-gray-900:hover {
+  color: #f9fafb;
+}
+
 /* List view extra-info modal */
 .dark .list-info-dialog {
   border-color: #374151;
@@ -2252,6 +2260,12 @@ section > .list-panel {
 
 .dark .application-add-dialog {
   background: #1f2937;
+  color: #f9fafb;
+}
+
+.dark .application-add-fields select {
+  border-color: #4b5563;
+  background-color: #1f2937;
   color: #f9fafb;
 }
 

@@ -26,6 +26,27 @@ export function createDefaultTracker(id, title = 'Job Applications') {
       },
       { name: 'Date', type: 'date' },
       { name: 'Link', type: 'text' },
+      {
+        name: 'Work Setup',
+        type: 'select',
+        options: [
+          { label: 'On-site', color: '#64748b' },
+          { label: 'Hybrid', color: '#8b5cf6' },
+          { label: 'Remote', color: '#10b981' }
+        ]
+      },
+      {
+        name: 'Employment Type',
+        type: 'select',
+        options: [
+          { label: 'Full-time', color: '#3b82f6' },
+          { label: 'Part-time', color: '#06b6d4' },
+          { label: 'Internship', color: '#f59e0b' },
+          { label: 'Contract', color: '#ec4899' },
+          { label: 'Freelance', color: '#84cc16' },
+          { label: 'Temporary', color: '#94a3b8' }
+        ]
+      },
       { name: 'Next Action', type: 'text' },
       { name: 'Next Action Date', type: 'date' }
     ],
