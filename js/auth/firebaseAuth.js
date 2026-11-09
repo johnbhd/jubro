@@ -26,6 +26,7 @@ import {
   firebaseTrackerSync,
 } from "../storage/firebaseTrackerSync.js";
 import { Storage } from "../storage/storage.js";
+import { confirmGuestTransfer, confirmTrackerOverwrite } from './syncChoice.js';
 
 class FirebaseAuthService {
   constructor() {
@@ -36,13 +37,8 @@ class FirebaseAuthService {
     this.syncingUserId = null;
     this.syncPromise = null;
     this.initialWorkspacePromise = null;
-    this.conflictResolver = ({ localTracker, firebaseTracker }) => window.confirm(
-      `"${localTracker?.title || 'Untitled Job Search'}" differs from the account copy `
-      + `"${firebaseTracker?.title || 'Untitled Job Search'}". Replace the account copy with this Job Search?`
-    );
-    this.guestTransferResolver = () => window.confirm(
-      'This browser has guest Job Searches and this account already has saved Job Searches. Bring the guest Job Searches into this account?'
-    );
+    this.conflictResolver = confirmTrackerOverwrite;
+    this.guestTransferResolver = confirmGuestTransfer;
   }
 
   setConflictResolver(resolveConflict) {

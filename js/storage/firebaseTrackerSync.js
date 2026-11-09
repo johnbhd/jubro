@@ -14,6 +14,11 @@ import { app } from "../firebase/firebaseApp.js";
 import { Storage } from "./storage.js";
 import { normalizeLegacyWorkspaceState } from "../services/trackerData.js";
 import {
+  getGuestTransferDecision,
+  hasMeaningfulGuestData,
+  rememberGuestTransferDecision,
+} from "./guestTransferDecision.js";
+import {
   GUEST_TRANSFER_AUTOMATIC,
   GUEST_TRANSFER_CONFIRM,
   getGuestTransferMode
@@ -77,6 +82,7 @@ export class FirebaseTrackerSync {
     this.db = getFirestore(app);
     this.auth = getAuth(app);
     this.pendingUploads = new Map();
+    this.pendingResolutions = new Map();
   }
 
   clone(value) {
@@ -99,6 +105,11 @@ export class FirebaseTrackerSync {
     return JSON.stringify(this.normalizeTracker(a)) === JSON.stringify(this.normalizeTracker(b));
   }
 
+  workspacesMatch(a, b) {
+    return a?.active === b?.active
+      && JSON.stringify(a?.data) === JSON.stringify(b?.data);
+  }
+
   findMatchingTrackerId(firebaseData, localId, localTracker) {
     if (firebaseData[localId]) return localId;
 
@@ -111,12 +122,41 @@ export class FirebaseTrackerSync {
     }) || null;
   }
 
-  async syncLocalData(user, options = {}) {
+  syncLocalData(user, options = {}) {
+    if (!user?.uid) {
+      return Promise.resolve();
+    }
+
+    const pending = this.pendingResolutions.get(user.uid);
+    if (pending) {
+      return pending;
+    }
+
+    const resolution = this.resolveSignedInWorkspace(user, options).finally(() => {
+      if (this.pendingResolutions.get(user.uid) === resolution) {
+        this.pendingResolutions.delete(user.uid);
+      }
+    });
+
+    this.pendingResolutions.set(user.uid, resolution);
+    return resolution;
+  }
+
+  assertWorkspaceOwner(user) {
+    const owner = Storage.getCurrentOwner();
+
+    if (owner.ownerType !== 'account' || owner.ownerId !== user.uid) {
+      throw new Error('The account changed during workspace resolution.');
+    }
+  }
+
+  async resolveSignedInWorkspace(user, options = {}) {
     if (!user?.uid) return;
 
     const guestState = Storage.loadGuest();
     const localState = Storage.useAccountWorkspace(user.uid);
     const firebaseState = await this.loadFirebaseState(user.uid);
+    this.assertWorkspaceOwner(user);
 
     const hasLocalData = hasValidTrackerData(localState);
     const hasFirebaseData = hasValidTrackerData(firebaseState);
@@ -133,24 +173,32 @@ export class FirebaseTrackerSync {
         firebaseState,
         options.resolveConflict
       );
-      shouldUpload = true;
+      shouldUpload = !this.workspacesMatch(accountState, firebaseState);
     }
 
+    this.assertWorkspaceOwner(user);
     const hasAccountData = hasValidTrackerData(accountState);
     const transferMode = getGuestTransferMode({
-      hasGuestData: hasValidTrackerData(guestState),
+      hasGuestData: hasValidTrackerData(guestState)
+        && hasMeaningfulGuestData(guestState)
+        && !getGuestTransferDecision(user.uid, guestState),
       hasAccountData,
       isLegacyGuest: guestState.legacyUnowned === true
     });
     let shouldTransferGuest = transferMode === GUEST_TRANSFER_AUTOMATIC;
 
     if (transferMode === GUEST_TRANSFER_CONFIRM) {
-      shouldTransferGuest = typeof options.resolveGuestTransfer === "function"
-        ? await options.resolveGuestTransfer({
-            guestState: this.clone(guestState),
-            accountState: this.clone(accountState)
-          })
-        : false;
+      if (typeof options.resolveGuestTransfer === 'function') {
+        shouldTransferGuest = await options.resolveGuestTransfer({
+          guestState: this.clone(guestState),
+          accountState: this.clone(accountState)
+        });
+        this.assertWorkspaceOwner(user);
+
+        if (!shouldTransferGuest) {
+          rememberGuestTransferDecision(user.uid, guestState, 'keep-account');
+        }
+      }
     }
 
     if (shouldTransferGuest) {
@@ -175,7 +223,10 @@ export class FirebaseTrackerSync {
       user.uid,
       expectedCloudRevision
     );
-    const saved = Storage.replace(ownedAccountState, localState.revision);
+    this.assertWorkspaceOwner(user);
+    const alreadyPersisted = this.workspacesMatch(ownedAccountState, localState)
+      && this.getCloudRevision(localState) === expectedCloudRevision;
+    const saved = alreadyPersisted || Storage.replace(ownedAccountState, localState.revision);
 
     if (!saved) {
       throw new Error("Local tracker data changed before account sync completed.");
@@ -188,6 +239,8 @@ export class FirebaseTrackerSync {
     }
 
     if (shouldTransferGuest) {
+      this.assertWorkspaceOwner(user);
+      rememberGuestTransferDecision(user.uid, guestState, 'transferred');
       Storage.clearGuestAfterTransfer(guestState.revision);
       console.log("Transferred guest trackerData to the signed-in account");
     } else if (!hasLocalData && hasFirebaseData) {

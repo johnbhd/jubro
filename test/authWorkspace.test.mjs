@@ -80,7 +80,7 @@ test('resolves ownership before callbacks and restores guest before signout', as
   unsubscribe();
 });
 
-test('provides explicit browser fallback resolvers without the navbar Auth UI', async () => {
+test('uses shared Jubro modal resolvers without the navbar Auth UI', async () => {
   const originalSync = firebaseTrackerSync.syncLocalData;
   let options = null;
 
@@ -95,7 +95,7 @@ test('provides explicit browser fallback resolvers without the navbar Auth UI', 
     firebaseTrackerSync.syncLocalData = originalSync;
   }
 
-  assert.equal(typeof options.resolveConflict, 'function');
-  assert.equal(typeof options.resolveGuestTransfer, 'function');
-  assert.equal(await options.resolveGuestTransfer(), true);
+  const { confirmGuestTransfer, confirmTrackerOverwrite } = await import('../js/auth/syncChoice.js');
+  assert.equal(options.resolveConflict, confirmTrackerOverwrite);
+  assert.equal(options.resolveGuestTransfer, confirmGuestTransfer);
 });

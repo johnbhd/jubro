@@ -33,10 +33,7 @@ export class Auth {
     this.createForgotPasswordModal();
     this.createSettingsModal();
     this.createDeleteAccountModal();
-    this.createSyncConflictModal();
     this.createDropdown();
-    authService.setConflictResolver((conflict) => this.confirmTrackerOverwrite(conflict));
-    authService.setGuestTransferResolver((details) => this.confirmGuestTransfer(details));
     this.bindEvents();
     this.listenAuth();
   }
@@ -1384,114 +1381,6 @@ export class Auth {
     } catch (err) {
       message.textContent = err.message;
     }
-  }
-
-  createSyncConflictModal() {
-    const div = document.createElement('div');
-
-    div.id = 'syncConflictModal';
-    div.className = 'hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4';
-    div.setAttribute('role', 'dialog');
-    div.setAttribute('aria-modal', 'true');
-    div.setAttribute('aria-labelledby', 'syncConflictTitle');
-    div.setAttribute('aria-describedby', 'syncConflictText');
-    div.setAttribute('aria-hidden', 'true');
-
-    div.innerHTML = `
-      <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <h2 id="syncConflictTitle" class="text-xl font-semibold text-gray-900">
-          Job Search already exists
-        </h2>
-
-        <p id="syncConflictText" class="mt-3 leading-7 text-gray-600"></p>
-
-        <div class="mt-6 flex flex-col gap-2 sm:flex-row">
-          <button
-            id="btnSyncChoiceCancel"
-            type="button"
-            class="flex-1 rounded-xl border border-gray-300 bg-white px-4 py-2 font-medium text-gray-900 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-          >
-            Keep Cloud
-          </button>
-
-          <button
-            id="btnSyncChoiceConfirm"
-            type="button"
-            class="theme-create-button flex-1 rounded-xl bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-          >
-            Overwrite
-          </button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(div);
-    this.syncConflictModal = div;
-    this.syncConflictTitle = div.querySelector('#syncConflictTitle');
-    this.syncConflictText = div.querySelector('#syncConflictText');
-  }
-
-  confirmTrackerOverwrite({ localTracker, firebaseTracker }) {
-    const localTitle = localTracker?.title || 'Untitled Job Search';
-    const cloudTitle = firebaseTracker?.title || localTitle;
-
-    return this.presentSyncChoice({
-      title: 'Job Search already exists',
-      text: `"${localTitle}" already exists in your account as "${cloudTitle}", but the applications do not match. Replace the account Job Search with this Job Search?`,
-      cancelLabel: 'Keep Account',
-      confirmLabel: 'Replace Account'
-    });
-  }
-
-  confirmGuestTransfer({ guestState, accountState }) {
-    const guestCount = Object.keys(guestState?.data || {}).length;
-    const accountCount = Object.keys(accountState?.data || {}).length;
-
-    return this.presentSyncChoice({
-      title: 'Guest Job Searches found',
-      text: `This browser has ${guestCount} guest Job Search${guestCount === 1 ? '' : 'es'}, and your account has ${accountCount}. Bring the guest Job Searches into this account?`,
-      cancelLabel: 'Keep Account Only',
-      confirmLabel: 'Bring Guest Job Searches'
-    });
-  }
-
-  presentSyncChoice({ title, text, cancelLabel, confirmLabel }) {
-    const cancelButton = document.getElementById('btnSyncChoiceCancel');
-    const confirmButton = document.getElementById('btnSyncChoiceConfirm');
-    const previousFocus = document.activeElement;
-
-    this.syncConflictTitle.textContent = title;
-    this.syncConflictText.textContent = text;
-    cancelButton.textContent = cancelLabel;
-    confirmButton.textContent = confirmLabel;
-    this.syncConflictModal.classList.remove('hidden');
-    this.syncConflictModal.setAttribute('aria-hidden', 'false');
-
-    return new Promise((resolve) => {
-      const cleanup = (confirmed) => {
-        cancelButton.removeEventListener('click', cancelHandler);
-        confirmButton.removeEventListener('click', confirmHandler);
-        this.syncConflictModal.removeEventListener('keydown', keydownHandler);
-        this.syncConflictModal.classList.add('hidden');
-        this.syncConflictModal.setAttribute('aria-hidden', 'true');
-        previousFocus?.focus?.();
-        resolve(confirmed);
-      };
-
-      const cancelHandler = () => cleanup(false);
-      const confirmHandler = () => cleanup(true);
-      const keydownHandler = (event) => {
-        if (event.key !== 'Escape') return;
-
-        event.preventDefault();
-        cleanup(false);
-      };
-
-      cancelButton.addEventListener('click', cancelHandler);
-      confirmButton.addEventListener('click', confirmHandler);
-      this.syncConflictModal.addEventListener('keydown', keydownHandler);
-      requestAnimationFrame(() => cancelButton.focus());
-    });
   }
 
   toggleMode() {

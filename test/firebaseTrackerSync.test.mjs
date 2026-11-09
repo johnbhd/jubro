@@ -36,6 +36,217 @@ const {
 
 const ACCOUNT_A = { uid: 'account-a', email: 'a@example.test' };
 const ACCOUNT_B = { uid: 'account-b', email: 'b@example.test' };
+const { createDefaultTracker } = await import('../js/tracker/defaultTracker.js');
+const {
+  getGuestTransferDecision,
+  hasMeaningfulGuestData,
+} = await import('../js/storage/guestTransferDecision.js');
+
+test('guest shell detection preserves customization and ignores only pristine defaults', () => {
+  const tracker = createDefaultTracker('default', 'My Job Search');
+  const guest = { revision: 1, data: { default: tracker } };
+  assert.equal(hasMeaningfulGuestData(guest), false);
+  assert.equal(hasMeaningfulGuestData({ ...guest, legacyUnowned: true }), false);
+  tracker.columns[0].name = 'Organization';
+  assert.equal(hasMeaningfulGuestData(guest), true);
+  tracker.columns[0].name = 'Company';
+  guest.data.second = createDefaultTracker('second', 'My Job Search');
+  assert.equal(hasMeaningfulGuestData(guest), true);
+});
+
+test('reading a decision has no workspace side effects and validates snapshot IDs', async () => {
+  const guest = trackerState('guest-1', 'Guest Search');
+  assert.equal(Storage.save(guest), true);
+  seedCloudState(1);
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => false,
+  });
+  const before = [...localStorage.values];
+  const writes = firebase.__getWrites();
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, guest), 'keep-account');
+  const replacement = { ...guest, data: { different: guest.data['guest-1'] } };
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, replacement), null);
+  assert.deepEqual([...localStorage.values], before);
+  assert.deepEqual(firebase.__getWrites(), writes);
+});
+
+test('failed transfers stay unresolved and retry records only a successful upload', async () => {
+  const guest = trackerState('guest-1', 'Guest Search');
+  assert.equal(Storage.save(guest), true);
+  firebase.__setFailWrites(true);
+  await assert.rejects(new FirebaseTrackerSync().syncLocalData(ACCOUNT_A));
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, guest), null);
+  assert.ok(Storage.loadGuest().data['guest-1']);
+
+  firebase.__setFailWrites(false);
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => true,
+  });
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, guest), 'transferred');
+  assert.ok(JSON.parse(firebase.__getDocument('trackerData/account-a').data)['guest-1']);
+});
+
+test('unavailable account data never prompts or resolves the guest snapshot', async () => {
+  const guest = trackerState('guest-1', 'Guest Search');
+  assert.equal(Storage.save(guest), true);
+  const client = new FirebaseTrackerSync();
+  client.loadFirebaseState = async () => {
+    throw new Error('offline');
+  };
+  let prompts = 0;
+  await assert.rejects(client.syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => {
+      prompts += 1;
+      return true;
+    },
+  }), /offline/);
+  assert.equal(prompts, 0);
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, guest), null);
+  assert.deepEqual(Storage.load().data, {});
+  assert.ok(Storage.loadGuest().data['guest-1']);
+});
+
+test('malformed transfer metadata prompts safely and replaces only that account record', async () => {
+  assert.equal(Storage.save(trackerState('guest-1', 'Guest Search')), true);
+  seedCloudState(1);
+  const key = 'jubro_guest_transfer_decision_account-a';
+  for (const invalid of ['{', 'null', '{"decision":"keep-account"}']) {
+    localStorage.setItem(key, invalid);
+    let prompts = 0;
+    await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+      resolveGuestTransfer: async () => {
+        prompts += 1;
+        return false;
+      },
+    });
+    assert.equal(prompts, 1);
+    assert.equal(JSON.parse(localStorage.getItem(key)).decision, 'keep-account');
+  }
+});
+
+test('customized empty guest searches remain meaningful', async () => {
+  const tracker = createDefaultTracker('custom', 'Internship Search');
+  assert.equal(Storage.save({ active: 'custom', data: { custom: tracker } }), true);
+  seedCloudState(1);
+  let prompts = 0;
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => {
+      prompts += 1;
+      return false;
+    },
+  });
+  assert.equal(prompts, 1);
+});
+
+test('an account switch during a pending choice cannot persist a decision or transfer', async () => {
+  const guest = trackerState('guest-1', 'Guest Search');
+  assert.equal(Storage.save(guest), true);
+  seedCloudState(1);
+  await assert.rejects(new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => {
+      Storage.useAccountWorkspace(ACCOUNT_B.uid);
+      return true;
+    },
+  }), /account changed/);
+  assert.equal(getGuestTransferDecision(ACCOUNT_A.uid, guest), null);
+  assert.equal(Storage.getCurrentOwner().ownerId, ACCOUNT_B.uid);
+  assert.deepEqual(Storage.load().data, {});
+  assert.ok(Storage.loadGuest().data['guest-1']);
+});
+
+test('remembers a declined guest snapshot across reloads and accounts independently', async () => {
+  assert.equal(Storage.save(trackerState('guest-1', 'Guest Search')), true);
+  const guestBefore = localStorage.getItem(STORAGE_KEY);
+  seedCloudState(1);
+  let prompts = 0;
+  const options = {
+    resolveGuestTransfer: async () => {
+      prompts += 1;
+      return false;
+    },
+  };
+
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, options);
+  Storage.useGuestWorkspace();
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, options);
+  assert.equal(prompts, 1);
+  assert.equal(localStorage.getItem(STORAGE_KEY), guestBefore);
+
+  firebase.__setDocument('trackerData/account-b', {
+    ...cloudState('b-1', 'B Search'),
+    ownerId: ACCOUNT_B.uid,
+  });
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_B, options);
+  assert.equal(prompts, 2);
+
+  const guest = Storage.useGuestWorkspace();
+  guest.data['guest-1'].title = 'Changed guest';
+  assert.equal(Storage.save(guest), true);
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, options);
+  assert.equal(prompts, 3);
+});
+
+test('concurrent workspace resolution shares one pending result and prompt', async () => {
+  assert.equal(Storage.save(trackerState('guest-1', 'Guest Search')), true);
+  seedCloudState(1);
+  let decide;
+  let prompted;
+  const ready = new Promise((resolve) => {
+    prompted = resolve;
+  });
+  let prompts = 0;
+  const client = new FirebaseTrackerSync();
+  const options = {
+    resolveGuestTransfer: () => {
+      prompts += 1;
+      prompted();
+      return new Promise((resolve) => {
+        decide = resolve;
+      });
+    },
+  };
+  const first = client.syncLocalData(ACCOUNT_A, options);
+  const second = client.syncLocalData(ACCOUNT_A, options);
+  await ready;
+  decide(false);
+  await Promise.all([first, second]);
+  assert.equal(first, second);
+  assert.equal(prompts, 1);
+});
+
+test('empty automatic guest shell is not transferred or prompted', async () => {
+  const tracker = createDefaultTracker('default', 'My Job Search');
+  assert.equal(Storage.save({ active: 'default', data: { default: tracker } }), true);
+  const before = localStorage.getItem(STORAGE_KEY);
+  seedCloudState(1);
+  let prompts = 0;
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => {
+      prompts += 1;
+      return true;
+    },
+  });
+  assert.equal(prompts, 0);
+  assert.equal(localStorage.getItem(STORAGE_KEY), before);
+  assert.deepEqual(Object.keys(Storage.load().data), ['account-1']);
+});
+
+test('remembered decisions do not rewrite or upload an unchanged account on startup', async () => {
+  assert.equal(Storage.save(trackerState('guest-1', 'Guest Search')), true);
+  seedCloudState(1);
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => false,
+  });
+  const before = JSON.stringify(Storage.load());
+  const writes = firebase.__getWrites().length;
+  await new FirebaseTrackerSync().syncLocalData(ACCOUNT_A, {
+    resolveGuestTransfer: async () => {
+      throw new Error('must not prompt');
+    },
+  });
+  assert.equal(JSON.stringify(Storage.load()), before);
+  assert.equal(firebase.__getWrites().length, writes);
+});
 
 function trackerState(id, title) {
   return {
