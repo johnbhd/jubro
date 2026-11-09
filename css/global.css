@@ -2298,3 +2298,118 @@ section > .list-panel {
 [hidden] {
   display: none !important;
 }
+
+/* Keep landing layout independent of generated utility availability. */
+#homeBody .landing-shell {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 120px 16px 24px;
+}
+
+#homeBody .landing-main {
+  display: grid;
+  gap: 64px;
+}
+
+#homeBody .landing-main > section {
+  width: 100%;
+  min-width: 0;
+  scroll-margin-top: 112px;
+}
+
+#homeBody .landing-hero-copy {
+  max-width: 896px;
+  margin-inline: auto;
+}
+
+#homeBody .landing-hero-copy h1 {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+#homeBody .landing-hero-visual {
+  max-width: 1120px;
+  margin: 48px auto 0;
+}
+
+#homeBody .landing-hero-visual > div {
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: #fff;
+  padding: 8px;
+  box-shadow: 0 20px 50px #0f172a14;
+}
+
+.dark #homeBody .landing-hero-visual > div {
+  border-color: #334155;
+  background: #0f172a;
+  box-shadow: 0 20px 50px #0004;
+}
+
+#homeBody .landing-about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+}
+
+#homeBody .landing-steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+#homeBody .landing-steps > div {
+  border-color: #bfdbfe;
+}
+
+.dark #homeBody .landing-steps > div {
+  border-color: #1e40af;
+}
+
+#homeBody .landing-phone-visual {
+  width: 208px;
+  max-width: 100%;
+}
+
+#homeBody .landing-phone-visual img,
+#homeBody #heroProductImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  #homeBody .landing-shell {
+    padding-inline: 24px;
+  }
+
+  #homeBody .landing-phone-visual {
+    width: 240px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #homeBody .landing-shell {
+    padding: 144px 32px 32px;
+  }
+
+  #homeBody .landing-main {
+    gap: 96px;
+  }
+
+  #homeBody .landing-about-grid {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 56px;
+  }
+
+  #homeBody .landing-phone-visual {
+    width: 280px;
+  }
+
+  #homeBody .landing-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
