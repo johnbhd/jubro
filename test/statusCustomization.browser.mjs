@@ -1194,10 +1194,14 @@ try {
   assert.equal(await evaluate(`
     await window.jubroComponentsReady;
     const primary = [...document.querySelectorAll('a.theme-create-button')];
-    return primary.length > 0 && primary.every(link => link.pathname === '/board/'
-      && link.textContent.trim() === 'Open Jubro')
+    return primary.length === 3 && primary.every(link => link.pathname === '/board/')
+      && document.getElementById('btnOpenModal').textContent.trim() === 'Start for Free'
+      && document.querySelector('#heroSection .theme-create-button').textContent.trim() === 'Start Tracking'
+      && document.querySelector('.landing-final-cta .theme-create-button').textContent.trim() === 'Create My Job Search'
+      && document.querySelector('#heroSection a[href="#how-it-works"]').textContent.trim() === 'See How It Works'
+      && Boolean(document.getElementById('how-it-works'))
       && !document.querySelector('a[href^="/trackers"]');
-  `), true, 'Landing and shared navigation open Board without tracker management wording.');
+  `), true, 'Contextual landing CTAs keep the same guest-first Board route and workflow anchor.');
   assert.deepEqual(await evaluate(`
     const navigation = document.querySelector('nav[aria-label="Primary navigation"]');
     return [...navigation.querySelectorAll('a')].map(link => link.textContent.trim());
@@ -1236,9 +1240,55 @@ try {
     await firebase.__emitAuth(null);
     return unchanged && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
   `), true, 'Account loading failure and logout cannot change static marketing content.');
+  assert.equal(await evaluate(`
+    const { Storage } = await import('/js/storage/storage.js');
+    const before = JSON.stringify(Storage.load());
+    const wasDark = document.documentElement.classList.contains('dark');
+    document.getElementById('btnGuestTheme').click();
+    const switched = document.documentElement.classList.contains('dark') !== wasDark;
+    document.getElementById('btnGuestTheme').click();
+    return switched && document.documentElement.classList.contains('dark') === wasDark
+      && JSON.stringify(Storage.load()) === before;
+  `), true, 'Theme control switches immediately without changing workspace data.');
   for (const theme of ['dark', 'light']) {
     for (const width of [390, 430, 768, 1024, 1440, 1920]) {
       await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      assert.equal(await evaluate(`
+        document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await Promise.all(document.getAnimations().map(animation => animation.finished));
+        const body = getComputedStyle(document.body);
+        const frame = getComputedStyle(document.querySelector('.landing-hero-visual > div'));
+        const navbar = getComputedStyle(document.getElementById('siteNavbar'));
+        const footer = getComputedStyle(document.querySelector('footer'));
+        if (document.documentElement.classList.contains('dark')) {
+          return body.backgroundColor === 'rgb(11, 17, 32)'
+            && frame.backgroundColor === 'rgb(31, 41, 55)';
+        }
+        function luminance(color) {
+          const channels = color.match(/[\\d.]+/g).slice(0, 3).map(Number).map(value => {
+            const channel = value / 255;
+            return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+          });
+          return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+        }
+        function readable(selector, background) {
+          const foreground = luminance(getComputedStyle(document.querySelector(selector)).color);
+          const surface = luminance(background);
+          return (Math.max(foreground, surface) + 0.05) / (Math.min(foreground, surface) + 0.05) >= 4.5;
+        }
+        const secondary = getComputedStyle(document.querySelector('#heroSection a[href="#how-it-works"]'));
+        return body.backgroundColor === 'rgb(244, 245, 247)'
+          && navbar.backgroundColor === 'rgb(250, 250, 251)'
+          && footer.backgroundColor === 'rgb(250, 250, 251)'
+          && frame.borderTopColor === 'rgb(229, 231, 235)'
+          && frame.backgroundColor === 'rgb(248, 249, 250)'
+          && readable('#heroSection h1', body.backgroundColor)
+          && readable('.landing-hero-copy > p', body.backgroundColor)
+          && readable('[data-nav-link="features"]', navbar.backgroundColor)
+          && readable('#heroSection a[href="#how-it-works"]', secondary.backgroundColor)
+          && readable('#heroSection .theme-create-button', getComputedStyle(document.querySelector('#heroSection .theme-create-button')).backgroundColor);
+      `), true, 'Theme surfaces and light text contrast remain readable ' + theme + ' ' + width);
       assert.equal(await evaluate(`
         document.documentElement.classList.toggle('dark', ${theme === 'dark'});
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
