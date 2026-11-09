@@ -2,6 +2,7 @@ import { normalizeCellValue } from '../services/trackerData.js';
 import { getSelectOptionColor, STATUS_COLORS } from '../services/statusColors.js';
 import { createApplicationDragHandle, createKanbanDrag } from './kanbanDrag.js';
 import { createCompanyFaviconElement } from './favicon.js';
+import { getSafeHttpUrl } from './trackerUtils.js';
 
 function formatActionDate(value) {
   if (!value || typeof value !== 'string') return '';
@@ -421,6 +422,8 @@ export const kanbanMethods = {
         const date = this.getCellDisplay(row?.[indexes.date]);
         const platform = this.getCellDisplay(row?.[indexes.platform]);
         const link = indexes.link >= 0 ? this.getCellValue(row?.[indexes.link]) : '';
+        const employmentType = indexes.employmentType >= 0 ? this.getCellDisplay(row?.[indexes.employmentType]) : '-';
+        const workSetup = indexes.workSetup >= 0 ? this.getCellDisplay(row?.[indexes.workSetup]) : '-';
         const nextAction = indexes.nextAction >= 0 ? this.getCellDisplay(row?.[indexes.nextAction]) : '-';
         const nextActionDate = indexes.nextActionDate >= 0 ? this.getCellDisplay(row?.[indexes.nextActionDate]) : '-';
         const card = document.createElement('article');
@@ -438,16 +441,46 @@ export const kanbanMethods = {
         headerRow.className = 'flex min-w-0 items-start justify-between gap-2';
 
         const mainInfo = document.createElement('div');
-        mainInfo.className = 'flex min-w-0 flex-1 items-start gap-3';
+        mainInfo.className = 'min-w-0 flex-1';
 
         const faviconEl = createCompanyFaviconElement(link, company === '-' ? '' : company);
-        mainInfo.appendChild(faviconEl);
+        const safeJobUrl = typeof this.getSafeHttpUrl === 'function' ? this.getSafeHttpUrl(link) : getSafeHttpUrl(link);
 
-        const titleCol = document.createElement('div');
-        titleCol.className = 'min-w-0 flex-1';
-        appendText(titleCol, 'block truncate text-sm font-semibold text-gray-900', company === '-' ? 'Untitled company' : company);
-        appendText(titleCol, 'mt-0.5 block truncate text-xs text-gray-500', position === '-' ? 'Untitled position' : position);
-        mainInfo.appendChild(titleCol);
+        if (safeJobUrl) {
+          const companyLink = document.createElement('a');
+          companyLink.className = 'kanban-card-company-link group flex min-w-0 items-center gap-3 text-gray-900 dark:text-gray-100';
+          companyLink.href = safeJobUrl;
+          companyLink.target = '_blank';
+          companyLink.rel = 'noopener noreferrer';
+          companyLink.setAttribute('aria-label', `Open ${company === '-' ? 'application' : company} job posting`);
+          companyLink.addEventListener('click', (event) => event.stopPropagation());
+          companyLink.addEventListener('pointerdown', (event) => event.stopPropagation());
+
+          companyLink.appendChild(faviconEl);
+
+          const companySpan = document.createElement('span');
+          companySpan.className = 'kanban-card-company-name block truncate text-sm font-semibold';
+          companySpan.textContent = company === '-' ? 'Untitled company' : company;
+          companyLink.appendChild(companySpan);
+
+          mainInfo.appendChild(companyLink);
+        } else {
+          const companyHeader = document.createElement('div');
+          companyHeader.className = 'flex min-w-0 items-center gap-3';
+          companyHeader.appendChild(faviconEl);
+
+          const companySpan = document.createElement('span');
+          companySpan.className = 'kanban-card-company-name block truncate text-sm font-semibold text-gray-900 dark:text-gray-100';
+          companySpan.textContent = company === '-' ? 'Untitled company' : company;
+          companyHeader.appendChild(companySpan);
+
+          mainInfo.appendChild(companyHeader);
+        }
+
+        const positionEl = document.createElement('div');
+        positionEl.className = 'kanban-card-position mt-0.5 block truncate text-xs text-gray-500 pl-12';
+        positionEl.textContent = position === '-' ? 'Untitled position' : position;
+        mainInfo.appendChild(positionEl);
 
         headerRow.appendChild(mainInfo);
 
@@ -459,8 +492,9 @@ export const kanbanMethods = {
 
         card.appendChild(headerRow);
 
+        // 3. Application Date + Platform
         const meta = document.createElement('div');
-        meta.className = 'kanban-card-meta mt-3 text-xs text-gray-500';
+        meta.className = 'kanban-card-meta mt-2.5 text-xs text-gray-500';
 
         const metadata = [date, platform].filter((value) => value !== '-');
 
@@ -474,30 +508,85 @@ export const kanbanMethods = {
 
         if (metadata.length > 0) card.appendChild(meta);
 
+        // 4. Employment Type + Work Setup pills
+        const hasEmploymentType = employmentType && employmentType !== '-';
+        const hasWorkSetup = workSetup && workSetup !== '-';
+        const isEmploymentTypeVisible = indexes.employmentType >= 0
+          && (!this.isListColumnVisible || this.isListColumnVisible(tracker, indexes.employmentType));
+        const isWorkSetupVisible = indexes.workSetup >= 0
+          && (!this.isListColumnVisible || this.isListColumnVisible(tracker, indexes.workSetup));
+
+        const showEmploymentType = hasEmploymentType && isEmploymentTypeVisible;
+        const showWorkSetup = hasWorkSetup && isWorkSetupVisible;
+
+        if (showEmploymentType || showWorkSetup) {
+          const pills = document.createElement('div');
+          pills.className = 'kanban-card-pills mt-2.5 flex flex-wrap items-center gap-1.5';
+
+          if (showEmploymentType) {
+            const pill = document.createElement('span');
+            pill.className = 'kanban-pill kanban-pill-employment';
+
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-briefcase text-[10px] opacity-75';
+            icon.setAttribute('aria-hidden', 'true');
+
+            const text = document.createElement('span');
+            text.textContent = employmentType;
+
+            pill.append(icon, text);
+            pills.appendChild(pill);
+          }
+
+          if (showWorkSetup) {
+            const pill = document.createElement('span');
+            const normalized = String(workSetup).trim().toLowerCase().replace(/[^a-z]/g, '');
+            let pillClass = 'kanban-pill-worksetup-default';
+            if (normalized === 'remote') pillClass = 'kanban-pill-remote';
+            else if (normalized === 'hybrid') pillClass = 'kanban-pill-hybrid';
+            else if (normalized === 'onsite' || normalized === 'office') pillClass = 'kanban-pill-onsite';
+
+            pill.className = `kanban-pill ${pillClass}`;
+
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-location-dot text-[10px] opacity-75';
+            icon.setAttribute('aria-hidden', 'true');
+
+            const text = document.createElement('span');
+            text.textContent = workSetup;
+
+            pill.append(icon, text);
+            pills.appendChild(pill);
+          }
+
+          card.appendChild(pills);
+        }
+
+        // 5. Next Action + Next Action Date
         const hasNextAction = nextAction !== '-';
         const hasNextActionDate = nextActionDate !== '-';
         if (hasNextAction || hasNextActionDate) {
           const nextActionWrapper = document.createElement('div');
-          nextActionWrapper.className = 'kanban-card-next-action mt-3 rounded-lg bg-gray-50 p-2.5 text-xs border border-gray-100';
+          nextActionWrapper.className = 'kanban-card-next-action mt-3 rounded-lg bg-gray-50 p-3 text-xs border border-gray-100';
 
           const nextActionHeader = document.createElement('div');
-          nextActionHeader.className = 'kanban-next-action-label text-[11px] font-semibold uppercase tracking-wider text-gray-400';
+          nextActionHeader.className = 'kanban-next-action-label text-[10px] font-semibold uppercase tracking-wider text-gray-400';
           nextActionHeader.textContent = 'Next Action';
           nextActionWrapper.appendChild(nextActionHeader);
 
           if (hasNextAction) {
             const textEl = document.createElement('div');
-            textEl.className = 'kanban-next-action-text mt-1 text-sm font-medium text-gray-800 break-words';
+            textEl.className = 'kanban-next-action-text mt-1.5 text-xs font-medium text-gray-800 break-words leading-snug';
             textEl.textContent = nextAction;
             nextActionWrapper.appendChild(textEl);
           }
 
           if (hasNextActionDate) {
-            const formattedDate = formatActionDate(nextActionDate);
-            if (formattedDate) {
+            const formattedActionDate = formatActionDate(nextActionDate);
+            if (formattedActionDate) {
               const dateEl = document.createElement('div');
-              dateEl.className = 'kanban-next-action-date mt-1 text-xs text-gray-500 font-medium';
-              dateEl.textContent = formattedDate;
+              dateEl.className = `kanban-next-action-date ${hasNextAction ? 'mt-1' : 'mt-1.5'} text-[11px] text-gray-500 font-normal`;
+              dateEl.textContent = formattedActionDate;
               nextActionWrapper.appendChild(dateEl);
             }
           }
