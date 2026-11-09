@@ -441,7 +441,7 @@ export const kanbanMethods = {
         headerRow.className = 'flex min-w-0 items-start justify-between gap-2';
 
         const mainInfo = document.createElement('div');
-        mainInfo.className = 'min-w-0 flex-1';
+        mainInfo.className = 'kanban-card-header-main min-w-0 flex-1';
 
         const faviconEl = createCompanyFaviconElement(link, company === '-' ? '' : company);
         const safeJobUrl = typeof this.getSafeHttpUrl === 'function' ? this.getSafeHttpUrl(link) : getSafeHttpUrl(link);
@@ -466,7 +466,7 @@ export const kanbanMethods = {
           mainInfo.appendChild(companyLink);
         } else {
           const companyHeader = document.createElement('div');
-          companyHeader.className = 'flex min-w-0 items-center gap-3';
+          companyHeader.className = 'kanban-card-company-header flex min-w-0 items-center gap-3';
           companyHeader.appendChild(faviconEl);
 
           const companySpan = document.createElement('span');
@@ -478,7 +478,7 @@ export const kanbanMethods = {
         }
 
         const positionEl = document.createElement('div');
-        positionEl.className = 'kanban-card-position mt-0.5 block truncate text-xs text-gray-500 pl-12';
+        positionEl.className = 'kanban-card-position mt-0.5 block truncate text-xs text-gray-500';
         positionEl.textContent = position === '-' ? 'Untitled position' : position;
         mainInfo.appendChild(positionEl);
 
@@ -521,7 +521,7 @@ export const kanbanMethods = {
 
         if (showEmploymentType || showWorkSetup) {
           const pills = document.createElement('div');
-          pills.className = 'kanban-card-pills mt-3 flex flex-wrap items-center gap-1.5';
+          pills.className = 'kanban-card-pills mt-3 flex flex-wrap items-center gap-2';
 
           if (showEmploymentType) {
             const pill = document.createElement('span');

@@ -645,6 +645,39 @@ input:disabled {
   border-left-color: var(--card-status-accent, #94a3b8);
 }
 
+.kanban-card-header-main {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+.kanban-card-company-link,
+.kanban-card-company-header {
+  display: contents;
+}
+
+.kanban-card-company-link .kanban-card-favicon,
+.kanban-card-company-header .kanban-card-favicon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.kanban-card-company-name {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.kanban-card-position {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  margin-top: 2px;
+}
+
 .kanban-card-company-link {
   text-decoration: none;
   cursor: pointer;
@@ -652,12 +685,19 @@ input:disabled {
   outline-offset: 2px;
 }
 
-.kanban-card-company-link:hover .kanban-card-company-name {
+.kanban-card-company-link .kanban-card-favicon,
+.kanban-card-company-link .kanban-card-company-name {
+  cursor: pointer;
+}
+
+.kanban-card-company-link:hover .kanban-card-company-name,
+.kanban-card-company-link .kanban-card-company-name:hover {
   color: #2563eb !important;
   text-decoration: underline;
 }
 
-.dark .kanban-card-company-link:hover .kanban-card-company-name {
+.dark .kanban-card-company-link:hover .kanban-card-company-name,
+.dark .kanban-card-company-link .kanban-card-company-name:hover {
   color: #60a5fa !important;
 }
 
@@ -667,6 +707,7 @@ input:disabled {
 
 .kanban-card-pills {
   margin-top: 12px;
+  gap: 8px;
 }
 
 /* Kanban card pill badges */
@@ -873,8 +914,9 @@ input:disabled {
 }
 
 .kanban-card-meta {
+  margin-top: 10px;
   align-items: center;
-  column-gap: 0.45rem;
+  column-gap: 0.5rem;
   display: flex;
   flex-wrap: wrap;
   row-gap: 0.25rem;
@@ -2738,6 +2780,27 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody .landing-showcase-visual {
   order: 2;
+}
+
+#homeBody .faq-item + .faq-item {
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  #homeBody .faq-item + .faq-item {
+    margin-top: 1.25rem;
+  }
+}
+
+#homeBody [data-faq-content] {
+  padding-top: 0.875rem;
+  padding-bottom: 1.75rem;
+}
+
+@media (min-width: 640px) {
+  #homeBody [data-faq-content] {
+    padding-bottom: 2rem;
+  }
 }
 
 #homeBody .faq-item button {
