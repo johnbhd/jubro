@@ -1186,33 +1186,24 @@ try {
     const primary = [...document.querySelectorAll('a.theme-create-button')];
     return primary.length > 0 && primary.every(link => link.pathname === '/board/'
       && link.textContent.trim() === 'Open Jubro')
-      && !document.querySelector('a[href^="/trackers"]')
-      && document.querySelector('#how-it-works').textContent.includes('Open Jubro');
+      && !document.querySelector('a[href^="/trackers"]');
   `), true, 'Landing and shared navigation open Board without tracker management wording.');
   assert.deepEqual(await evaluate(`
     const navigation = document.querySelector('nav[aria-label="Primary navigation"]');
     return [...navigation.querySelectorAll('a')].map(link => link.textContent.trim());
   `), ['Home', 'Features', 'How It Works', 'About'], 'Public navigation has exactly four informational links.');
   assert.equal(await evaluate(`
-    const preview = document.getElementById('homePreviewRows');
+    const heroImg = document.getElementById('heroProductImage');
     const featureLink = document.querySelector('[data-nav-link="features"]');
     window.marketingPreview = () => ({
-      title: document.getElementById('homePreviewBoardTitle').textContent.trim(),
-      count: document.getElementById('homePreviewBoardEntries').textContent.trim(),
-      rows: [...preview.children].map(card => ({
-        title: card.querySelector('[data-preview-title]').textContent.trim(),
-        subtitle: card.querySelector('[data-preview-subtitle]').textContent.trim(),
-        status: card.querySelector('[data-preview-status]').textContent.trim(),
-        visible: getComputedStyle(card).display !== 'none',
-      })),
-      url: document.getElementById('homePreviewBoardLink').getAttribute('href'),
+      src: heroImg.getAttribute('src'),
+      alt: heroImg.getAttribute('alt'),
+      visible: getComputedStyle(heroImg).display !== 'none',
     });
     const expected = {
-      title: 'My Job Search', count: '3 applications', rows: [
-        { title: 'Google', subtitle: 'Frontend Developer', status: 'Applied', visible: true },
-        { title: 'Canva', subtitle: 'UI Designer', status: 'Interview', visible: true },
-        { title: 'Microsoft', subtitle: 'Software Engineer', status: 'Offer', visible: true },
-      ], url: '/board/',
+      src: '/img/hero.png',
+      alt: 'Jubro job application Kanban board showing applications across job-search stages',
+      visible: true,
     };
     window.staticMarketingSnapshot = JSON.stringify(expected);
     const { Storage } = await import('/js/storage/storage.js');
@@ -1222,7 +1213,7 @@ try {
     return JSON.stringify(marketingPreview()) === staticMarketingSnapshot
       && JSON.stringify(Storage.load()) === before
       && Boolean(document.querySelector(featureLink.hash))
-      && !preview.textContent.includes('Private');
+      && !document.body.textContent.includes('Private Company');
   `), true, 'Static demo never renders private data or changes on sync events.');
   assert.equal(await evaluate(`
     const firebase = await import('/test/fixtures/firebase.mjs');
@@ -1241,8 +1232,8 @@ try {
       assert.equal(await evaluate(`
         document.documentElement.classList.toggle('dark', ${theme === 'dark'});
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        const preview = document.getElementById('homePreviewRows');
-        const rect = preview.getBoundingClientRect();
+        const heroImg = document.getElementById('heroProductImage');
+        const rect = heroImg.getBoundingClientRect();
         return rect.left >= 0 && rect.right <= innerWidth
           && document.documentElement.scrollWidth <= innerWidth
           && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
@@ -1280,7 +1271,7 @@ try {
         `);
         assert.equal(navigation.fits, true, 'Scrolled public navigation fits ' + theme + ' ' + width + ': ' + JSON.stringify(navigation));
       }
-      await evaluate('document.getElementById("homePreviewRows").scrollIntoView({ block: "center" });');
+      await evaluate('document.getElementById("heroProductImage").scrollIntoView({ block: "center" });');
       const previewShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-marketing.png`), Buffer.from(previewShot.data, 'base64'));
     }
@@ -1364,9 +1355,18 @@ try {
       && userHeader.classList.contains('hidden')
       && logoutWrap.classList.contains('hidden');
 
+    document.getElementById('boardWorkspace').click();
+    const guestOutsideClickCloseOk = dropdown.classList.contains('hidden')
+      && guestBtn.getAttribute('aria-expanded') === 'false';
+
+    guestBtn.click();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     const guestCloseOk = dropdown.classList.contains('hidden')
       && guestBtn.getAttribute('aria-expanded') === 'false';
+
+    await firebase.__emitAuth({ uid: 'test-user-456', email: 'noname@example.test', displayName: '' });
+    const noNameFallbackOk = document.getElementById('userAccountLabel').textContent === 'Account'
+      && document.getElementById('dropdownUserName').textContent === 'Account';
 
     await firebase.__emitAuth({ uid: 'test-user-123', email: 'jb@example.test', displayName: 'JB Villegas' });
     const signedInVisibleOk = guestBtn.classList.contains('hidden')
@@ -1387,7 +1387,7 @@ try {
       && userBtn.classList.contains('hidden')
       && dropdown.classList.contains('hidden');
 
-    return guestInitialOk && guestOpenOk && guestCloseOk && signedInVisibleOk && signedInOpenOk && signedOutOk;
+    return guestInitialOk && guestOpenOk && guestOutsideClickCloseOk && guestCloseOk && noNameFallbackOk && signedInVisibleOk && signedInOpenOk && signedOutOk;
   `), true, 'Board Main Navbar consolidates global actions, toggles guest/signed-in state, and manages accessible menu.');
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6, entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY), errors }));

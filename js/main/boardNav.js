@@ -109,7 +109,7 @@ export function initBoardTopNavbar() {
     }
   });
 
-  document.addEventListener('click', (event) => {
+  const handleOutsideClick = (event) => {
     if (
       dropdown
       && !dropdown.classList.contains('hidden')
@@ -119,7 +119,10 @@ export function initBoardTopNavbar() {
     ) {
       closeDropdown();
     }
-  });
+  };
+
+  document.addEventListener('click', handleOutsideClick, true);
+  document.addEventListener('pointerdown', handleOutsideClick, true);
 
   document.getElementById('btnImport')?.addEventListener('click', () => {
     closeDropdown();
@@ -129,6 +132,14 @@ export function initBoardTopNavbar() {
     closeDropdown();
   });
 
+  function resolveUserName(user) {
+    if (!user) return 'Account';
+    const name = (typeof user.displayName === 'string' && user.displayName.trim())
+      ? user.displayName.trim()
+      : '';
+    return name || 'Account';
+  }
+
   function updateAuthUI(user) {
     currentUser = user;
     if (user) {
@@ -136,7 +147,7 @@ export function initBoardTopNavbar() {
       btnGuestSettings?.setAttribute('hidden', '');
       btnUserAccount?.classList.remove('hidden');
       btnUserAccount?.removeAttribute('hidden');
-      const name = user.displayName || 'Account';
+      const name = resolveUserName(user);
       if (userAccountLabel) userAccountLabel.textContent = name;
       if (dropdownUserName) dropdownUserName.textContent = name;
       if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
@@ -148,6 +159,8 @@ export function initBoardTopNavbar() {
       btnGuestSettings?.removeAttribute('hidden');
       btnUserAccount?.classList.add('hidden');
       btnUserAccount?.setAttribute('hidden', '');
+      if (userAccountLabel) userAccountLabel.textContent = 'Account';
+      if (dropdownUserName) dropdownUserName.textContent = 'Account';
       dropdownUserHeader?.classList.add('hidden');
       btnNavSettings?.classList.add('hidden');
       dropdownLogoutWrapper?.classList.add('hidden');
@@ -157,6 +170,11 @@ export function initBoardTopNavbar() {
 
   const currentTheme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
   syncThemeUI(currentTheme);
+
+  const initialUser = authService.getCurrentUser?.();
+  if (initialUser) {
+    updateAuthUI(initialUser);
+  }
 
   authService.onAuthChange((user) => {
     updateAuthUI(user);

@@ -8,7 +8,7 @@ export const listBadgeMethods = {
     const fallback = () => {
       holder.replaceChildren();
       const icon = document.createElement('i');
-      icon.className = 'fa-solid fa-globe text-[11px] text-gray-500';
+      icon.className = 'fa-solid fa-globe text-[11px] text-gray-300';
       holder.appendChild(icon);
     };
 
@@ -20,7 +20,7 @@ export const listBadgeMethods = {
     const image = document.createElement('img');
     image.src = favicon.url;
     image.alt = '';
-    image.className = 'h-5 w-5 rounded';
+    image.className = 'h-4 w-4 rounded-full object-contain';
     image.loading = 'lazy';
     image.referrerPolicy = 'no-referrer';
     image.addEventListener('error', fallback);

@@ -23,27 +23,27 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Primary SEO -->
-  <title>Jubro - Free Job Application Tracker & Job Search Organizer</title>
+  <title>Jubro - Simple Job Application Tracker</title>
   <meta
     name="description"
-    content="Jubro is a simple job tracker Excel alternative for job seekers, students, and freelancers. Monitor job applications, job listings, interviews, statuses, links, and application todos in one clean dashboard."
+    content="Jubro is a simple job application tracker that helps students, fresh graduates, freelancers, and job seekers organize applications, interviews, offers, and next steps in one clean workspace."
   />
   <meta
     name="keywords"
-    content="job application tracker, job tracker, job search tracker, application tracker, job search organizer, job application dashboard, job hunt tracker, internship tracker, internship application tracker, student job tracker, freelance job tracker, job tracking tool, job tracker excel alternative, job application tracker excel alternative, job application management, interview tracker, career tracker, job seeker tool, job search management, Jubro"
+    content="job application tracker, job tracker, job search tracker, application tracker, job search organizer, job application dashboard, job hunt tracker, internship tracker, student job tracker, freelance job tracker, simple job tracker, Jubro"
   />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="author" content="Jubro" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#0B1120" />
   <link rel="canonical" href="https://jubro.vercel.app/" />
 
   <!-- Open Graph SEO -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Jubro" />
-  <meta property="og:title" content="Jubro - Free Job Application Tracker & Job Search Organizer" />
+  <meta property="og:title" content="Jubro - Simple Job Application Tracker" />
   <meta
     property="og:description"
-    content="Track job applications, interviews, internships, statuses, and job links in one simple dashboard. Jubro is a free job application tracker and Excel alternative for students, freelancers, and job seekers."
+    content="Jubro helps students, fresh graduates, freelancers, and job seekers organize applications, interviews, offers, and important job links in one simple workspace."
   />
   <meta property="og:url" content="https://jubro.vercel.app/" />
   <meta property="og:image" content="https://jubro.vercel.app/img/jubro.png" />
@@ -52,10 +52,10 @@
 
   <!-- Twitter/X Card SEO -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Jubro - Job Tracker Excel Alternative" />
+  <meta name="twitter:title" content="Jubro - Simple Job Application Tracker" />
   <meta
     name="twitter:description"
-    content="Track job applications, interviews, internships, statuses, and job links in one simple dashboard. Free for students, freelancers, and job seekers."
+    content="Jubro helps students, fresh graduates, freelancers, and job seekers organize applications, interviews, offers, and important job links in one simple workspace."
   />
   <meta name="twitter:image" content="https://jubro.vercel.app/img/jubro.png" />
   <meta name="twitter:image:alt" content="Jubro job application tracker logo" />
@@ -76,11 +76,11 @@
       "name": "Jubro",
       "url": "https://jubro.vercel.app/",
       "image": "https://jubro.vercel.app/img/jubro.png",
-      "description": "Jubro is a simple job tracker Excel alternative and job application dashboard for monitoring applications, job listings, interviews, statuses, dates, links, freelance opportunities, internships, and job search todos.",
+      "description": "Jubro is a simple job application tracker for monitoring applications, interviews, offers, dates, links, and next actions in one clean workspace.",
       "applicationCategory": "ProductivityApplication",
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript and a modern web browser.",
-      "keywords": "job tracker, job tracker excel alternative, excel job application tracker alternative, application tracker, job application tracker, job monitoring, job listing tracker, job application todo, job search todo list, internship tracker, freelance tracker, job dashboard, simple job tracker, job bro, jobbro, Jubro",
+      "keywords": "job tracker, job search tracker, application tracker, job application tracker, internship tracker, freelance tracker, simple job tracker, Jubro",
       "author": {
         "@type": "Organization",
         "name": "Jubro"
@@ -94,7 +94,7 @@
   </script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', system-ui, sans-serif; }
 
     @media (min-width: 1024px) {
@@ -105,464 +105,256 @@
   </style>
 </head>
 
-<body id="homeBody" data-page="homepage" class="bg-gray-100 min-h-screen">
-  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-10">
+<body id="homeBody" data-page="homepage" class="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-200 dark:bg-[#0B1120] dark:text-slate-100">
+  <div class="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
     <div id="navbar"></div>
 
-    <main>
-      <section id="heroSection" class="relative overflow-hidden px-6 py-7 sm:px-10">
-        <div class="relative grid items-center gap-12 lg:grid-cols-2">
-          <div class="max-w-2xl">
-            <div class="mb-5 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-100 px-4 py-2 text-sm text-gray-700">
-              <span class="h-2 w-2 rounded-full bg-green-500"></span>
-              Organize your job applications easier
-            </div>
+    <main class="space-y-20 sm:space-y-28 lg:space-y-36 pt-4 sm:pt-6">
+      <!-- 1. HERO SECTION -->
+      <section id="home" class="scroll-mt-28">
+        <div id="heroSection" class="mx-auto max-w-4xl text-center pt-4 sm:pt-10">
+          <h1 class="text-4xl font-black tracking-tight text-gray-900 sm:text-5xl lg:text-6xl dark:text-white leading-[1.12]">
+            Track Every Job<br class="hidden sm:inline" /> Without the Mess
+          </h1>
 
-            <h1 class="text-4xl font-black leading-tight text-gray-900 sm:text-5xl lg:text-6xl">
-              Track Every Job
-              <span class="block text-gray-500">
-                Without The Mess
-              </span>
-            </h1>
+          <p class="mx-auto mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-600 dark:text-slate-400">
+            Jubro helps students, fresh graduates, freelancers, and job seekers organize applications, interviews, offers, and important job links in one simple workspace.
+          </p>
 
-            <p class="mt-6 max-w-xl text-base leading-7 text-gray-600 sm:text-lg">
-              Jubro helps students, freelancers, and job seekers organize applications,
-              interviews, and job links with a clean and simple Kanban board and list view.
-            </p>
+          <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a
+              href="/board/"
+              class="theme-create-button inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl bg-gray-900 px-7 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:bg-blue-600 dark:hover:bg-blue-500"
+            >
+              Open Jubro
+            </a>
 
-            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="/board/"
-                class="theme-create-button inline-flex items-center justify-center rounded-2xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:bg-gray-800"
-              >
-                Open Jubro
-              </a>
-
-              <a
-                href="#how-it-works"
-                class="inline-flex items-center justify-center rounded-2xl border border-gray-300 bg-white px-6 py-4 text-sm font-semibold text-gray-900 transition hover:bg-gray-100"
-              >
-                Learn More
-              </a>
-            </div>
-
-            <section id="features" aria-label="Features" class="mt-10 flex flex-wrap items-center gap-6">
-              <div>
-                <h3 class="text-2xl font-bold text-gray-900">Simple</h3>
-                <p class="text-sm text-gray-500">
-                  Beginner friendly UI
-                </p>
-              </div>
-
-              <div class="h-10 w-px bg-gray-200"></div>
-
-              <div>
-                <h3 class="text-2xl font-bold text-gray-900">Fast</h3>
-                <p class="text-sm text-gray-500">
-                  Track jobs instantly
-                </p>
-              </div>
-
-              <div class="h-10 w-px bg-gray-200"></div>
-
-              <div>
-                <h3 class="text-2xl font-bold text-gray-900">Clean</h3>
-                <p class="text-sm text-gray-500">
-                  No clutter dashboard
-                </p>
-              </div>
-            </section>
+            <a
+              href="#how-it-works"
+              class="inline-flex h-12 w-full sm:w-auto items-center justify-center rounded-xl border border-gray-300 bg-white px-7 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Learn More
+            </a>
           </div>
+        </div>
 
-          <div class="relative">
-            <div class="rounded-[2rem] border border-gray-200 bg-gray-50 p-5 shadow-lg">
-              <div class="mb-5 flex items-center justify-between border-b border-gray-200 pb-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-12 w-12 rounded-2xl">
-                        <img
-                          src="../img/jubro.png"
-                          alt="Jubro logo"
-                          class="w-11 h-11 rounded-xl"
-                        />
-                    </div>
-
-                  <div>
-                    <h3 id="homePreviewBoardTitle" class="font-semibold text-gray-900">
-                      My Job Search
-                    </h3>
-
-                    <p id="homePreviewBoardEntries" class="text-sm text-gray-500">
-                      3 applications
-                    </p>
-                  </div>
-                </div>
-
-                <a id="homePreviewBoardLink" href="/board/" class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-200">
-                  Open
-                </a>
-              </div>
-
-              <div id="homePreviewRows" class="space-y-4">
-                <div class="rounded-2xl border border-gray-200 bg-white p-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h4 data-preview-title class="font-semibold text-gray-900">
-                        Google
-                      </h4>
-
-                      <p data-preview-subtitle class="text-sm text-gray-500">
-                        Frontend Developer
-                      </p>
-                    </div>
-
-                    <span data-preview-status class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
-                      Applied
-                    </span>
-                  </div>
-                </div>
-
-                <div class="rounded-2xl border border-gray-200 bg-white p-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h4 data-preview-title class="font-semibold text-gray-900">
-                        Canva
-                      </h4>
-
-                      <p data-preview-subtitle class="text-sm text-gray-500">
-                        UI Designer
-                      </p>
-                    </div>
-
-                    <span data-preview-status class="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                      Interview
-                    </span>
-                  </div>
-                </div>
-
-                <div class="rounded-2xl border border-gray-200 bg-white p-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h4 data-preview-title class="font-semibold text-gray-900">
-                        Microsoft
-                      </h4>
-
-                      <p data-preview-subtitle class="text-sm text-gray-500">
-                        Software Engineer
-                      </p>
-                    </div>
-
-                    <span data-preview-status class="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                      Offer
-                    </span>
-                  </div>
-                </div>
-              </div>
+        <!-- 2. LARGE HERO PRODUCT VISUAL -->
+        <div class="mt-12 sm:mt-16 mx-auto max-w-6xl">
+          <div class="overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/90 bg-white p-2 sm:p-3 shadow-xl sm:shadow-2xl dark:border-slate-800/90 dark:bg-slate-900/90 dark:shadow-[0_20px_50px_rgba(0,0,0,0.55)]">
+            <div class="overflow-hidden rounded-xl sm:rounded-2xl bg-slate-950">
+              <img
+                id="heroProductImage"
+                src="/img/hero.png"
+                alt="Jubro job application Kanban board showing applications across job-search stages"
+                class="w-full h-auto object-contain block select-none"
+                loading="eager"
+                decoding="async"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" class="mt-24">
-        <div class="mx-auto max-w-3xl text-center">
-          <div class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
-            <span class="h-2 w-2 rounded-full bg-black"></span>
+      <!-- 3. HOW JUBRO WORKS -->
+      <section id="how-it-works" class="mx-auto max-w-5xl scroll-mt-28">
+        <div class="text-center max-w-2xl mx-auto">
+          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             How Jubro Works
-          </div>
-
-          <h2 class="mt-6 text-4xl font-black tracking-tight text-gray-900 sm:text-5xl">
-            Organize Your Job Hunt
-            <span class="block text-gray-500">
-              In 3 Simple Steps
-            </span>
           </h2>
-
-          <p class="mt-6 text-lg leading-8 text-gray-600">
-            No complicated setup. Open Jubro, add applications,
-            and monitor your job progress in one clean dashboard.
+          <p class="mt-3 text-base sm:text-lg text-gray-600 dark:text-slate-400">
+            Three simple steps to keep your entire job search under control.
           </p>
         </div>
 
-        <div class="mt-16 grid gap-6 lg:grid-cols-3">
-          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
-            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-900 text-2xl text-white">
-              <i class="fa-solid fa-folder-plus"></i>
-            </div>
-
-            <div class="mt-8">
-              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                Step 01
-              </span>
-
-              <h3 class="mt-3 text-2xl font-bold text-gray-900">
-                Open Jubro
-              </h3>
-
-              <p class="mt-4 leading-7 text-gray-600">
-                Your Job Search Board is ready when you open Jubro.
-                Organize internships, freelance work, or company applications.
-              </p>
-            </div>
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
+            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">01</span>
+            <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
+              Add an Application
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Save the company, position, date, platform, and job link.
+            </p>
           </div>
 
-          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
-            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-black text-2xl text-white">
-              <i class="fa-solid fa-briefcase"></i>
-            </div>
-
-            <div class="mt-8">
-              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                Step 02
-              </span>
-
-              <h3 class="mt-3 text-2xl font-bold text-gray-900">
-                Save Job Applications
-              </h3>
-
-              <p class="mt-4 leading-7 text-gray-600">
-                Add company names, positions, dates applied,
-                status updates, and important job links.
-              </p>
-            </div>
+          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
+            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">02</span>
+            <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
+              Track Its Progress
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Move applications from Applied to Interview, Offer, or Rejected.
+            </p>
           </div>
 
-          <div class="group rounded-[2rem] border border-gray-200 bg-white p-8 transition hover:-translate-y-1 hover:shadow-xl">
-            <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-gray-800 text-2xl text-white">
-              <i class="fa-solid fa-chart-line"></i>
-            </div>
-
-            <div class="mt-8">
-              <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                Step 03
-              </span>
-
-              <h3 class="mt-3 text-2xl font-bold text-gray-900">
-                Track Your Progress
-              </h3>
-
-              <p class="mt-4 leading-7 text-gray-600">
-                Monitor interviews, rejections, pending applications,
-                and organize your entire job hunting journey.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-16 overflow-hidden rounded-[2rem] border border-gray-200 bg-gradient-to-br from-gray-900 to-black p-8 sm:p-12">
-          <div class="grid items-center gap-10 lg:grid-cols-[1fr_auto]">
-            <div>
-              <h3 class="text-3xl font-black text-white sm:text-4xl">
-                Keep Your Job Search
-                Organized & Stress Free
-              </h3>
-
-              <p class="mt-5 max-w-2xl text-base leading-7 text-gray-300">
-                Jubro gives students, fresh graduates, and freelancers
-                a simple way to manage applications without messy spreadsheets.
-              </p>
-            </div>
-
-            <a
-              href="/board/"
-              class="theme-create-button inline-flex items-center justify-center rounded-2xl bg-white px-7 py-4 text-sm font-semibold text-gray-900 transition hover:bg-gray-200"
-            >
-              Open Jubro
-            </a>
+          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
+            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">03</span>
+            <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
+              Know What Comes Next
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Use Next Action to see which applications need attention.
+            </p>
           </div>
         </div>
       </section>
 
-      <section id="about" class="mt-24">
-        <div class="grid items-center gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div class="max-w-2xl">
-            <p class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-              About Jubro
-            </p>
-
-            <h2 class="mt-5 text-4xl font-black leading-tight text-gray-900 sm:text-5xl">
-              Built For Students,
-              <span class="block text-gray-500">
-                Freelancers & Job Seekers
-              </span>
-            </h2>
-
-            <div class="mt-6 space-y-5">
-              <p class="text-lg leading-8 text-gray-600">
-                Jubro is a simple job application tracker designed to help people
-                organize applications, interviews, and opportunities with a
-                Kanban board and list view, without complicated dashboards or messy spreadsheets.
-              </p>
-
-              <p class="text-base leading-8 text-gray-500">
-                Whether you're applying for internships, freelance projects,
-                remote work, or full-time jobs, Jubro keeps everything
-                organized in one clean and beginner-friendly workspace.
-              </p>
-            </div>
-
-            <div class="mt-12 space-y-7">
-              <div class="flex items-start gap-5">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-800 text-white">
-                  <i class="fa-solid fa-check"></i>
-                </div>
-
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900">
-                    Simple & Minimal UI
-                  </h3>
-
-                  <p class="mt-2 leading-7 text-gray-600">
-                    Easy to use even if you are not familiar with productivity tools.
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-5">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-800 text-white">
-                  <i class="fa-solid fa-briefcase"></i>
-                </div>
-
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900">
-                    Track Job Applications
-                  </h3>
-
-                  <p class="mt-2 leading-7 text-gray-600">
-                    Save positions, companies, statuses, and important job links.
-                  </p>
-                </div>
-              </div>
-
-              <div class="flex items-start gap-5">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-800 text-white">
-                  <i class="fa-solid fa-chart-simple"></i>
-                </div>
-
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900">
-                    Organize Everything
-                  </h3>
-
-                  <p class="mt-2 leading-7 text-gray-600">
-                    Keep your entire job hunting journey in one place.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="flex flex-col gap-6">
-            <article class="group rounded-[2rem] border border-gray-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-xl sm:p-8">
-              <div class="flex items-start gap-4">
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-900 text-white">
-                  <i class="fa-solid fa-video"></i>
-                </div>
-
-                <div>
-                  <h3 class="text-2xl font-bold text-gray-900">
-                    How to Use Kanban Board & List Views
-                  </h3>
-
-                  <p class="mt-2 leading-7 text-gray-600">
-                    Switch between a status-driven Kanban board and a focused List view inside each Job Search.
-                  </p>
-                </div>
-              </div>
-
-             <!-- Video -->
-              <div class="overflow-hidden rounded-2xl border border-gray-200 shadow-lg">
-                <video
-                  class="w-full h-auto pointer-events-none select-none"
-                  autoplay
-                  muted
-                  loop
-                  playsinline
-                  preload="metadata"
-                  draggable="false"
-                >
-                  <source src="./img/vid.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-
-              <p class="mt-5 leading-7 text-gray-600">
-                Use the Kanban board to see applications by stage, then switch to List view for a cleaner reading layout for each application.
-              </p>
-
-              <div class="mt-6 grid gap-4 sm:grid-cols-3">
-                <div class="cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
-                      <i class="fa-solid fa-table-columns"></i>
-                    </div>
-
-                    <h4 class="text-sm font-semibold text-gray-900">
-                      Kanban Board
-                    </h4>
-                  </div>
-                </div>
-
-                <div class="cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
-                      <i class="fa-solid fa-list-ul"></i>
-                    </div>
-
-                    <h4 class="text-sm font-semibold text-gray-900">
-                      List View
-                    </h4>
-                  </div>
-                </div>
-
-                <div class="cursor-pointer rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl">
-                  <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
-                      <i class="fa-solid fa-chart-simple"></i>
-                    </div>
-
-                    <h4 class="text-sm font-semibold text-gray-900">
-                      Analytics
-                    </h4>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-          </div>
+      <!-- 4. PRODUCT SHOWCASE -->
+      <section id="product-showcase" class="mx-auto max-w-6xl">
+        <div class="text-center max-w-3xl mx-auto">
+          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+            See Your Entire Job Search at a Glance
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
+            Every application is organized by stage so you can quickly see what is moving, what needs attention, and what happened next.
+          </p>
         </div>
 
-        <article class="group mt-16 overflow-hidden rounded-[2rem] border border-gray-200 bg-white p-6 transition hover:-translate-y-1 hover:shadow-xl sm:p-8 lg:p-10">
-          <div class="flex flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
-            <div class="max-w-2xl">
-              <div class="flex items-center gap-3">
-                <img
-                  src="/img/jubro.png"
-                  alt="Jubro logo"
-                  class="h-12 w-12 rounded-2xl"
-                />
+        <div class="mt-10 sm:mt-12 overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/90 bg-white p-2 sm:p-3 shadow-lg dark:border-slate-800 dark:bg-slate-900/80">
+          <div class="relative overflow-hidden rounded-xl sm:rounded-2xl max-h-[460px] sm:max-h-[520px] bg-slate-950">
+            <img
+              src="/img/hero.png"
+              alt="Focused view of Jubro Kanban board columns showing application cards with Next Action and stage details"
+              class="w-full h-auto object-cover object-top block select-none transform hover:scale-[1.01] transition-transform duration-300"
+              loading="lazy"
+            />
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white dark:from-slate-900/90 to-transparent"></div>
+          </div>
+        </div>
+      </section>
 
-                <span class="text-sm font-semibold uppercase tracking-wider text-gray-400">
-                  Jubro
-                </span>
-              </div>
+      <!-- 5. ABOUT JUBRO -->
+      <section id="about" class="mx-auto max-w-6xl scroll-mt-28">
+        <div class="grid grid-cols-1 lg:grid-cols-12 items-center gap-10 lg:gap-14">
+          <div class="lg:col-span-7">
+            <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+              Built for Students,<br />Freelancers & Job Seekers
+            </h2>
 
-              <h3 class="mt-6 text-3xl font-black leading-tight text-gray-900">
-                Ready to organize your job journey?
-              </h3>
-
-              <p class="mt-4 leading-7 text-gray-600">
-                Start tracking your applications and stay organized with Jubro.
+            <div class="mt-5 space-y-4 text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
+              <p>
+                Jubro keeps your applications organized without spreadsheets, complicated dashboards, or unnecessary setup.
+              </p>
+              <p>
+                Use it for internships, freelance work, remote jobs, or your next full-time opportunity.
               </p>
             </div>
 
-            <a
-              href="/board/"
-              class="theme-create-button inline-flex items-center justify-center gap-3 rounded-2xl bg-black px-6 py-4 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-gray-800"
-            >
-              Open Jubro
-              <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            <ul class="mt-8 space-y-3.5 text-sm sm:text-base font-medium text-gray-800 dark:text-slate-200">
+              <li class="flex items-center gap-3">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <span>Simple job application tracking</span>
+              </li>
+
+              <li class="flex items-center gap-3">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <span>Clear application stages</span>
+              </li>
+
+              <li class="flex items-center gap-3">
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </span>
+                <span>Works on desktop and mobile</span>
+              </li>
+            </ul>
           </div>
-        </article>
+
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="relative max-w-[280px] sm:max-w-[320px] lg:max-w-[340px]">
+              <img
+                src="/img/phone.png"
+                alt="Jubro responsive web app viewed on a mobile device showing application list"
+                class="w-full h-auto object-contain block drop-shadow-xl"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. FEATURES -->
+      <section id="features" class="mx-auto max-w-6xl scroll-mt-28">
+        <div class="text-center max-w-3xl mx-auto">
+          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Everything You Need to Stay On Top of Applications
+          </h2>
+          <p class="mt-4 text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
+            Essential tools to keep your search organized without unnecessary complexity.
+          </p>
+        </div>
+
+        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
+              <i class="fa-solid fa-table-columns"></i>
+            </div>
+            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+              Visual Job Pipeline
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              See applications grouped by their current stage so you always know where each opportunity stands.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+              Next Action
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Keep the next step for each application visible, whether that means following up, preparing for an interview, or reviewing an offer.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+              Board &amp; List
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Use Board for visual progress and List when you need a more detailed view of your applications.
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+              Local + Cloud
+            </h3>
+            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+              Start immediately as a guest. Sign in when you want your applications synced across devices.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. FINAL CTA -->
+      <section class="mx-auto max-w-5xl rounded-3xl border border-gray-200/80 bg-white p-8 sm:p-14 text-center shadow-lg dark:border-slate-800 dark:bg-slate-900/70">
+        <h2 class="text-3xl sm:text-4xl font-black tracking-tight text-gray-900 dark:text-white">
+          Ready to organize your job search?
+        </h2>
+        <p class="mx-auto mt-4 max-w-xl text-base sm:text-lg text-gray-600 dark:text-slate-400">
+          Keep every application, interview, and next step in one place.
+        </p>
+        <div class="mt-8 flex justify-center">
+          <a
+            href="/board/"
+            class="theme-create-button inline-flex h-12 items-center justify-center rounded-xl bg-gray-900 px-8 text-sm font-semibold text-white shadow transition hover:bg-black dark:bg-blue-600 dark:hover:bg-blue-500"
+          >
+            Open Jubro
+          </a>
+        </div>
       </section>
     </main>
   </div>
