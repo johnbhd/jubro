@@ -2387,6 +2387,27 @@ section > .list-panel {
   padding-inline: 32px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  #homeBody .landing-final-cta {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+
+  #homeBody .landing-final-cta:hover,
+  #homeBody .landing-final-cta:focus-within {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px #0f172a26;
+  }
+
+  #homeBody .landing-final-cta .theme-create-button {
+    transition: transform 180ms ease, background-color 180ms ease;
+  }
+
+  #homeBody .landing-final-cta .theme-create-button:hover,
+  #homeBody .landing-final-cta .theme-create-button:focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
 #homeBody .landing-phone-visual img,
 #homeBody #heroProductImage {
   display: block;

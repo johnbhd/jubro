@@ -1254,6 +1254,8 @@ try {
         const benefits = document.querySelector('.landing-benefits');
         const benefitRows = [...benefits.children].map(item => item.getBoundingClientRect());
         const cta = getComputedStyle(document.querySelector('.landing-final-cta .theme-create-button'));
+        const ctaCard = document.querySelector('.landing-final-cta').getBoundingClientRect();
+        const features = document.getElementById('features').getBoundingClientRect();
         const onlineJobs = document.createElement('span');
         const otherPlatform = document.createElement('span');
         onlineJobs.className = 'favicon-holder favicon-holder-onlinejobs';
@@ -1264,6 +1266,8 @@ try {
         onlineJobs.remove();
         otherPlatform.remove();
         return rect.left >= 0 && rect.right <= innerWidth
+          && Math.abs(ctaCard.left - features.left) < 1
+          && Math.abs(ctaCard.right - features.right) < 1
           && faviconColorsMatch
           && benefitRows.slice(1).every((row, index) => Math.abs(row.top - benefitRows[index].bottom - 14) < 1)
           && parseFloat(cta.paddingLeft) >= 32 && parseFloat(cta.paddingRight) >= 32
@@ -1326,6 +1330,31 @@ try {
       await evaluate('document.getElementById("about").scrollIntoView({ block: "start" });');
       const aboutShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-about.png`), Buffer.from(aboutShot.data, 'base64'));
+      const ctaPointer = await evaluate(`
+        const card = document.querySelector('.landing-final-cta');
+        card.scrollIntoView({ block: 'center' });
+        const bounds = card.getBoundingClientRect();
+        return { x: Math.round(bounds.left + bounds.width / 2), y: Math.round(bounds.top + bounds.height / 2) };
+      `);
+      await command('input.performActions', { context, actions: [{
+        type: 'pointer', id: 'cta-mouse', parameters: { pointerType: 'mouse' },
+        actions: [{ type: 'pointerMove', ...ctaPointer, duration: 0 }],
+      }] });
+      const ctaMotion = await evaluate(`
+        const card = document.querySelector('.landing-final-cta');
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await Promise.all(card.getAnimations().map(animation => animation.finished));
+        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const transform = getComputedStyle(card).transform;
+        const result = reducedMotion ? transform === 'none' : transform === 'matrix(1, 0, 0, 1, 0, -3)';
+        return { result, transform, reducedMotion };
+      `);
+      assert.equal(ctaMotion.result, true, 'CTA hover animation respects motion preference '
+        + theme + ' ' + width + ': ' + JSON.stringify(ctaMotion));
+      await command('input.performActions', { context, actions: [{
+        type: 'pointer', id: 'cta-mouse', parameters: { pointerType: 'mouse' },
+        actions: [{ type: 'pointerMove', x: 0, y: 0, duration: 0 }],
+      }] });
     }
   }
   if (!process.env.JUBRO_LANDING_ONLY) {
