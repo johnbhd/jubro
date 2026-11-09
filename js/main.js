@@ -170,6 +170,32 @@ function setupActiveNavigation() {
   });
 }
 
+function setupFaqAccordion() {
+  const faqItems = document.querySelectorAll('[data-faq-item]');
+  if (!faqItems.length) return;
+
+  faqItems.forEach((item) => {
+    const trigger = item.querySelector('[data-faq-trigger]');
+    const content = item.querySelector('[data-faq-content]');
+    const icon = item.querySelector('[data-faq-icon]');
+
+    if (!trigger || !content) return;
+
+    trigger.addEventListener('click', () => {
+      const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+      const nextState = !isExpanded;
+
+      trigger.setAttribute('aria-expanded', String(nextState));
+      content.classList.toggle('hidden', !nextState);
+
+      if (icon) {
+        icon.classList.toggle('fa-plus', !nextState);
+        icon.classList.toggle('fa-minus', nextState);
+      }
+    });
+  });
+}
+
 async function setupAuth() {
   try {
     const [{ Auth }, { authService }] = await Promise.all([
@@ -194,6 +220,7 @@ async function initHomepage() {
   setupMobileMenu();
   setupScrollAwareNavbar();
   setupActiveNavigation();
+  setupFaqAccordion();
   syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
   setupStorageNotice();
   await setupAuth();

@@ -2721,6 +2721,52 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   gap: 40px;
 }
 
+#homeBody .landing-board-showcase-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 40px;
+}
+
+#homeBody .landing-showcase-copy {
+  order: 1;
+}
+
+#homeBody .landing-showcase-visual {
+  order: 2;
+}
+
+#homeBody .faq-item button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dark #homeBody :is(h1, h2, h3, h4) {
+  color: #ffffff !important;
+}
+
+.dark #homeBody .text-gray-900 {
+  color: #f9fafb !important;
+}
+
+.dark #homeBody #why-jubro .text-blue-600 {
+  color: #60a5fa !important;
+}
+
+.dark #homeBody .bg-gray-50 {
+  background-color: #111827 !important;
+}
+
+.dark #homeBody .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark #homeBody .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
+.dark #homeBody .divide-gray-200\/80 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #374151 !important;
+}
+
+.dark #homeBody .faq-item button:hover {
+  background-color: #111827 !important;
+}
+
 #homeBody .landing-steps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2800,6 +2846,19 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   #homeBody .landing-about-grid {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: 56px;
+  }
+
+  #homeBody .landing-board-showcase-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 56px;
+  }
+
+  #homeBody .landing-showcase-visual {
+    order: 1;
+  }
+
+  #homeBody .landing-showcase-copy {
+    order: 2;
   }
 
   #homeBody .landing-phone-visual {
