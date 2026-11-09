@@ -2308,7 +2308,7 @@ section > .list-panel {
 #homeBody .landing-shell {
   max-width: 1440px;
   margin-inline: auto;
-  padding: 120px 16px 24px;
+  padding: 96px 16px 24px;
 }
 
 #homeBody .landing-main {
@@ -2428,7 +2428,7 @@ section > .list-panel {
 
 @media (min-width: 1024px) {
   #homeBody .landing-shell {
-    padding: 144px 32px 32px;
+    padding: 120px 32px 32px;
   }
 
   #homeBody .landing-main {
