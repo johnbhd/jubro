@@ -47,7 +47,7 @@ All existing guest usage, account isolation, guest-to-account transfer policy, r
    - Updated [`js/main/trackerActions.js`](../../js/main/trackerActions.js) to reuse `showToast` from `js/toast.js` instead of duplicating toast DOM manipulation.
 
 4. **Styling & Accessibility**:
-   - Added `.jubro-toast.jubro-toast-success` in [`css/global.css`](../../css/global.css) with fixed positioning below the navbar (`top: calc(env(safe-area-inset-top, 0px) + 10rem)`), top-right placement on desktop/tablet, and centered placement on mobile.
+   - Added `.jubro-toast.jubro-toast-success` in [`css/global.css`](../../css/global.css) with fixed positioning in the top right (`top: calc(env(safe-area-inset-top, 0px) + 1.25rem) !important; right: calc(env(safe-area-inset-right, 0px) + 1.25rem) !important;` on desktop/tablet, and `top: 1rem; right: 1rem;` on mobile).
    - Styled with calm emerald green accent (`#15803d` border-left and icon in light mode, `#86efac` in dark mode) and elevated surface.
    - Avoids stealing focus or moving the page scroll.
 

@@ -58,11 +58,11 @@ export async function verifyAuthNavigation({ command, evaluate, context, origin,
         showToast('Login successful', { success: true });
         const toast = document.getElementById('jubroToast');
         const bounds = toast.getBoundingClientRect();
-        const nav = document.getElementById('siteNavbar').getBoundingClientRect();
-        return bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= nav.bottom
+        return bounds.left >= 0 && bounds.right <= innerWidth && bounds.top >= 0 && bounds.top <= 40
+          && bounds.right >= innerWidth - 40
           && toast.getAttribute('role') === 'status' && toast.getAttribute('aria-live') === 'polite'
           && document.activeElement === previousFocus && !toast.classList.contains('hidden');
-      `), true, theme + ' ' + width + ': toast fits below navbar without stealing focus');
+      `), true, theme + ' ' + width + ': toast appears in top right without stealing focus');
       const shot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-auth-navbar.png`), Buffer.from(shot.data, 'base64'));
     }
