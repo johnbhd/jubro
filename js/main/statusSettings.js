@@ -126,6 +126,62 @@ export const statusSettingsMethods = {
     this.kanbanColumns?.querySelector(`[data-status-option-index="${optionIndex}"]`)?.focus();
   },
 
+  deleteStatusOption(optionIndex) {
+    const tracker = this.getTracker();
+    const status = getKanbanStatusColumn(tracker);
+    const options = status?.column.options;
+
+    if (!Array.isArray(options) || !Number.isInteger(optionIndex)
+      || optionIndex < 0 || optionIndex >= options.length) {
+      throw new Error('This status no longer exists. Reopen its menu.');
+    }
+
+    if (options.length <= 1) {
+      throw new Error('You must have at least one status.');
+    }
+
+    const option = options[optionIndex];
+    const targetLabel = optionLabel(option);
+
+    options.splice(optionIndex, 1);
+
+    tracker.rows.forEach((row) => {
+      if (!Array.isArray(row)) return;
+      const cell = row[status.index];
+      const value = cell && typeof cell === 'object' ? cell.value : cell;
+
+      if (normalized(value) === normalized(targetLabel)) {
+        row[status.index] = {
+          ...(cell && typeof cell === 'object' ? cell : {}),
+          value: '',
+          type: 'select',
+        };
+      }
+    });
+
+    if (normalized(this.activeListFilters?.[status.index]) === normalized(targetLabel)) {
+      delete this.activeListFilters[status.index];
+    }
+
+    let saved;
+
+    try {
+      saved = this.save();
+    } catch (failure) {
+      this.reloadStateFromStorage();
+      throw failure;
+    }
+
+    if (saved === false) {
+      this.reloadStateFromStorage();
+      return false;
+    }
+
+    this.refresh({ persist: false });
+    this.showToast?.(`Deleted "${targetLabel}" status.`, { success: true });
+    return true;
+  },
+
   createKanbanStatusMenu(optionIndex) {
     const options = getKanbanStatusColumn(this.getTracker()).column.options;
     const fallback = optionIndex === null;
@@ -156,10 +212,12 @@ export const statusSettingsMethods = {
       ['Change color', () => this.openStatusDialog(optionIndex, 'color')],
       ['Move left', () => this.updateStatusOption(optionIndex, { direction: -1 }), optionIndex === 0],
       ['Move right', () => this.updateStatusOption(optionIndex, { direction: 1 }), optionIndex === options.length - 1],
+      ['Delete status', () => this.deleteStatusOption(optionIndex), options.length <= 1],
     ];
 
     actions.forEach(([text, action, disabled]) => {
-      const button = makeButton(text, 'kanban-status-menu-action');
+      const isDelete = text.startsWith('Delete');
+      const button = makeButton(text, `kanban-status-menu-action${isDelete ? ' kanban-status-menu-action-delete' : ''}`);
       button.setAttribute('role', 'menuitem');
       button.disabled = Boolean(disabled);
       button.addEventListener('click', () => {
@@ -167,6 +225,9 @@ export const statusSettingsMethods = {
         action();
         if (text.startsWith('Move')) {
           this.focusStatusMenu(optionIndex + (text === 'Move left' ? -1 : 1));
+        } else if (text.startsWith('Delete')) {
+          const nextIndex = Math.min(optionIndex, Math.max(0, (options.length || 1) - 1));
+          this.focusStatusMenu(nextIndex);
         }
       });
       menu.appendChild(button);

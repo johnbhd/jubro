@@ -3,7 +3,7 @@ import { logoutAndRedirect } from '../auth/authNavigation.js';
 
 const THEME_KEY = 'jubro_theme';
 
-export function initBoardTopNavbar() {
+export function initBoardTopNavbar(auth = authService) {
   const topNav = document.getElementById('boardTopNavbar');
   if (!topNav) return null;
 
@@ -16,6 +16,7 @@ export function initBoardTopNavbar() {
   const dropdownUserEmail = document.getElementById('dropdownUserEmail');
   const dropdownLogoutWrapper = document.getElementById('dropdownLogoutWrapper');
   const btnNavHome = document.getElementById('btnNavHome');
+  const btnNavSignIn = document.getElementById('btnNavSignIn');
   const btnNavSettings = document.getElementById('btnNavSettings');
   const btnThemeLight = document.getElementById('btnThemeLight');
   const btnThemeDark = document.getElementById('btnThemeDark');
@@ -79,6 +80,19 @@ export function initBoardTopNavbar() {
 
   btnThemeDark?.addEventListener('click', () => {
     syncThemeUI('dark');
+  });
+
+  btnNavSignIn?.addEventListener('click', async () => {
+    closeDropdown();
+    try {
+      const { Auth } = await import('../auth/auth.js');
+      if (!window.__jubroAuth) {
+        window.__jubroAuth = new Auth();
+      }
+      window.__jubroAuth.open();
+    } catch (error) {
+      console.error('Failed to open sign in modal:', error);
+    }
   });
 
   btnNavSettings?.addEventListener('click', async () => {
@@ -154,6 +168,7 @@ export function initBoardTopNavbar() {
       if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
       dropdownUserHeader?.classList.remove('hidden');
       btnNavSettings?.classList.remove('hidden');
+      btnNavSignIn?.classList.add('hidden');
       dropdownLogoutWrapper?.classList.remove('hidden');
     } else {
       btnGuestSettings?.classList.remove('hidden');
@@ -164,6 +179,7 @@ export function initBoardTopNavbar() {
       if (dropdownUserName) dropdownUserName.textContent = 'Account';
       dropdownUserHeader?.classList.add('hidden');
       btnNavSettings?.classList.add('hidden');
+      btnNavSignIn?.classList.remove('hidden');
       dropdownLogoutWrapper?.classList.add('hidden');
       closeDropdown();
     }
@@ -172,12 +188,11 @@ export function initBoardTopNavbar() {
   const currentTheme = localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
   syncThemeUI(currentTheme);
 
-  const initialUser = authService.getCurrentUser?.();
-  if (initialUser) {
-    updateAuthUI(initialUser);
-  }
+  const activeAuth = auth || authService;
+  const initialUser = activeAuth.getCurrentUser?.() || null;
+  updateAuthUI(initialUser);
 
-  authService.onAuthChange((user) => {
+  activeAuth.onAuthChange?.((user) => {
     updateAuthUI(user);
   });
 

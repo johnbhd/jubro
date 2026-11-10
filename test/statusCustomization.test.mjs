@@ -139,6 +139,30 @@ test('color changes persist a key without altering names, order or application v
   assert.equal(app.saves, 1);
 });
 
+test('delete status choice removes option, clears affected row statuses, updates filters, and saves', async () => {
+  const app = await createApp();
+  // Add a row with Rejected status
+  app.tracker.rows.push(['Apple', { value: 'Rejected', type: 'select' }]);
+  app.activeListFilters[1] = 'Rejected';
+
+  assert.equal(app.deleteStatusOption(2), true);
+  assert.deepEqual(app.tracker.columns[1].options, ['Applied', 'Interview']);
+  assert.equal(app.tracker.rows[4][1].value, '');
+  assert.equal(app.activeListFilters[1], undefined);
+  assert.equal(app.saves, 1);
+  assert.equal(app.refreshes, 1);
+
+  // Deleting down to 1 option succeeds
+  assert.equal(app.deleteStatusOption(1), true);
+  assert.deepEqual(app.tracker.columns[1].options, ['Applied']);
+  assert.equal(app.saves, 2);
+
+  // Deleting the final option throws and rejects mutation
+  assert.throws(() => app.deleteStatusOption(0), /at least one status/i);
+  assert.deepEqual(app.tracker.columns[1].options, ['Applied']);
+  assert.equal(app.saves, 2);
+});
+
 test('custom hex color saves once and round-trips through shared status presentation', async () => {
   const app = await createApp();
   const rows = structuredClone(app.tracker.rows);
