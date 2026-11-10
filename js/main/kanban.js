@@ -417,15 +417,36 @@ export const kanbanMethods = {
         const indexes = typeof this.getListColumnIndexes === 'function'
           ? this.getListColumnIndexes(tracker)
           : {};
-        const company = this.getCellDisplay(row?.[indexes.company]);
-        const position = this.getCellDisplay(row?.[indexes.position]);
-        const date = this.getCellDisplay(row?.[indexes.date]);
-        const platform = this.getCellDisplay(row?.[indexes.platform]);
-        const link = indexes.link >= 0 ? this.getCellValue(row?.[indexes.link]) : '';
-        const employmentType = indexes.employmentType >= 0 ? this.getCellDisplay(row?.[indexes.employmentType]) : '-';
-        const workSetup = indexes.workSetup >= 0 ? this.getCellDisplay(row?.[indexes.workSetup]) : '-';
-        const nextAction = indexes.nextAction >= 0 ? this.getCellDisplay(row?.[indexes.nextAction]) : '-';
-        const nextActionDate = indexes.nextActionDate >= 0 ? this.getCellDisplay(row?.[indexes.nextActionDate]) : '-';
+        const resolvedRow = typeof this.resolveApplicationRow === 'function'
+          ? this.resolveApplicationRow(tracker, row, indexes)
+          : null;
+        const company = resolvedRow
+          ? (resolvedRow.company || '-')
+          : this.getCellDisplay(row?.[indexes.company]);
+        const position = resolvedRow
+          ? (resolvedRow.position || '-')
+          : this.getCellDisplay(row?.[indexes.position]);
+        const date = resolvedRow
+          ? (resolvedRow.date || '-')
+          : this.getCellDisplay(row?.[indexes.date]);
+        const platform = resolvedRow
+          ? (resolvedRow.platform || '-')
+          : this.getCellDisplay(row?.[indexes.platform]);
+        const link = resolvedRow
+          ? resolvedRow.link
+          : (indexes.link >= 0 ? this.getCellValue(row?.[indexes.link]) : '');
+        const employmentType = resolvedRow
+          ? (resolvedRow.employmentType || '-')
+          : (indexes.employmentType >= 0 ? this.getCellDisplay(row?.[indexes.employmentType]) : '-');
+        const workSetup = resolvedRow
+          ? (resolvedRow.workSetup || '-')
+          : (indexes.workSetup >= 0 ? this.getCellDisplay(row?.[indexes.workSetup]) : '-');
+        const nextAction = resolvedRow
+          ? (resolvedRow.nextAction || '-')
+          : (indexes.nextAction >= 0 ? this.getCellDisplay(row?.[indexes.nextAction]) : '-');
+        const nextActionDate = resolvedRow
+          ? (resolvedRow.nextActionDate || '-')
+          : (indexes.nextActionDate >= 0 ? this.getCellDisplay(row?.[indexes.nextActionDate]) : '-');
         const card = document.createElement('article');
 
         card.className = 'kanban-card rounded-xl border border-gray-200 bg-white p-4 shadow-sm';

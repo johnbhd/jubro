@@ -70,10 +70,17 @@ export const listBadgeMethods = {
   },
 
   renderListBadgesForCard(tracker, row, statusIndex) {
+    const indexes = typeof this.getListColumnIndexes === 'function'
+      ? this.getListColumnIndexes(tracker)
+      : {};
     const selectColumns = this.getListSelectColumns();
     const statusColumn = selectColumns.find(({ index }) => index === statusIndex);
     const otherBadges = selectColumns
-      .filter(({ index }) => index !== statusIndex)
+      .filter(({ index }) => (
+        index !== statusIndex
+        && index !== indexes.company
+        && index !== indexes.position
+      ))
       .filter(({ column, index }) => {
         const name = this.normalizeText(this.getColumnName(column));
         return !['platform', 'source'].includes(name) || this.isListColumnVisible(tracker, index);

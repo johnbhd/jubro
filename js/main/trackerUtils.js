@@ -26,13 +26,53 @@ export function getSafeHttpUrl(value) {
   }
 }
 
+const CANONICAL_COLUMN_NAMES = new Set([
+  'company',
+  'company name',
+  'employer',
+  'organization',
+  'position',
+  'role',
+  'job title',
+  'position / role',
+  'job role',
+  'title',
+  'platform',
+  'source',
+  'status',
+  'application date',
+  'date',
+  'date applied',
+  'job link',
+  'website',
+  'link',
+  'url',
+  'application link',
+  'work setup',
+  'worksetup',
+  'employment type',
+  'employmenttype',
+  'next action',
+  'nextaction',
+  'next action date',
+  'nextactiondate',
+  'email',
+  'location',
+]);
+
 export const trackerUtilityMethods = {
 getColumnName(column) {
-    return typeof column === 'object' ? column.name : column;
+    return typeof column === 'object' ? column?.name : column;
   },
 
 getCellValue(cell) {
-    return typeof cell === 'object' ? cell.value : cell;
+    if (cell === null || cell === undefined) return '';
+
+    if (typeof cell === 'object') {
+      return cell.value ?? cell.label ?? '';
+    }
+
+    return cell;
   },
 
 getCellDisplay(cell) {
@@ -57,7 +97,18 @@ getColumnIndexByNames(tracker, names, fallbackIndex = -1) {
       wantedNames.includes(this.normalizeText(this.getColumnName(column)))
     ));
 
-    return index >= 0 ? index : fallbackIndex;
+    if (index >= 0) return index;
+
+    if (fallbackIndex < 0 || fallbackIndex >= tracker.columns.length) {
+      return -1;
+    }
+
+    const fallbackName = this.normalizeText(this.getColumnName(tracker.columns[fallbackIndex]));
+    if (fallbackName && CANONICAL_COLUMN_NAMES.has(fallbackName) && !wantedNames.includes(fallbackName)) {
+      return -1;
+    }
+
+    return fallbackIndex;
   },
 
 isHttpLink(value) {

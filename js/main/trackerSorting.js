@@ -2,21 +2,28 @@ export const trackerSortingMethods = {
 getDateColumnIndex(tracker) {
     if (!tracker || !Array.isArray(tracker.columns)) return -1;
 
-    const typedIndex = tracker.columns.findIndex((column) => (
-      typeof column === 'object' && column.type === 'date'
-    ));
-
-    if (typedIndex !== -1) return typedIndex;
-
-    return tracker.columns.findIndex((column) => {
+    const primaryDateIndex = tracker.columns.findIndex((column) => {
       const name = String(this.getColumnName(column) || '').trim().toLowerCase();
-      return name === 'date' || name === 'date applied';
+      if (name === 'next action date' || name === 'nextactiondate') return false;
+
+      return (typeof column === 'object' && column?.type === 'date')
+        || name === 'application date'
+        || name === 'date'
+        || name === 'date applied';
     });
+
+    if (primaryDateIndex !== -1) return primaryDateIndex;
+
+    return tracker.columns.findIndex((column) => (
+      typeof column === 'object' && column?.type === 'date'
+    ));
   },
 
 getDateSortValue(row, dateIndex) {
     const cell = row?.[dateIndex];
-    const value = typeof cell === 'object' ? cell.value : cell;
+    const value = typeof this.getCellValue === 'function'
+      ? this.getCellValue(cell)
+      : (cell && typeof cell === 'object' ? cell.value : cell);
     const time = new Date(`${value || ''}T00:00:00`).getTime();
 
     return Number.isNaN(time) ? Number.POSITIVE_INFINITY : time;
@@ -24,7 +31,9 @@ getDateSortValue(row, dateIndex) {
 
 getCellSortText(row, columnIndex) {
     const cell = row?.[columnIndex];
-    const value = typeof cell === 'object' ? cell.value : cell;
+    const value = typeof this.getCellValue === 'function'
+      ? this.getCellValue(cell)
+      : (cell && typeof cell === 'object' ? cell.value : cell);
 
     return String(value || '').trim().toLowerCase();
   },

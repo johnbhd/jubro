@@ -158,20 +158,31 @@ export const listRenderMethods = {
       article.addEventListener('pointerleave', () => clearActiveTarget(rowIndex, null, 'row'));
       article.addEventListener('contextmenu', (event) => showMenu(event, rowIndex, null, 'row'));
 
-      const dateApplied = this.getCellDisplay(row[indexes.date]);
-      const position = this.getCellDisplay(row[indexes.position]);
-      const company = this.getCellDisplay(row[indexes.company]);
-      const link = this.getFirstRowLink(row);
+      const resolvedRow = typeof this.resolveApplicationRow === 'function'
+        ? this.resolveApplicationRow(tracker, row, indexes)
+        : {
+            dateDisplay: this.getCellDisplay(row[indexes.date]),
+            link: this.getFirstRowLink(row)
+          };
+      const identity = typeof this.resolveListCardIdentity === 'function'
+        ? this.resolveListCardIdentity(tracker, row, indexes)
+        : (() => {
+            const rawPosition = this.getCellDisplay(row[indexes.position]);
+            const rawCompany = this.getCellDisplay(row[indexes.company]);
+            const hasPosition = this.isUsefulListValue(rawPosition);
+            const hasCompany = this.isUsefulListValue(rawCompany);
+            return {
+              titleText: hasPosition ? rawPosition : hasCompany ? rawCompany : 'Untitled Application',
+              companyText: hasPosition && hasCompany ? rawCompany : '',
+              showCompany: hasPosition && hasCompany
+            };
+          })();
+      const dateApplied = resolvedRow.dateDisplay;
+      const link = resolvedRow.link;
       const email = indexes.email >= 0 ? this.getCellValue(row[indexes.email]) : '';
       const location = indexes.location >= 0 ? this.getCellValue(row[indexes.location]) : '';
       const { otherBadges, statusBadge } = this.renderListBadgesForCard(tracker, row, indexes.status);
-      const shouldShowPosition = this.isListColumnVisible(tracker, indexes.position) && this.isUsefulListValue(position);
-      const shouldShowCompany = this.isListColumnVisible(tracker, indexes.company) && this.isUsefulListValue(company);
-      const titleText = shouldShowPosition
-        ? position
-        : shouldShowCompany
-          ? company
-          : 'Job Application';
+      const { titleText, companyText, showCompany } = identity;
       const shouldShowDate = this.isListColumnVisible(tracker, indexes.date) && this.isUsefulListValue(dateApplied);
       const additionalDetails = this.getListAdditionalDetails(tracker, row, indexes);
 
@@ -229,8 +240,8 @@ export const listRenderMethods = {
       dateElement.hidden = !shouldShowDate;
       dateElement.textContent = dateApplied;
       titleElement.textContent = titleText;
-      companyElement.hidden = !(shouldShowCompany && titleText !== company);
-      companyElement.textContent = company;
+      companyElement.hidden = !showCompany;
+      companyElement.textContent = companyText;
       infoButton.hidden = additionalDetails.length === 0;
 
       if (this.isListColumnVisible(tracker, indexes.email) && this.isUsefulListValue(email)) {
@@ -245,6 +256,10 @@ export const listRenderMethods = {
         locationElement.className = 'text-xs text-gray-500';
         locationElement.append(this.createIcon('fa-location-dot'), document.createTextNode(location));
         extraElement.appendChild(locationElement);
+      }
+
+      if (companyElement.parentElement) {
+        companyElement.parentElement.hidden = companyElement.hidden && extraElement.childElementCount === 0;
       }
 
       const shouldShowWebsite = this.isListColumnVisible(tracker, indexes.link)
