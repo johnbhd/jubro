@@ -1,4 +1,4 @@
-import { isStatusColorKey } from './statusColors.js';
+import { isStatusColorValue } from './statusColors.js';
 
 export const FIELD_TYPES = Object.freeze([
   'text',
@@ -9,7 +9,6 @@ export const FIELD_TYPES = Object.freeze([
 
 const FIELD_TYPE_SET = new Set(FIELD_TYPES);
 const DEFAULT_OPTION_COLOR = '#6b7280';
-const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export class TrackerDataValidationError extends Error {
@@ -62,9 +61,9 @@ function normalizeOption(option, { strict }) {
 
   const color = option.color;
 
-  if (!isStatusColorKey(color) && !(typeof color === 'string' && HEX_COLOR_PATTERN.test(color))) {
+  if (!isStatusColorValue(color)) {
     if (strict) {
-      fail('Select option colors must be a supported color key or a legacy six-digit hexadecimal color.', 'A select option color is invalid.');
+      fail('Select option colors must be a supported color key or a six-digit hexadecimal color.', 'A select option color is invalid.');
     }
 
     return {

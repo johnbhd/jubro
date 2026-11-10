@@ -4,7 +4,7 @@ import {
   STATUS_COLORS,
   getDefaultStatusColorKey,
   getSelectOptionColor,
-  isStatusColorKey,
+  isStatusColorValue,
 } from '../services/statusColors.js';
 
 function optionLabel(option) {
@@ -43,8 +43,8 @@ export const statusSettingsMethods = {
       && normalized(optionLabel(item)) === normalized(nextLabel))) {
       throw new Error('A status with that name already exists.');
     }
-    if (color !== undefined && !isStatusColorKey(color)) {
-      throw new Error('Choose a color from the palette.');
+    if (color !== undefined && !isStatusColorValue(color)) {
+      throw new Error('Choose a preset or a valid custom color.');
     }
 
     if (direction !== undefined) {
@@ -243,9 +243,9 @@ export const statusSettingsMethods = {
     const fields = dialog.querySelector('.status-dialog-fields');
     const error = dialog.querySelector('.status-dialog-error');
     let input;
-    let selectedColor = Object.keys(STATUS_COLORS).find((key) => (
-      STATUS_COLORS[key].toLowerCase() === getSelectOptionColor(option, { status: true }).toLowerCase()
-    ));
+    let selectedColor = isStatusColorValue(option?.color)
+      ? option.color
+      : getDefaultStatusColorKey(label);
 
     dialog.querySelector('h2').textContent = mode === 'rename' ? 'Rename Status' : 'Change Column Color';
 
@@ -270,23 +270,56 @@ export const statusSettingsMethods = {
       palette.setAttribute('role', 'group');
       palette.setAttribute('aria-label', 'Status color');
 
-      Object.entries(STATUS_COLORS).forEach(([key, value]) => {
+      const presets = Object.entries(STATUS_COLORS).filter(([key]) => key !== 'slate');
+      const currentColor = getSelectOptionColor(option, { status: true });
+      const selectedPreset = presets.find(([, value]) => (
+        value.toLowerCase() === currentColor.toLowerCase()
+      ))?.[0];
+      const selectColor = (color, button) => {
+        selectedColor = color;
+        palette.querySelectorAll('button').forEach((choice) => {
+          const selected = choice === button;
+          choice.setAttribute('aria-pressed', String(selected));
+          choice.textContent = selected ? '✓' : '';
+        });
+      };
+
+      presets.forEach(([key, value]) => {
         const button = makeButton('', 'status-color-choice');
         button.setAttribute('aria-label', key[0].toUpperCase() + key.slice(1));
-        button.setAttribute('aria-pressed', String(selectedColor === key));
+        button.setAttribute('aria-pressed', String(selectedPreset === key));
         button.style.setProperty('--status-accent', value);
-        button.textContent = selectedColor === key ? '✓' : '';
+        button.textContent = selectedPreset === key ? '✓' : '';
         button.addEventListener('click', () => {
-          selectedColor = key;
-          palette.querySelectorAll('button').forEach((choice) => {
-            const selected = choice === button;
-            choice.setAttribute('aria-pressed', String(selected));
-            choice.textContent = selected ? '✓' : '';
-          });
+          selectColor(key, button);
         });
         palette.appendChild(button);
       });
-      fields.append(description, palette);
+
+      const customButton = makeButton('', 'status-color-choice status-color-custom');
+      customButton.title = 'Custom color';
+      customButton.setAttribute('aria-label', 'Choose custom color');
+      customButton.setAttribute('aria-pressed', String(selectedPreset === undefined));
+      customButton.textContent = selectedPreset === undefined ? '✓' : '';
+
+      const customInput = document.createElement('input');
+      customInput.type = 'color';
+      customInput.className = 'status-custom-color-input';
+      customInput.value = currentColor;
+      customInput.hidden = true;
+      customInput.setAttribute('aria-label', 'Custom color');
+      customButton.addEventListener('click', () => customInput.click());
+      const selectCustomColor = () => {
+        const color = customInput.value;
+        if (!isStatusColorValue(color) || !color.startsWith('#')) {
+          return;
+        }
+        selectColor(color.toLowerCase(), customButton);
+      };
+      customInput.addEventListener('input', selectCustomColor);
+      customInput.addEventListener('change', selectCustomColor);
+      palette.appendChild(customButton);
+      fields.append(description, palette, customInput);
     }
 
     dialog.querySelector('.status-dialog-cancel').addEventListener('click', () => dialog.close());
@@ -310,11 +343,13 @@ export const statusSettingsMethods = {
         }
 
         const changes = mode === 'rename' ? { label: input.value } : { color: selectedColor };
-        if (mode === 'color' && selectedColor === undefined) {
-          throw new Error('Choose a color from the palette.');
+        if (mode === 'color' && !isStatusColorValue(selectedColor)) {
+          throw new Error('Choose a preset or a valid custom color.');
         }
         if (fallback) {
-          if (!isStatusColorKey(selectedColor)) throw new Error('Choose a color from the palette.');
+          if (!isStatusColorValue(selectedColor)) {
+            throw new Error('Choose a preset or a valid custom color.');
+          }
           this.kanbanFallbackColor = selectedColor;
           this.refresh({ persist: false });
           dialog.close();

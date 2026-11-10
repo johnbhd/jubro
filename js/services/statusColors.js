@@ -15,6 +15,11 @@ export function isStatusColorKey(color) {
   return typeof color === 'string' && Object.hasOwn(STATUS_COLORS, color);
 }
 
+export function isStatusColorValue(color) {
+  return isStatusColorKey(color)
+    || (typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color));
+}
+
 export function getDefaultStatusColorKey(label) {
   const name = String(label ?? '').trim().toLowerCase();
   const common = {
@@ -41,7 +46,9 @@ export function getSelectOptionColor(option, { status = false } = {}) {
   const color = option && typeof option === 'object' ? option.color : undefined;
 
   if (isStatusColorKey(color)) return STATUS_COLORS[color];
-  if (typeof color === 'string' && /^#[0-9a-f]{6}$/i.test(color)) return color;
+  if (isStatusColorValue(color)) {
+    return color;
+  }
 
   const label = typeof option === 'string' ? option : option?.label;
   return status ? STATUS_COLORS[getDefaultStatusColorKey(label)] : '#6b7280';

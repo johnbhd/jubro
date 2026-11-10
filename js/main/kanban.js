@@ -1,5 +1,5 @@
 import { normalizeCellValue } from '../services/trackerData.js';
-import { getSelectOptionColor, STATUS_COLORS } from '../services/statusColors.js';
+import { getSelectOptionColor } from '../services/statusColors.js';
 import { createApplicationDragHandle, createKanbanDrag } from './kanbanDrag.js';
 import { createCompanyFaviconElement } from './favicon.js';
 import { getSafeHttpUrl } from './trackerUtils.js';
@@ -331,7 +331,7 @@ export const kanbanMethods = {
       column.className = 'kanban-column flex min-w-[17rem] max-w-[21rem] flex-1 flex-col rounded-2xl bg-gray-100';
       column.dataset.kanbanStatus = group.value === null ? '' : group.value;
       const color = group.value === ''
-        ? STATUS_COLORS[this.kanbanFallbackColor] || STATUS_COLORS.slate
+        ? getSelectOptionColor({ color: this.kanbanFallbackColor || 'slate' })
         : group.color;
       column.style.borderTop = `3px solid ${color}`;
       column.style.setProperty('--status-accent', color);

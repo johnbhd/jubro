@@ -571,9 +571,12 @@ input:disabled {
 
 .status-color-palette {
   display: grid;
+  align-items: center;
+  justify-items: center;
   gap: 0.75rem;
-  grid-template-columns: repeat(5, 2.75rem);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   margin: 1.25rem 0;
+  width: 100%;
 }
 
 .status-color-choice {
@@ -596,6 +599,23 @@ input:disabled {
 .status-color-choice[aria-pressed="true"] {
   border-color: currentColor;
   box-shadow: 0 0 0 2px #ffffff;
+}
+
+.status-color-custom {
+  background: conic-gradient(
+    #ef4444,
+    #eab308,
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #a855f7,
+    #ec4899,
+    #ef4444
+  );
+}
+
+.status-dialog .status-custom-color-input {
+  display: none;
 }
 
 .status-color-choice:hover {

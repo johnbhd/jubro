@@ -5,6 +5,7 @@
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
 // Use JUBRO_TOOLBAR_ONLY=1 for protected Job Search widths and responsive toolbar checks.
 // Use JUBRO_NEXT_ACTION_ONLY=1 for compact Board-card action/date presentation checks.
+// Use JUBRO_COLOR_ONLY=1 for centered palettes and native custom-color Save/Cancel checks.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -125,7 +126,8 @@ try {
     || process.env.JUBRO_TRANSFER_ONLY
     || process.env.JUBRO_AUTH_ONLY
     || process.env.JUBRO_TOOLBAR_ONLY
-    || process.env.JUBRO_NEXT_ACTION_ONLY;
+    || process.env.JUBRO_NEXT_ACTION_ONLY
+    || process.env.JUBRO_COLOR_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
@@ -146,6 +148,10 @@ try {
   if (process.env.JUBRO_NEXT_ACTION_ONLY) {
     const { verifyNextAction } = await import('./nextAction.browser.mjs');
     await verifyNextAction({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_COLOR_ONLY) {
+    const { verifyColorDialog } = await import('./colorDialog.browser.mjs');
+    await verifyColorDialog({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     if (!process.env.JUBRO_ENTRY_ONLY) {
@@ -1634,6 +1640,7 @@ try {
     authOnly: Boolean(process.env.JUBRO_AUTH_ONLY),
     toolbarWidths: process.env.JUBRO_TOOLBAR_ONLY ? 7 : undefined,
     nextActionOnly: Boolean(process.env.JUBRO_NEXT_ACTION_ONLY),
+    colorOnly: Boolean(process.env.JUBRO_COLOR_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

@@ -139,6 +139,41 @@ test('color changes persist a key without altering names, order or application v
   assert.equal(app.saves, 1);
 });
 
+test('custom hex color saves once and round-trips through shared status presentation', async () => {
+  const app = await createApp();
+  const rows = structuredClone(app.tracker.rows);
+  assert.equal(app.updateStatusOption(2, { color: '#D946EF' }), true);
+  assert.deepEqual(app.tracker.columns[1].options, [
+    'Applied', 'Interview', { label: 'Rejected', color: '#D946EF' },
+  ]);
+  assert.deepEqual(app.tracker.rows, rows);
+  assert.equal(app.saves, 1);
+  const imported = normalizeSingleTrackerImport(JSON.parse(JSON.stringify(app.saved)));
+  assert.equal(getKanbanColumns(imported)[2].color, '#D946EF');
+  assert.equal(trackerUtilityMethods.getDashboardOptions(imported.columns[1])[2].color, '#D946EF');
+});
+
+test('invalid custom colors are rejected before mutation and have safe display fallbacks', async () => {
+  const app = await createApp();
+  const before = structuredClone(app.tracker);
+  for (const color of ['#bad', '#12345G', '#12345678', 'rgb(1,2,3)', 'url(evil)', 'linear-gradient(red,blue)']) {
+    assert.throws(() => app.updateStatusOption(2, { color }), /color/i);
+    const imported = structuredClone(before);
+    imported.columns[1].options[2] = { label: 'Rejected', color };
+    assert.throws(() => normalizeSingleTrackerImport(imported), /color/i);
+    assert.equal(getKanbanColumns(imported)[2].color, '#ef4444');
+  }
+  assert.deepEqual(app.tracker, before);
+  assert.equal(app.saves, 0);
+});
+
+test('existing custom colors remain unchanged when the same value is saved', async () => {
+  const app = await createApp();
+  app.tracker.columns[1].options[2] = { label: 'Rejected', color: '#D946EF' };
+  assert.equal(app.updateStatusOption(2, { color: '#D946EF' }), false);
+  assert.equal(app.saves, 0);
+});
+
 test('rejected save restores canonical status and filters', async () => {
   const app = await createApp();
   app.save = () => false;
@@ -181,11 +216,13 @@ test('full backup export/import preserves color keys and strips untrusted style 
   const service = new JSONService();
   const value = tracker();
   value.columns[1].options[0] = { label: 'Applied', color: 'blue', style: 'url(evil)' };
+  value.columns[1].options[1] = { label: 'Interview', color: '#D946EF' };
   let text;
   service.downloadJson = (data) => { text = JSON.stringify(data); };
   service.exportAll({ active: '1', data: { 1: value } });
   const result = service.parseFullBackupText(text);
   assert.deepEqual(result.data['1'].columns[1].options[0], { label: 'Applied', color: 'blue' });
+  assert.deepEqual(result.data['1'].columns[1].options[1], { label: 'Interview', color: '#D946EF' });
 });
 
 test('real storage and sync create one revision and one logical upload per customization', async () => {
@@ -221,16 +258,17 @@ test('real storage and sync create one revision and one logical upload per custo
 
   for (const [index, changes] of [
     [0, { label: 'Submitted' }], [1, { color: 'purple' }], [2, { direction: -1 }],
+    [2, { color: '#D946EF' }],
   ]) {
     assert.equal(app.updateStatusOption(index, changes), true);
     await app.pendingSync;
   }
 
-  assert.equal(Storage.load().revision, initialRevision + 3);
-  assert.equal(__getWrites().length, 6, 'Three logical uploads each write two compatibility documents.');
+  assert.equal(Storage.load().revision, initialRevision + 4);
+  assert.equal(__getWrites().length, 8, 'Four logical uploads each write two compatibility documents.');
   const saved = Storage.load().data['1'];
   assert.deepEqual(saved.columns[1].options, [
-    { label: 'Submitted', color: 'blue' }, 'Rejected', { label: 'Interview', color: 'purple' },
+    { label: 'Submitted', color: 'blue' }, 'Rejected', { label: 'Interview', color: '#D946EF' },
   ]);
   assert.equal(saved.rows[0][1].value, 'Submitted');
 });
