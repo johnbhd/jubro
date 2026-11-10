@@ -407,6 +407,11 @@ input:disabled {
     flex: 0 1 340px;
     max-width: 350px;
     min-width: 260px;
+    margin-left: auto;
+  }
+
+  .board-toolbar-actions {
+    margin-left: 0;
   }
 
   #btnOpenSearch,

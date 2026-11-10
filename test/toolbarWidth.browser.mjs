@@ -85,6 +85,10 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
           check(searchBounds.width >= 260 && searchBounds.width <= 350, 'Search stays compact but usable');
           check(inputBounds.width >= 140, 'Search input retains useful typing space');
           check(Math.abs(inputBounds.top - selector.getBoundingClientRect().top) <= 4, 'Inline search stays aligned');
+          const actions = document.querySelector('.board-toolbar-actions').getBoundingClientRect();
+          const gap = parseFloat(getComputedStyle(document.getElementById('appNavbar')).columnGap);
+          check(Math.abs(actions.left - searchBounds.right - gap) < 1,
+            'Search stays adjacent to the right-hand action group');
         } else {
           document.getElementById('btnOpenSearch').click();
           await toolbarFrame();
