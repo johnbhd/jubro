@@ -76,8 +76,9 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
         for (const id of ['btnDashboard', 'btnCustomFields']) {
           const button = document.getElementById(id);
           check(Boolean(button.getAttribute('aria-label') && button.title), 'Compact controls retain accessible names');
-          check((getComputedStyle(button.querySelector('span')).display !== 'none') === (innerWidth >= 1280),
-            'Secondary action labels yield to workspace context');
+          const labelBreakpoint = id === 'btnDashboard' ? 768 : 1280;
+          check((getComputedStyle(button.querySelector('span')).display !== 'none') === (innerWidth >= labelBreakpoint),
+            'Dashboard keeps tablet text while Custom Fields compacts first');
         }
         if (innerWidth >= 1024) {
           const searchBounds = search.getBoundingClientRect();

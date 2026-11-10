@@ -343,7 +343,6 @@ input:disabled {
 }
 
 @media (max-width: 1279px) {
-  #btnDashboard span,
   #btnCustomFields span {
     display: none;
   }
@@ -406,7 +405,7 @@ input:disabled {
     display: block;
     flex: 0 1 340px;
     max-width: 350px;
-    min-width: 260px;
+    min-width: 220px;
     margin-left: auto;
   }
 

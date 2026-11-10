@@ -939,7 +939,7 @@ try {
             && document.documentElement.scrollWidth <= innerWidth;
           const correctLabels = labels.length === 2 && labels.every(label =>
             (getComputedStyle(label).display !== 'none') === (innerWidth >= 768))
-            && (getComputedStyle(document.querySelector('#btnDashboard span')).display !== 'none') === (innerWidth >= 1280)
+            && (getComputedStyle(document.querySelector('#btnDashboard span')).display !== 'none') === (innerWidth >= 768)
             && (getComputedStyle(document.querySelector('#btnAddApplication span')).display !== 'none') === (innerWidth >= 1024);
           const before = savedRevision();
           let search = true;
