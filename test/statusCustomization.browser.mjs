@@ -3,6 +3,7 @@
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
+// Use JUBRO_TOOLBAR_ONLY=1 for protected Job Search widths and responsive toolbar checks.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -121,7 +122,8 @@ try {
   const focusedOnly = process.env.JUBRO_LANDING_ONLY
     || process.env.JUBRO_SURFACES_ONLY
     || process.env.JUBRO_TRANSFER_ONLY
-    || process.env.JUBRO_AUTH_ONLY;
+    || process.env.JUBRO_AUTH_ONLY
+    || process.env.JUBRO_TOOLBAR_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
@@ -134,6 +136,10 @@ try {
   if (process.env.JUBRO_SURFACES_ONLY) {
     const { verifyWorkspaceSurfaces } = await import('./workspaceSurfaces.browser.mjs');
     await verifyWorkspaceSurfaces({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_TOOLBAR_ONLY) {
+    const { verifyToolbarWidth } = await import('./toolbarWidth.browser.mjs');
+    await verifyToolbarWidth({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     if (!process.env.JUBRO_ENTRY_ONLY) {
@@ -908,7 +914,7 @@ try {
         && savedRevision() === before;
     `), true, 'Select-field filters stay with Search and clear to Manual without writes.');
     for (const theme of ['dark', 'light']) {
-      for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+      for (const width of [390, 430, 768, 1024, 1280, 1440, 1920]) {
         await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
         const toolbar = await evaluate(`
           document.documentElement.classList.toggle('dark', ${theme === 'dark'});
@@ -923,16 +929,18 @@ try {
             document.getElementById('btnCustomFields'),
             document.getElementById('btnAddApplication')];
           const rects = controls.map(control => control.getBoundingClientRect());
-          const labels = [...document.querySelectorAll('.board-view-button span, #btnDashboard span, #btnAddApplication span')];
+          const labels = [...document.querySelectorAll('.board-view-button span')];
           const customFieldsSpan = document.querySelector('#btnCustomFields span');
           const customFieldsLabelOk = customFieldsSpan
-            && (getComputedStyle(customFieldsSpan).display !== 'none') === (innerWidth >= 1024);
+            && (getComputedStyle(customFieldsSpan).display !== 'none') === (innerWidth >= 1280);
           const fits = rects.every(rect => rect.width >= 40 && rect.height >= 40
             && rect.left >= 0 && rect.right <= innerWidth)
             && Math.max(...rects.map(rect => rect.top)) - Math.min(...rects.map(rect => rect.top)) <= 4
             && document.documentElement.scrollWidth <= innerWidth;
-          const correctLabels = labels.length === 4 && labels.every(label =>
-            (getComputedStyle(label).display !== 'none') === (innerWidth >= 768));
+          const correctLabels = labels.length === 2 && labels.every(label =>
+            (getComputedStyle(label).display !== 'none') === (innerWidth >= 768))
+            && (getComputedStyle(document.querySelector('#btnDashboard span')).display !== 'none') === (innerWidth >= 1280)
+            && (getComputedStyle(document.querySelector('#btnAddApplication span')).display !== 'none') === (innerWidth >= 1024);
           const before = savedRevision();
           let search = true;
           if (innerWidth < 1024) {
@@ -1618,6 +1626,7 @@ try {
     surfacesOnly: Boolean(process.env.JUBRO_SURFACES_ONLY),
     transferOnly: Boolean(process.env.JUBRO_TRANSFER_ONLY),
     authOnly: Boolean(process.env.JUBRO_AUTH_ONLY),
+    toolbarWidths: process.env.JUBRO_TOOLBAR_ONLY ? 7 : undefined,
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

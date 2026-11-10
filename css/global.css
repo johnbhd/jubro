@@ -174,16 +174,9 @@ input:disabled {
   text-align: left;
 }
 
-@media (min-width: 1280px) {
-  #appNavbar .job-search-selector {
-    max-width: 280px;
-  }
-}
-
 .job-search-selector span:first-child {
   display: inline-block;
   min-width: 0;
-  max-width: calc(100% - 22px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -287,8 +280,8 @@ input:disabled {
 
 #sortSelect {
   height: 100%;
-  min-width: 82px;
-  max-width: 120px;
+  min-width: 100px;
+  max-width: 110px;
   padding: 0 24px 0 10px;
   background: transparent;
   outline: none;
@@ -337,14 +330,27 @@ input:disabled {
     padding: 0;
   }
 
+  .job-search-navigation {
+    flex: 1 1 0;
+    max-width: 100px;
+  }
+
   #appNavbar .job-search-selector {
-    max-width: min(100px, calc(100vw - 276px));
+    width: 100%;
+    max-width: 100%;
     padding: 0 4px;
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1279px) {
+  #btnDashboard span,
   #btnCustomFields span {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  #btnAddApplication span {
     display: none;
   }
 
@@ -378,6 +384,17 @@ input:disabled {
   .board-toolbar-actions-row {
     gap: 4px;
   }
+
+  .job-search-navigation {
+    flex: 0 0 auto;
+    min-width: 200px;
+    max-width: 240px;
+  }
+
+  #appNavbar .job-search-selector {
+    min-width: 200px;
+    max-width: 240px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -387,21 +404,14 @@ input:disabled {
 
   .board-search {
     display: block;
-    flex: 0 1 400px;
-    max-width: 440px;
-    min-width: 212px;
+    flex: 0 1 340px;
+    max-width: 350px;
+    min-width: 260px;
   }
 
   #btnOpenSearch,
   #btnCloseSearch {
     display: none;
-  }
-}
-
-@media (min-width: 1440px) {
-  .board-search {
-    flex: 0 1 420px;
-    max-width: 460px;
   }
 }
 
