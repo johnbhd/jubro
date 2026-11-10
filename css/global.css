@@ -801,6 +801,64 @@ input:disabled {
   padding: 12px 14px;
 }
 
+.kanban-next-action-layout {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+}
+
+.kanban-next-action-icon {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.kanban-next-action-layout .kanban-next-action-label {
+  grid-column: 2 / span 2;
+  grid-row: 1;
+  color: #2563eb;
+}
+
+.kanban-next-action-layout .kanban-next-action-text {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.kanban-next-action-layout .kanban-next-action-date {
+  display: inline-flex;
+  grid-column: 3;
+  grid-row: 2;
+  align-items: center;
+  justify-self: end;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background-color: #111827;
+  color: #e5e7eb;
+  white-space: nowrap;
+}
+
+.kanban-next-action-layout .kanban-next-action-date i {
+  font-size: 10px;
+}
+
+.dark .kanban-next-action-icon {
+  color: #9ca3af;
+}
+
+.dark .kanban-next-action-layout .kanban-next-action-label {
+  color: #93c5fd !important;
+}
+
+.dark .kanban-next-action-layout .kanban-next-action-date {
+  color: #e5e7eb !important;
+}
+
 .kanban-card[draggable="true"],
 .list-view-row[draggable="true"] {
   cursor: grab;

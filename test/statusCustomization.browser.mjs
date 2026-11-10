@@ -4,6 +4,7 @@
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
 // Use JUBRO_TOOLBAR_ONLY=1 for protected Job Search widths and responsive toolbar checks.
+// Use JUBRO_NEXT_ACTION_ONLY=1 for compact Board-card action/date presentation checks.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -123,7 +124,8 @@ try {
     || process.env.JUBRO_SURFACES_ONLY
     || process.env.JUBRO_TRANSFER_ONLY
     || process.env.JUBRO_AUTH_ONLY
-    || process.env.JUBRO_TOOLBAR_ONLY;
+    || process.env.JUBRO_TOOLBAR_ONLY
+    || process.env.JUBRO_NEXT_ACTION_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
@@ -140,6 +142,10 @@ try {
   if (process.env.JUBRO_TOOLBAR_ONLY) {
     const { verifyToolbarWidth } = await import('./toolbarWidth.browser.mjs');
     await verifyToolbarWidth({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_NEXT_ACTION_ONLY) {
+    const { verifyNextAction } = await import('./nextAction.browser.mjs');
+    await verifyNextAction({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     if (!process.env.JUBRO_ENTRY_ONLY) {
@@ -1627,6 +1633,7 @@ try {
     transferOnly: Boolean(process.env.JUBRO_TRANSFER_ONLY),
     authOnly: Boolean(process.env.JUBRO_AUTH_ONLY),
     toolbarWidths: process.env.JUBRO_TOOLBAR_ONLY ? 7 : undefined,
+    nextActionOnly: Boolean(process.env.JUBRO_NEXT_ACTION_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

@@ -567,16 +567,21 @@ export const kanbanMethods = {
         const hasNextActionDate = nextActionDate !== '-';
         if (hasNextAction || hasNextActionDate) {
           const nextActionWrapper = document.createElement('div');
-          nextActionWrapper.className = 'kanban-card-next-action mt-3 rounded-lg bg-gray-50 p-3 text-xs border border-gray-100';
+          nextActionWrapper.className = 'kanban-card-next-action kanban-next-action-layout mt-3 rounded-lg bg-gray-50 p-3 text-xs border border-gray-100';
+
+          const taskIcon = document.createElement('i');
+          taskIcon.className = 'kanban-next-action-icon fa-regular fa-calendar-check';
+          taskIcon.setAttribute('aria-hidden', 'true');
+          nextActionWrapper.appendChild(taskIcon);
 
           const nextActionHeader = document.createElement('div');
-          nextActionHeader.className = 'kanban-next-action-label text-[10px] font-semibold uppercase tracking-wider text-gray-400';
+          nextActionHeader.className = 'kanban-next-action-label text-[10px] font-semibold tracking-wider';
           nextActionHeader.textContent = 'Next Action';
           nextActionWrapper.appendChild(nextActionHeader);
 
           if (hasNextAction) {
             const textEl = document.createElement('div');
-            textEl.className = 'kanban-next-action-text mt-1.5 text-xs font-medium text-gray-800 break-words leading-snug';
+            textEl.className = 'kanban-next-action-text text-xs font-medium text-gray-800 break-words leading-snug';
             textEl.textContent = nextAction;
             nextActionWrapper.appendChild(textEl);
           }
@@ -584,9 +589,14 @@ export const kanbanMethods = {
           if (hasNextActionDate) {
             const formattedActionDate = formatActionDate(nextActionDate);
             if (formattedActionDate) {
-              const dateEl = document.createElement('div');
-              dateEl.className = `kanban-next-action-date ${hasNextAction ? 'mt-1' : 'mt-1.5'} text-[11px] text-gray-500 font-normal`;
-              dateEl.textContent = formattedActionDate;
+              const dateEl = document.createElement('span');
+              dateEl.className = 'kanban-next-action-date text-[11px] font-normal';
+              const dateIcon = document.createElement('i');
+              dateIcon.className = 'fa-regular fa-calendar';
+              dateIcon.setAttribute('aria-hidden', 'true');
+              const dateText = document.createElement('span');
+              dateText.textContent = formattedActionDate;
+              dateEl.append(dateIcon, dateText);
               nextActionWrapper.appendChild(dateEl);
             }
           }

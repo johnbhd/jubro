@@ -447,11 +447,21 @@ test('Kanban card Next Action layout and hierarchy handles all combinations clea
   });
 
   // 1. Both action and date
-  const cardBoth = renderSingleCard(makeTracker('Prepare portfolio and review interview questions', '2026-11-14'));
+  const tracker = makeTracker('fafa', '2026-11-12');
+  tracker.rows[0][0].value = 'Google';
+  const storedBefore = JSON.stringify(tracker);
+  const cardBoth = renderSingleCard(tracker);
   const nextActionWrapperBoth = cardBoth.querySelector('.kanban-card-next-action');
   assert.ok(nextActionWrapperBoth, 'Wrapper exists');
-  assert.match(nextActionWrapperBoth.querySelector('.kanban-next-action-text').textContent, /Prepare portfolio/);
-  assert.match(nextActionWrapperBoth.querySelector('.kanban-next-action-date').textContent, /Nov 14/);
+  assert.equal(nextActionWrapperBoth.querySelector('.kanban-next-action-label').textContent, 'Next Action');
+  assert.equal(nextActionWrapperBoth.querySelector('.kanban-next-action-text').textContent, 'fafa');
+  const date = nextActionWrapperBoth.querySelector('.kanban-next-action-date');
+  assert.equal(date.textContent, 'Nov 12');
+  assert.ok(date.querySelector('i'), 'Date pill retains its calendar icon');
+  assert.ok(nextActionWrapperBoth.querySelector('.kanban-next-action-icon'), 'Task icon stays on the left');
+  assert.equal(nextActionWrapperBoth.querySelectorAll('i').length, 2, 'Only the requested task and calendar icons exist');
+  assert.equal(nextActionWrapperBoth.querySelector('button'), null, 'No circular completion button or empty button slot');
+  assert.equal(JSON.stringify(tracker), storedBefore, 'Presentation does not change saved action or date');
 
   // 2. Action only (no date)
   const cardActionOnly = renderSingleCard(makeTracker('Follow up with recruiter', ''));
