@@ -569,22 +569,29 @@ export const kanbanMethods = {
           const nextActionWrapper = document.createElement('div');
           nextActionWrapper.className = 'kanban-card-next-action kanban-next-action-layout mt-3 rounded-lg bg-gray-50 p-3 text-xs border border-gray-100';
 
+          const iconBox = document.createElement('span');
+          iconBox.className = 'kanban-next-action-icon-box';
           const taskIcon = document.createElement('i');
-          taskIcon.className = 'kanban-next-action-icon fa-regular fa-calendar-check';
+          taskIcon.className = 'kanban-next-action-icon fa-regular fa-calendar';
           taskIcon.setAttribute('aria-hidden', 'true');
-          nextActionWrapper.appendChild(taskIcon);
+          iconBox.appendChild(taskIcon);
+
+          const nextActionContent = document.createElement('div');
+          nextActionContent.className = 'kanban-next-action-content';
 
           const nextActionHeader = document.createElement('div');
-          nextActionHeader.className = 'kanban-next-action-label text-[10px] font-semibold tracking-wider';
+          nextActionHeader.className = 'kanban-next-action-label';
           nextActionHeader.textContent = 'Next Action';
-          nextActionWrapper.appendChild(nextActionHeader);
+          nextActionContent.appendChild(nextActionHeader);
 
           if (hasNextAction) {
             const textEl = document.createElement('div');
             textEl.className = 'kanban-next-action-text text-xs font-medium text-gray-800 break-words leading-snug';
             textEl.textContent = nextAction;
-            nextActionWrapper.appendChild(textEl);
+            nextActionContent.appendChild(textEl);
           }
+
+          nextActionWrapper.append(iconBox, nextActionContent);
 
           if (hasNextActionDate) {
             const formattedActionDate = formatActionDate(nextActionDate);

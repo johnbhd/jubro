@@ -802,44 +802,65 @@ input:disabled {
 }
 
 .kanban-next-action-layout {
-  display: grid;
-  grid-template-columns: 16px minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  column-gap: 8px;
-  row-gap: 4px;
+  gap: 8px;
+  border-radius: 10px;
 }
 
-.kanban-next-action-icon {
-  grid-column: 1;
-  grid-row: 1 / span 2;
-  color: #64748b;
+html:not(.dark) #appBody .kanban-card-next-action.kanban-next-action-layout {
+  background-color: #f8fbff;
+  border-color: #b8cdef;
+}
+
+.kanban-next-action-icon-box {
+  display: inline-flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #c7d5eb;
+  border-radius: 7px;
+  background-color: #eaf1fb;
+  color: #4774b8;
+}
+
+.kanban-next-action-icon-box i {
   font-size: 14px;
 }
 
+.kanban-next-action-content {
+  flex: 1 1 72px;
+  min-width: 0;
+}
+
 .kanban-next-action-layout .kanban-next-action-label {
-  grid-column: 2 / span 2;
-  grid-row: 1;
   color: #2563eb;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 .kanban-next-action-layout .kanban-next-action-text {
-  grid-column: 2;
-  grid-row: 2;
   min-width: 0;
+  margin-top: 3px;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
 .kanban-next-action-layout .kanban-next-action-date {
   display: inline-flex;
-  grid-column: 3;
-  grid-row: 2;
+  flex: 0 0 auto;
   align-items: center;
-  justify-self: end;
   gap: 4px;
+  margin-left: auto;
   padding: 3px 6px;
+  border: 1px solid #d5deeb;
   border-radius: 6px;
-  background-color: #111827;
-  color: #e5e7eb;
+  background-color: #eef2f7;
+  color: #475569;
   white-space: nowrap;
 }
 
@@ -847,8 +868,15 @@ input:disabled {
   font-size: 10px;
 }
 
-.dark .kanban-next-action-icon {
-  color: #9ca3af;
+.dark .kanban-card-next-action.kanban-next-action-layout {
+  background-color: #17263b !important;
+  border-color: #355b8e !important;
+}
+
+.dark .kanban-next-action-icon-box {
+  background-color: #122035;
+  border-color: #35527a;
+  color: #93c5fd;
 }
 
 .dark .kanban-next-action-layout .kanban-next-action-label {
@@ -856,7 +884,9 @@ input:disabled {
 }
 
 .dark .kanban-next-action-layout .kanban-next-action-date {
-  color: #e5e7eb !important;
+  background-color: #111c2f;
+  border-color: #35445d;
+  color: #cbd5e1 !important;
 }
 
 .kanban-card[draggable="true"],
