@@ -30,7 +30,9 @@ function app() {
     state: Storage.load(),
     eventsInitialized: true,
     refresh() {},
-    showToast() {},
+    showToast(message, options) {
+      this.lastToast = { message, options };
+    },
     closeSearchSpecificUI() {},
     syncs: 0,
     syncLocalStateToFirebase() { this.syncs += 1; },
@@ -274,4 +276,16 @@ test('Add rejected persistence restores canonical rows instead of showing a fake
   assert.equal(instance.addApplicationDraft(draft, context), false);
   assert.equal(instance.getTracker().rows.length, 0);
   assert.equal(instance.getTracker().title, 'Other tab');
+});
+
+test('Add application triggers success toast with success: true', () => {
+  const instance = app();
+  const context = instance.captureApplicationContext();
+  const draft = instance.createApplicationDraft();
+  draft[0].value = 'Toast Corp';
+  assert.equal(instance.addApplicationDraft(draft, context), true);
+  assert.deepEqual(instance.lastToast, {
+    message: 'Application added.',
+    options: { success: true },
+  });
 });

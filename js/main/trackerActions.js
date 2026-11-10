@@ -115,8 +115,8 @@ export const trackerActionMethods = {
     return true;
   },
 
-showToast(message) {
-    presentToast(message);
+showToast(message, options) {
+    presentToast(message, options);
   },
 
 refresh({ persist = true } = {}) {

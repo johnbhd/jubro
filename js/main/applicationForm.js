@@ -80,7 +80,7 @@ export const applicationFormMethods = {
       return false;
     }
     this.refresh({ persist: false });
-    this.showToast('Application added.');
+    this.showToast('Application added.', { success: true });
     return true;
   },
 

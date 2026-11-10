@@ -33,6 +33,7 @@ export function consumeFlashToast() {
 }
 
 export function showToast(message, { success = false } = {}) {
+  const isSuccess = Boolean(success || message === 'Application added.' || SUCCESS_MESSAGES.includes(message));
   let toast = document.getElementById('jubroToast');
 
   if (!toast) {
@@ -46,9 +47,9 @@ export function showToast(message, { success = false } = {}) {
   }
 
   toast.textContent = '';
-  toast.classList.toggle('jubro-toast-success', success);
+  toast.classList.toggle('jubro-toast-success', isSuccess);
 
-  if (success) {
+  if (isSuccess) {
     const icon = document.createElement('span');
     icon.className = 'jubro-toast-icon';
     icon.textContent = '✓';
@@ -61,7 +62,7 @@ export function showToast(message, { success = false } = {}) {
   toast.appendChild(text);
   toast.classList.remove('hidden');
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => toast.classList.add('hidden'), success ? 3000 : 2600);
+  toastTimeout = setTimeout(() => toast.classList.add('hidden'), isSuccess ? 3000 : 2600);
 }
 
 export function showFlashToast() {

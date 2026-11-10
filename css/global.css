@@ -2571,6 +2571,33 @@ section > .list-panel {
   border-radius: 8px;
 }
 
+.dark .kanban-guide-card {
+  border-color: #4b5563;
+  background: rgba(156, 163, 175, 0.08);
+  color: #f9fafb;
+}
+
+.dark .kanban-guide-badge {
+  color: #93c5fd;
+  border-color: #3b82f6;
+}
+
+.dark .kanban-guide-icon {
+  border-color: #374151;
+  background-color: #1f2937;
+  color: #9ca3af;
+}
+
+.dark .kanban-guide-company {
+  color: #f9fafb !important;
+}
+
+.dark .kanban-guide-details,
+.dark .kanban-guide-position,
+.dark .kanban-guide-explanation {
+  color: #9ca3af !important;
+}
+
 @media (max-width: 639px) {
   .application-add-fields {
     grid-template-columns: minmax(0, 1fr);

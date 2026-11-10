@@ -380,18 +380,72 @@ export const kanbanMethods = {
         guideIcon.innerHTML = '<i class="fa-solid fa-briefcase text-xs"></i>';
         const guideMainInfo = document.createElement('div');
         guideMainInfo.className = 'min-w-0 flex-1';
-        appendText(guideMainInfo, 'kanban-guide-company block truncate text-sm font-semibold text-gray-900', 'Company Name');
-        appendText(guideMainInfo, 'kanban-guide-position mt-0.5 block truncate text-xs text-gray-500', 'Position Role');
+        appendText(guideMainInfo, 'kanban-guide-company block truncate text-sm font-semibold text-gray-900 dark:text-gray-100', 'Company Name');
+        appendText(guideMainInfo, 'kanban-guide-position mt-0.5 block truncate text-xs text-gray-500 dark:text-gray-400', 'Position Role');
         guideHeader.append(guideIcon, guideMainInfo);
         guide.appendChild(guideHeader);
 
         appendText(guide, 'kanban-guide-details', 'Application Date · Platform');
 
+        const guidePills = document.createElement('div');
+        guidePills.className = 'kanban-card-pills mt-1 flex flex-wrap items-center gap-2';
+
+        const guideEmploymentPill = document.createElement('span');
+        guideEmploymentPill.className = 'kanban-pill kanban-pill-employment';
+        const empIcon = document.createElement('i');
+        empIcon.className = 'fa-solid fa-briefcase text-[10px] opacity-75';
+        empIcon.setAttribute('aria-hidden', 'true');
+        const empText = document.createElement('span');
+        empText.textContent = 'Full-time';
+        guideEmploymentPill.append(empIcon, empText);
+
+        const guideWorkSetupPill = document.createElement('span');
+        guideWorkSetupPill.className = 'kanban-pill kanban-pill-remote';
+        const wsIcon = document.createElement('i');
+        wsIcon.className = 'fa-solid fa-location-dot text-[10px] opacity-75';
+        wsIcon.setAttribute('aria-hidden', 'true');
+        const wsText = document.createElement('span');
+        wsText.textContent = 'Remote';
+        guideWorkSetupPill.append(wsIcon, wsText);
+
+        guidePills.append(guideEmploymentPill, guideWorkSetupPill);
+        guide.appendChild(guidePills);
+
         const guideNextAction = document.createElement('div');
-        guideNextAction.className = 'kanban-card-next-action rounded-lg bg-gray-50 p-2 text-xs border border-gray-100';
-        appendText(guideNextAction, 'kanban-next-action-label block text-[11px] font-semibold uppercase tracking-wider text-gray-400', 'Next Action');
-        appendText(guideNextAction, 'kanban-next-action-text mt-0.5 block font-medium text-gray-800', 'Follow up with recruiter');
-        appendText(guideNextAction, 'kanban-next-action-date mt-0.5 block text-xs text-gray-500', 'Next Action Date');
+        guideNextAction.className = 'kanban-card-next-action kanban-next-action-layout mt-1 rounded-lg bg-gray-50 p-3 text-xs border border-gray-100';
+
+        const iconBox = document.createElement('span');
+        iconBox.className = 'kanban-next-action-icon-box';
+        const taskIcon = document.createElement('i');
+        taskIcon.className = 'kanban-next-action-icon fa-regular fa-calendar';
+        taskIcon.setAttribute('aria-hidden', 'true');
+        iconBox.appendChild(taskIcon);
+
+        const nextActionContent = document.createElement('div');
+        nextActionContent.className = 'kanban-next-action-content';
+
+        const nextActionHeader = document.createElement('div');
+        nextActionHeader.className = 'kanban-next-action-label';
+        nextActionHeader.textContent = 'Next Action';
+        nextActionContent.appendChild(nextActionHeader);
+
+        const textEl = document.createElement('div');
+        textEl.className = 'kanban-next-action-text text-xs font-medium text-gray-800 break-words leading-snug';
+        textEl.textContent = 'Follow up with recruiter';
+        nextActionContent.appendChild(textEl);
+
+        guideNextAction.append(iconBox, nextActionContent);
+
+        const dateEl = document.createElement('span');
+        dateEl.className = 'kanban-next-action-date text-[11px] font-normal';
+        const dateIcon = document.createElement('i');
+        dateIcon.className = 'fa-regular fa-calendar';
+        dateIcon.setAttribute('aria-hidden', 'true');
+        const dateText = document.createElement('span');
+        dateText.textContent = 'Next Action Date';
+        dateEl.append(dateIcon, dateText);
+        guideNextAction.appendChild(dateEl);
+
         guide.appendChild(guideNextAction);
 
         appendText(guide, 'kanban-guide-details', 'Status');
