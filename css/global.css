@@ -2845,10 +2845,6 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   color: #f9fafb !important;
 }
 
-.dark #homeBody #why-jubro .text-blue-600 {
-  color: #60a5fa !important;
-}
-
 .dark #homeBody .bg-gray-50 {
   background-color: #111827 !important;
 }
@@ -2869,12 +2865,119 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   gap: 32px;
 }
 
-#homeBody .landing-steps > div {
-  border-color: #bfdbfe;
+#homeBody :is(#how-it-works, #why-jubro) {
+  --landing-accent: #476eb3;
+  --landing-copy: #4b5563;
+  --landing-title: #172033;
+  --landing-card: #fafafb;
+  --landing-card-highlight: #ffffff;
+  --landing-card-border: #d9dee7;
 }
 
-.dark #homeBody .landing-steps > div {
-  border-color: #1e40af;
+.dark #homeBody :is(#how-it-works, #why-jubro) {
+  --landing-accent: #7fa8ff;
+  --landing-copy: #a8b4c6;
+  --landing-title: #f8fafc;
+  --landing-card: #111c2f;
+  --landing-card-highlight: #142036;
+  --landing-card-border: #2a374c;
+}
+
+#homeBody .landing-step {
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  border-top: 1px solid rgb(91 141 239 / 0.32);
+}
+
+#homeBody .landing-step-number {
+  color: var(--landing-accent);
+  font-family: ui-monospace, monospace;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+#homeBody #why-jubro {
+  max-width: 1056px;
+}
+
+#homeBody .landing-comparison-intro {
+  max-width: 768px;
+}
+
+#homeBody .landing-comparison {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 20px;
+}
+
+#homeBody .landing-comparison-card {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--landing-card-border);
+  border-radius: 20px;
+  background-color: var(--landing-card);
+  color: var(--landing-copy);
+  text-align: left;
+}
+
+#homeBody .landing-comparison-jubro {
+  background-color: var(--landing-card-highlight);
+}
+
+#homeBody .landing-comparison-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+}
+
+#homeBody .landing-comparison-jubro .landing-comparison-label {
+  color: var(--landing-accent);
+}
+
+#homeBody .landing-comparison-card h3 {
+  margin-top: 10px;
+  color: var(--landing-title);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+#homeBody .landing-comparison-card ul {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+#homeBody .landing-comparison-jubro li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+#homeBody .landing-comparison-jubro li i {
+  flex: 0 0 14px;
+  color: var(--landing-accent);
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  #homeBody .landing-comparison {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  #homeBody .landing-comparison-card {
+    padding: 28px;
+  }
 }
 
 #homeBody .landing-phone-visual {

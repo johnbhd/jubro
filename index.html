@@ -171,8 +171,8 @@
         </div>
 
         <div class="landing-steps mt-12">
-          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
-            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">01</span>
+          <div class="landing-step">
+            <span class="landing-step-number">01</span>
             <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
               Add an Application
             </h3>
@@ -181,8 +181,8 @@
             </p>
           </div>
 
-          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
-            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">02</span>
+          <div class="landing-step">
+            <span class="landing-step-number">02</span>
             <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
               Track Its Progress
             </h3>
@@ -191,8 +191,8 @@
             </p>
           </div>
 
-          <div class="flex flex-col border-t-2 border-blue-600/30 dark:border-blue-500/40 pt-6">
-            <span class="text-3xl sm:text-4xl font-black font-mono text-blue-600 dark:text-blue-400">03</span>
+          <div class="landing-step">
+            <span class="landing-step-number">03</span>
             <h3 class="mt-3 text-xl font-bold text-gray-900 dark:text-white">
               Know What Comes Next
             </h3>
@@ -204,8 +204,8 @@
       </section>
 
       <!-- 3. WHY JUBRO INSTEAD OF SPREADSHEETS -->
-      <section id="why-jubro" class="mx-auto max-w-4xl scroll-mt-28">
-        <div class="text-center max-w-2xl mx-auto">
+      <section id="why-jubro" class="mx-auto scroll-mt-28">
+        <div class="landing-comparison-intro text-center mx-auto">
           <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
             Your Job Search Shouldn't<br class="hidden sm:inline" /> Feel Like a Spreadsheet
           </h2>
@@ -214,98 +214,30 @@
           </p>
         </div>
 
-        <div class="mt-10 overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/90 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-          <div class="grid grid-cols-2 border-b border-gray-200/90 bg-gray-50/80 px-5 py-4 sm:px-8 sm:py-5 dark:border-slate-800 dark:bg-slate-800/40">
-            <div>
-              <span class="inline-flex items-center gap-2 rounded-lg bg-gray-200/70 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-gray-600 dark:bg-slate-800 dark:text-slate-400">
-                <i class="fa-regular fa-file-lines text-xs" aria-hidden="true"></i>
-                Spreadsheets / Notes
-              </span>
-            </div>
-            <div>
-              <span class="inline-flex items-center gap-2 rounded-lg bg-blue-100/80 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                <i class="fa-solid fa-table-columns text-xs" aria-hidden="true"></i>
-                Jubro
-              </span>
-            </div>
-          </div>
+        <div class="landing-comparison mt-10">
+          <article class="landing-comparison-card" aria-labelledby="old-way-title">
+            <p class="landing-comparison-label">THE OLD WAY</p>
+            <h3 id="old-way-title">Spreadsheets &amp; Notes</h3>
+            <ul>
+              <li>Manual lists</li>
+              <li>Scattered job links</li>
+              <li>Hard to see progress</li>
+              <li>Easy to forget next steps</li>
+              <li>Setup required</li>
+            </ul>
+          </article>
 
-          <div class="divide-y divide-gray-100 px-5 sm:px-8 dark:divide-slate-800/60">
-            <div class="grid grid-cols-2 py-4 sm:py-5 gap-4 sm:gap-8 items-center">
-              <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500 text-[11px]">
-                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Manual lists</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-[11px]">
-                  <i class="fa-solid fa-check" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Visual job pipeline</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 py-4 sm:py-5 gap-4 sm:gap-8 items-center">
-              <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500 text-[11px]">
-                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Scattered job links</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-[11px]">
-                  <i class="fa-solid fa-check" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Everything in one place</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 py-4 sm:py-5 gap-4 sm:gap-8 items-center">
-              <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500 text-[11px]">
-                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Hard to see progress</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-[11px]">
-                  <i class="fa-solid fa-check" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Clear application stages</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 py-4 sm:py-5 gap-4 sm:gap-8 items-center">
-              <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500 text-[11px]">
-                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Easy to forget next steps</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-[11px]">
-                  <i class="fa-solid fa-check" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Next Action</span>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 py-4 sm:py-5 gap-4 sm:gap-8 items-center">
-              <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600 dark:text-slate-400">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500 text-[11px]">
-                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Setup required</span>
-              </div>
-              <div class="flex items-center gap-3 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white">
-                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400 text-[11px]">
-                  <i class="fa-solid fa-check" aria-hidden="true"></i>
-                </span>
-                <span class="leading-normal">Start immediately</span>
-              </div>
-            </div>
-          </div>
+          <article class="landing-comparison-card landing-comparison-jubro" aria-labelledby="jubro-way-title">
+            <p class="landing-comparison-label">THE JUBRO WAY</p>
+            <h3 id="jubro-way-title">Jubro</h3>
+            <ul>
+              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Visual job pipeline</li>
+              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Everything in one place</li>
+              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Clear application stages</li>
+              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Next Action</li>
+              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Start immediately</li>
+            </ul>
+          </article>
         </div>
       </section>
 

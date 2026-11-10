@@ -1350,6 +1350,69 @@ try {
           && document.documentElement.scrollWidth <= innerWidth
           && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
       `), true, 'Static landing preview fits ' + theme + ' ' + width);
+      const storytelling = await evaluate(`
+        const failures = [];
+        function check(condition, message) {
+          if (!condition) failures.push(message);
+        }
+        function contrast(foreground, background) {
+          function luminance(color) {
+            const channels = color.match(/[\\d.]+/g).slice(0, 3).map(Number).map(value => {
+              const channel = value / 255;
+              return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+            });
+            return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+          }
+          const values = [luminance(foreground), luminance(background)].sort((a, b) => a - b);
+          return (values[1] + 0.05) / (values[0] + 0.05);
+        }
+        const page = getComputedStyle(document.body).backgroundColor;
+        const steps = [...document.querySelectorAll('.landing-steps > div')];
+        check(steps.length === 3, 'Three steps remain visible');
+        for (const step of steps) {
+          const number = getComputedStyle(step.querySelector('span'));
+          const title = getComputedStyle(step.querySelector('h3'));
+          const divider = getComputedStyle(step);
+          check(parseFloat(number.fontSize) < parseFloat(title.fontSize), 'Step titles dominate numbers');
+          check(contrast(number.color, page) >= 4.5, 'Small step numbers remain readable');
+          check(parseFloat(divider.borderTopWidth) <= 1, 'Step dividers stay thin');
+          check(divider.borderTopColor.startsWith('rgba('), 'Step dividers use a translucent accent');
+        }
+        const section = document.getElementById('why-jubro');
+        const cards = [...section.querySelectorAll('article')];
+        check(cards.length === 2, 'Comparison uses two independent cards');
+        check(section.getBoundingClientRect().width <= 1100, 'Comparison stays compact');
+        if (cards.length === 2) {
+          const bounds = cards.map(card => card.getBoundingClientRect());
+          const labels = cards.map(card => card.querySelector('p').textContent.trim());
+          check(labels[0] === 'THE OLD WAY' && labels[1] === 'THE JUBRO WAY', 'Narrative card order remains clear');
+          check(Math.abs(bounds[0].width - bounds[1].width) < 1, 'Cards share equal widths');
+          check(Math.abs(bounds[0].height - bounds[1].height) < 1, 'Cards share equal heights');
+          check(innerWidth < 768
+            ? bounds[1].top >= bounds[0].bottom + 19.5
+            : Math.abs(bounds[0].top - bounds[1].top) < 1 && bounds[1].left >= bounds[0].right + 23.5,
+          'Cards stack on mobile and sit side by side on tablet/desktop: '
+            + JSON.stringify(bounds.map(rect => ({ top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right }))));
+          for (const card of cards) {
+            const surface = getComputedStyle(card);
+            check(surface.textAlign === 'left', 'Card contents stay left aligned');
+            check(parseFloat(surface.paddingLeft) >= 20 && parseFloat(surface.paddingLeft) <= 32, 'Card padding stays compact');
+            check(card.querySelectorAll('li').length === 5, 'Each card has five concise points');
+            for (const selector of ['p', 'h3', 'li']) {
+              check(contrast(getComputedStyle(card.querySelector(selector)).color, surface.backgroundColor) >= 4.5,
+                'Card labels, titles and body text remain readable');
+            }
+          }
+          check(cards[0].querySelectorAll('i').length === 0, 'Old Way has no repeated X icons');
+          const checks = [...cards[1].querySelectorAll('li i')];
+          check(checks.length === 5 && checks.every(icon => parseFloat(getComputedStyle(icon).fontSize) <= 14
+            && icon.getAttribute('aria-hidden') === 'true'), 'Jubro checks stay small and decorative');
+          const titleColor = getComputedStyle(cards[1].querySelector('h3')).color.match(/[\\d.]+/g).slice(0, 3).map(Number);
+          check(Math.max(...titleColor) - Math.min(...titleColor) < 50, 'Jubro title uses neutral text, not saturated blue');
+        }
+        return failures;
+      `);
+      assert.deepEqual(storytelling, [], 'Calm landing steps and comparison ' + theme + ' ' + width);
       if (width < 1024) {
         const mobileNav = await evaluate(`
           const menuBtn = document.getElementById('btnMobileMenu');
@@ -1396,6 +1459,14 @@ try {
       await writeFile(resolve(artifacts, `${theme}-${width}-marketing.png`), Buffer.from(previewShot.data, 'base64'));
       const fullShot = await command('browsingContext.captureScreenshot', { context, origin: 'document' });
       await writeFile(resolve(artifacts, `${theme}-${width}-full.png`), Buffer.from(fullShot.data, 'base64'));
+      for (const section of ['how-it-works', 'why-jubro']) {
+        await evaluate(`
+          document.getElementById('${section}').scrollIntoView({ block: 'start', behavior: 'instant' });
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        `);
+        const sectionShot = await command('browsingContext.captureScreenshot', { context });
+        await writeFile(resolve(artifacts, `${theme}-${width}-${section}.png`), Buffer.from(sectionShot.data, 'base64'));
+      }
       await evaluate('document.getElementById("about").scrollIntoView({ block: "start" });');
       const aboutShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-about.png`), Buffer.from(aboutShot.data, 'base64'));
