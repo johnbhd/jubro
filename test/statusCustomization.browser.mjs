@@ -1406,16 +1406,30 @@ try {
           return (values[1] + 0.05) / (values[0] + 0.05);
         }
         const page = getComputedStyle(document.body).backgroundColor;
-        const steps = [...document.querySelectorAll('.landing-steps > div')];
-        check(steps.length === 3, 'Three steps remain visible');
-        for (const step of steps) {
-          const number = getComputedStyle(step.querySelector('span'));
-          const title = getComputedStyle(step.querySelector('h3'));
-          const divider = getComputedStyle(step);
-          check(parseFloat(number.fontSize) < parseFloat(title.fontSize), 'Step titles dominate numbers');
-          check(contrast(number.color, page) >= 4.5, 'Small step numbers remain readable');
-          check(parseFloat(divider.borderTopWidth) <= 1, 'Step dividers stay thin');
-          check(divider.borderTopColor.startsWith('rgba('), 'Step dividers use a translucent accent');
+        const flowCards = [...document.querySelectorAll('#how-it-works .landing-flow-card')];
+        check(flowCards.length === 3, 'Three flow cards remain visible');
+        const verbs = flowCards.map(c => c.querySelector('.landing-flow-verb')?.textContent.trim());
+        check(verbs[0] === 'ADD' && verbs[1] === 'TRACK' && verbs[2] === 'ACT', 'Flow uses ADD -> TRACK -> ACT verbs');
+        for (const card of flowCards) {
+          const verb = getComputedStyle(card.querySelector('.landing-flow-verb'));
+          const title = getComputedStyle(card.querySelector('h3'));
+          const desc = getComputedStyle(card.querySelector('p'));
+          const surface = getComputedStyle(card);
+          check(parseFloat(verb.fontSize) < parseFloat(title.fontSize), 'Step titles dominate verb labels');
+          check(contrast(verb.color, surface.backgroundColor) >= 4.5, 'Verb labels remain readable on card surface');
+          check(contrast(title.color, surface.backgroundColor) >= 4.5, 'Card titles remain readable');
+          check(contrast(desc.color, surface.backgroundColor) >= 4.5, 'Card descriptions remain readable');
+        }
+        const arrows = [...document.querySelectorAll('#how-it-works .landing-flow-arrow')];
+        check(arrows.length === 2, 'Two arrows connect the three cards');
+        if (innerWidth >= 1024 && flowCards.length === 3) {
+          const bounds = flowCards.map(c => c.getBoundingClientRect());
+          check(Math.abs(bounds[0].width - bounds[1].width) < 2 && Math.abs(bounds[1].width - bounds[2].width) < 2, 'Cards share equal widths on desktop');
+          check(Math.abs(bounds[0].top - bounds[1].top) < 2 && Math.abs(bounds[1].top - bounds[2].top) < 2, 'Cards align horizontally on desktop');
+          check(bounds[1].left >= bounds[0].right && bounds[2].left >= bounds[1].right, 'Cards sit in left-to-right order with arrows');
+        } else if (innerWidth < 1024 && flowCards.length === 3) {
+          const bounds = flowCards.map(c => c.getBoundingClientRect());
+          check(bounds[1].top >= bounds[0].bottom && bounds[2].top >= bounds[1].bottom, 'Cards stack vertically on mobile/tablet');
         }
         const section = document.getElementById('why-jubro');
         const cards = [...section.querySelectorAll('article')];

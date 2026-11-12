@@ -3301,12 +3301,6 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   background-color: #111827 !important;
 }
 
-#homeBody .landing-steps {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 32px;
-}
-
 #homeBody :is(#how-it-works, #why-jubro) {
   --landing-accent: #476eb3;
   --landing-copy: #4b5563;
@@ -3325,19 +3319,161 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   --landing-card-border: #2a374c;
 }
 
-#homeBody .landing-step {
-  display: flex;
-  flex-direction: column;
-  padding-top: 20px;
-  border-top: 1px solid rgb(91 141 239 / 0.32);
+#homeBody #how-it-works {
+  max-width: 1056px;
 }
 
-#homeBody .landing-step-number {
-  color: var(--landing-accent);
-  font-family: ui-monospace, monospace;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.4;
+#homeBody .landing-flow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+#homeBody .landing-flow-card {
+  position: relative;
+  width: 100%;
+  background-color: var(--landing-card, #ffffff);
+  border: 1px solid var(--landing-card-border, #e5e7eb);
+  border-radius: 1rem;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+@media (min-width: 1024px) {
+  #homeBody .landing-flow-container {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  #homeBody .landing-flow-card {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+}
+
+.dark #homeBody .landing-flow-card {
+  background-color: var(--landing-card, #111c2f);
+  border-color: var(--landing-card-border, #1e293b);
+}
+
+#homeBody .landing-flow-card.landing-flow-card-add {
+  border-top: 2px solid #3b82f6;
+}
+
+#homeBody .landing-flow-card.landing-flow-card-track {
+  border-top: 2px solid #10b981;
+}
+
+#homeBody .landing-flow-card.landing-flow-card-act {
+  border-top: 2px solid #a855f7;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #homeBody .landing-flow-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgb(15 23 42 / 0.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #homeBody .landing-flow-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+#homeBody .landing-flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  align-self: center;
+  padding: 4px;
+}
+
+#homeBody .landing-flow-arrow .fa-arrow-down {
+  display: inline-block;
+}
+
+#homeBody .landing-flow-arrow .fa-arrow-right {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  #homeBody .landing-flow-arrow {
+    padding: 0 4px;
+  }
+
+  #homeBody .landing-flow-arrow .fa-arrow-down {
+    display: none;
+  }
+
+  #homeBody .landing-flow-arrow .fa-arrow-right {
+    display: inline-block;
+  }
+}
+
+#homeBody .landing-flow-verb-add {
+  color: #2563eb;
+}
+
+.dark #homeBody .landing-flow-verb-add {
+  color: #60a5fa;
+}
+
+#homeBody .landing-flow-verb-track {
+  color: #047857;
+}
+
+.dark #homeBody .landing-flow-verb-track {
+  color: #34d399;
+}
+
+#homeBody .landing-flow-verb-act {
+  color: #7c3aed;
+}
+
+.dark #homeBody .landing-flow-verb-act {
+  color: #c084fc;
+}
+
+#homeBody .landing-flow-icon-add {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+.dark #homeBody .landing-flow-icon-add {
+  background-color: rgb(30 58 138 / 0.4);
+  border-color: rgb(30 64 175 / 0.5);
+  color: #60a5fa;
+}
+
+#homeBody .landing-flow-icon-track {
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+.dark #homeBody .landing-flow-icon-track {
+  background-color: rgb(6 78 59 / 0.4);
+  border-color: rgb(6 95 70 / 0.5);
+  color: #34d399;
+}
+
+#homeBody .landing-flow-icon-act {
+  background-color: #faf5ff;
+  border-color: #e9d5ff;
+  color: #7c3aed;
+}
+
+.dark #homeBody .landing-flow-icon-act {
+  background-color: rgb(88 28 135 / 0.4);
+  border-color: rgb(107 33 168 / 0.5);
+  color: #c084fc;
 }
 
 #homeBody #why-jubro {
@@ -3504,9 +3640,5 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
   #homeBody .landing-phone-visual {
     width: 280px;
-  }
-
-  #homeBody .landing-steps {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
