@@ -3481,6 +3481,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   --feature-blue: #476eb3;
   --feature-green: #37816b;
   --feature-purple: #8565b5;
+  --feature-red: #b25c64;
 }
 
 .dark #homeBody #features {
@@ -3488,6 +3489,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   --feature-blue: #7fa8ff;
   --feature-green: #79bca4;
   --feature-purple: #b59adf;
+  --feature-red: #dc939b;
 }
 
 #homeBody .landing-features-grid {
@@ -3691,12 +3693,12 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 }
 
 #homeBody .feature-board-sample > span {
+  --feature-tone: var(--feature-blue);
   flex: 1;
   min-width: 0;
   height: 64px;
-  padding: 6px 2px;
   border: 1px solid var(--landing-card-border);
-  border-top: 2px solid var(--feature-blue);
+  border-top: 2px solid var(--feature-tone);
   border-radius: 5px;
   background: var(--landing-card-highlight);
   font-size: 0.5rem;
@@ -3706,11 +3708,20 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 }
 
 #homeBody .feature-board-sample > span:nth-child(2) {
-  border-top-color: var(--feature-green);
+  --feature-tone: var(--feature-green);
 }
 
 #homeBody .feature-board-sample > span:nth-child(3) {
-  border-top-color: var(--feature-purple);
+  --feature-tone: var(--feature-red);
+}
+
+#homeBody .feature-board-label {
+  display: block;
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--landing-card-border);
+  border-radius: 3px 3px 0 0;
+  background: color-mix(in srgb, var(--feature-tone) 10%, var(--landing-card-highlight));
+  color: var(--feature-tone);
 }
 
 #homeBody .feature-list-sample {

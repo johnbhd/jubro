@@ -1515,6 +1515,14 @@ try {
         const featuresEl = document.getElementById('features');
         const featureCards = [...featuresEl.querySelectorAll('.landing-feature-card')];
         check(featureCards.length === 4, 'Features has four product-preview cards');
+        const miniHeaders = [...featuresEl.querySelectorAll('.feature-board-label')];
+        check(miniHeaders.length === 3 && miniHeaders.every(header => {
+          const headerBounds = header.getBoundingClientRect();
+          const columnBounds = header.parentElement.getBoundingClientRect();
+          return Math.abs(headerBounds.width - (columnBounds.width - 2)) < 1
+            && getComputedStyle(header).backgroundColor !== 'rgba(0, 0, 0, 0)'
+            && getComputedStyle(header).backgroundColor !== getComputedStyle(header.parentElement).backgroundColor;
+        }), 'Miniature Board labels have full-width tinted headers over neutral bodies');
         if (featureCards.length === 4) {
           const bounds = featureCards.map(card => card.getBoundingClientRect());
           check(bounds.every(rect => Math.abs(rect.width - bounds[0].width) < 1),
