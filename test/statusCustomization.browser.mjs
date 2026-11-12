@@ -1482,8 +1482,15 @@ try {
         const aboutRect = aboutEl.getBoundingClientRect();
         const mbRect = mbEl.getBoundingClientRect();
         const featuresRect = featuresEl.getBoundingClientRect();
-        check(aboutRect.width <= 1056.5 && mbRect.width <= 1056.5, 'Mobile showcase sections capped at 1056px');
-        check(Math.abs(aboutRect.left - whyRect.left) < 1 && Math.abs(mbRect.left - whyRect.left) < 1, 'Mobile showcase sections align horizontally with why-jubro');
+        check(aboutEl.parentElement === mbEl.parentElement && aboutEl.parentElement.classList.contains('landing-main'),
+          'Both showcase rows share the landing content parent');
+        const contentRect = aboutEl.parentElement.getBoundingClientRect();
+        for (const rect of [aboutRect, mbRect]) {
+          check(Math.abs(rect.left - contentRect.left) < 1 && Math.abs(rect.right - contentRect.right) < 1,
+            'Showcase rows fill the shared landing content width');
+          check(Math.abs(rect.left - (document.documentElement.clientWidth - rect.right)) < 2,
+            'Showcase outer left and right margins are equal');
+        }
         const gapAboveAbout = aboutRect.top - whyRect.bottom;
         const gapBetweenShowcases = mbRect.top - aboutRect.bottom;
         const gapBelowShowcases = featuresRect.top - mbRect.bottom;
@@ -1491,6 +1498,21 @@ try {
         const aboutPhoneRect = aboutPhone.getBoundingClientRect();
         const mbPhoneRect = mbPhone.getBoundingClientRect();
         check(Math.abs(aboutPhoneRect.width - mbPhoneRect.width) < 1 && Math.abs(aboutPhoneRect.height - mbPhoneRect.height) < 1, 'Both mobile showcase phones share identical dimensions');
+        if (innerWidth >= 1024) {
+          const grids = [aboutEl, mbEl].map(showcase => getComputedStyle(showcase.querySelector('.mobile-showcase-grid'))
+            .gridTemplateColumns.split(' ').map(Number.parseFloat));
+          check(grids.every(columns => columns.length === 2 && Math.abs(columns[0] - columns[1]) < 1)
+            && Math.abs(grids[0][0] - grids[1][0]) < 1, 'Both showcase rows use identical equal-width columns');
+          check(Math.abs(aboutEl.querySelector('.mobile-showcase-copy').getBoundingClientRect().left - contentRect.left) < 1
+            && Math.abs(aboutPhoneRect.right - contentRect.right) < 1,
+          'First row uses the shared left text and right phone boundaries');
+          check(Math.abs(mbPhoneRect.left - contentRect.left) < 1
+            && Math.abs(mbEl.querySelector('.mobile-showcase-copy').getBoundingClientRect().right - contentRect.right) < 1,
+          'Second row uses the shared left phone and right text boundaries');
+        } else {
+          check([aboutPhoneRect, mbPhoneRect].every(rect => Math.abs((rect.left + rect.right)
+            - (contentRect.left + contentRect.right)) < 2), 'Stacked phones remain centered within normal page padding');
+        }
         for (const showcase of [aboutEl, mbEl]) {
           const copyRect = showcase.querySelector('.mobile-showcase-copy').getBoundingClientRect();
           const mediaRect = showcase.querySelector('.mobile-showcase-media').getBoundingClientRect();
