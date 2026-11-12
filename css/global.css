@@ -3015,6 +3015,13 @@ html:not(.dark) #homeBody footer {
   border-color: var(--landing-border);
 }
 
+#homeBody footer > div,
+footer > div {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
 html:not(.dark) #homeBody .site-navbar {
   width: calc(100% - 32px);
   max-width: 1376px;
@@ -3202,13 +3209,12 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   }
 }
 
-#homeBody .landing-about-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: center;
-  gap: 40px;
+#homeBody :is(#about, #mobile-board) {
+  margin-block: 0;
+  padding-block: 0;
 }
 
+#homeBody .landing-about-grid,
 #homeBody .landing-board-showcase-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

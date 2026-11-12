@@ -96,3 +96,15 @@ test('landing page comparison section implements Old Way vs Jubro Way structure'
   assert.ok(css.includes('.landing-comparison-jubro'), 'CSS styles .landing-comparison-jubro');
   assert.ok(css.includes('.landing-comparison-logo'), 'CSS styles .landing-comparison-logo');
 });
+
+test('landing page mobile sections and footer centering on large screens', () => {
+  const css = readFileSync(resolve(process.cwd(), 'css/global.css'), 'utf8');
+
+  // Verify mobile sections share equal vertical margins
+  assert.ok(css.includes(':is(#about, #mobile-board)'), 'Mobile sections rule exists');
+  assert.ok(css.includes('margin-block: 0'), 'Mobile sections margin-block set');
+
+  // Verify footer centering and max-width on large screens
+  assert.ok(css.includes('footer > div'), 'Footer container rule exists');
+  assert.ok(css.includes('max-width: 1440px') && css.includes('margin-inline: auto'), 'Footer container centered with max-width');
+});

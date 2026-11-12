@@ -1467,6 +1467,17 @@ try {
           const titleColor = getComputedStyle(cards[1].querySelector('h3')).color.match(/[\\d.]+/g).slice(0, 3).map(Number);
           check(Math.max(...titleColor) - Math.min(...titleColor) < 50, 'Jubro title uses neutral text, not saturated blue');
         }
+        const aboutStyle = getComputedStyle(document.getElementById('about'));
+        const mbStyle = getComputedStyle(document.getElementById('mobile-board'));
+        check(aboutStyle.marginTop === mbStyle.marginTop && aboutStyle.marginBottom === mbStyle.marginBottom, 'Mobile sections share equal vertical margins');
+        if (innerWidth >= 1440) {
+          const footerDiv = document.querySelector('footer > div')?.getBoundingClientRect();
+          if (footerDiv) {
+            check(footerDiv.width <= 1440.5, 'Footer container stays capped at 1440px on super large screens');
+            const clientWidth = document.documentElement.clientWidth;
+            check(Math.abs(footerDiv.left - (clientWidth - footerDiv.width) / 2) < 2, 'Footer stays centered on super large screens');
+          }
+        }
         return failures;
       `);
       assert.deepEqual(storytelling, [], 'Calm landing steps and comparison ' + theme + ' ' + width);
