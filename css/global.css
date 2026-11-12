@@ -3212,9 +3212,8 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 #homeBody .mobile-showcase,
 #homeBody :is(#about, #mobile-board) {
   width: 100%;
-  max-width: none;
   margin-block: 0;
-  margin-inline: 0;
+  margin-inline: auto;
   padding-block: 0;
 }
 
@@ -3514,8 +3513,12 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   color: #c084fc;
 }
 
-#homeBody #why-jubro {
+#homeBody #why-jubro,
+#homeBody :is(#about, #mobile-board) {
   max-width: 1056px;
+}
+
+#homeBody #why-jubro {
   position: relative;
 }
 

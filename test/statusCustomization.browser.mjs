@@ -1484,10 +1484,10 @@ try {
         const featuresRect = featuresEl.getBoundingClientRect();
         check(aboutEl.parentElement === mbEl.parentElement && aboutEl.parentElement.classList.contains('landing-main'),
           'Both showcase rows share the landing content parent');
-        const contentRect = aboutEl.parentElement.getBoundingClientRect();
+        const contentRect = section.querySelector('.landing-comparison').getBoundingClientRect();
         for (const rect of [aboutRect, mbRect]) {
           check(Math.abs(rect.left - contentRect.left) < 1 && Math.abs(rect.right - contentRect.right) < 1,
-            'Showcase rows fill the shared landing content width');
+            'Showcase rows align with the comparison cards above');
           check(Math.abs(rect.left - (document.documentElement.clientWidth - rect.right)) < 2,
             'Showcase outer left and right margins are equal');
         }
