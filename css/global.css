@@ -3381,51 +3381,83 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   margin: 0;
 }
 
-#homeBody .faq-item + .faq-item {
-  margin-top: 1rem;
+#homeBody .faq-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 40px;
 }
 
-@media (min-width: 640px) {
-  #homeBody .faq-item + .faq-item {
-    margin-top: 1.25rem;
-  }
+#homeBody .faq-item {
+  overflow: hidden;
+  border: 1px solid var(--landing-card-border);
+  border-radius: 16px;
+  background: var(--landing-card);
+  transition: border-color 180ms ease;
 }
 
-#homeBody [data-faq-content] {
-  padding-top: 0.875rem;
-  padding-bottom: 1.75rem;
+#homeBody .faq-item:hover,
+#homeBody .faq-item:has([aria-expanded="true"]) {
+  border-color: var(--landing-accent);
 }
 
-@media (min-width: 640px) {
-  #homeBody [data-faq-content] {
-    padding-bottom: 2rem;
-  }
-}
-
-#homeBody .faq-item button {
+#homeBody .faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  padding: 16px 20px;
+  background: transparent;
+  color: var(--landing-title);
+  text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 180ms ease;
+}
+
+#homeBody .faq-question:hover,
+#homeBody .faq-question[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--landing-accent) 6%, var(--landing-card));
+}
+
+#homeBody .faq-question:focus-visible {
+  outline: 2px solid var(--landing-accent);
+  outline-offset: -3px;
+  border-radius: 15px;
+}
+
+#homeBody .faq-question-text {
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+#homeBody .faq-answer {
+  padding: 14px 20px 20px;
+  border-top: 1px solid var(--landing-card-border);
+  color: var(--landing-copy);
+  font-size: 0.875rem;
+  line-height: 1.7;
 }
 
 #homeBody .faq-icon-badge {
-  background-color: #f1f5f9;
-  color: #64748b;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--landing-card-border);
+  border-radius: 8px;
+  background: var(--landing-card-highlight);
+  color: var(--landing-copy);
   transition: background-color 180ms ease, color 180ms ease;
 }
 
-.dark #homeBody .faq-icon-badge {
-  background-color: #1e293b !important;
-  color: #94a3b8 !important;
-}
-
 #homeBody [data-faq-trigger][aria-expanded="true"] .faq-icon-badge {
-  background-color: #eff6ff;
-  color: #2563eb;
-}
-
-.dark #homeBody [data-faq-trigger][aria-expanded="true"] .faq-icon-badge {
-  background-color: #1e3a8a !important;
-  color: #60a5fa !important;
+  background: color-mix(in srgb, var(--landing-accent) 12%, var(--landing-card));
+  color: var(--landing-accent);
 }
 
 #homeBody [data-faq-icon] {
@@ -3434,6 +3466,27 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody [data-faq-trigger][aria-expanded="true"] [data-faq-icon] {
   transform: rotate(180deg);
+}
+
+@media (min-width: 640px) {
+  #homeBody .faq-list {
+    gap: 16px;
+  }
+
+  #homeBody .faq-question {
+    padding-inline: 24px;
+  }
+
+  #homeBody .faq-answer {
+    padding-inline: 24px;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #homeBody :is(.faq-item, .faq-question, .faq-icon-badge, [data-faq-icon]) {
+    transition: none;
+  }
 }
 
 .dark #homeBody :is(h1, h2, h3, h4) {
@@ -3454,11 +3507,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   border-color: #374151 !important;
 }
 
-.dark #homeBody .faq-item button:hover {
-  background-color: #111827 !important;
-}
-
-#homeBody :is(#how-it-works, #why-jubro, #features) {
+#homeBody :is(#how-it-works, #why-jubro, #features, #faq) {
   --landing-accent: #476eb3;
   --landing-copy: #4b5563;
   --landing-title: #172033;
@@ -3467,7 +3516,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   --landing-card-border: #d9dee7;
 }
 
-.dark #homeBody :is(#how-it-works, #why-jubro, #features) {
+.dark #homeBody :is(#how-it-works, #why-jubro, #features, #faq) {
   --landing-accent: #7fa8ff;
   --landing-copy: #a8b4c6;
   --landing-title: #f8fafc;

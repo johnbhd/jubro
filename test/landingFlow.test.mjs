@@ -33,6 +33,35 @@ test('landing Features preserves four benefits with static decorative product pr
   assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
 });
 
+test('FAQ retains its five accessible questions and answers with scoped card styling', () => {
+  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+  const section = html.match(/<section id="faq"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(section);
+  assert.equal((section.match(/class="faq-question"/g) || []).length, 5);
+  assert.equal((section.match(/class="faq-icon-badge" aria-hidden="true"/g) || []).length, 5);
+  const questions = [
+    'Can I use Jubro without an account?',
+    'What happens when I sign in?',
+    'Can I create multiple Job Searches?',
+    'Is Jubro free?',
+    'Does Jubro work on mobile?',
+  ];
+  const answers = [
+    'Yes. You can start using Jubro as a guest without creating an account.',
+    'Signing in lets your supported Jubro data synchronize through your account instead of remaining only on the current device.',
+    'Yes. You can separate different searches such as internships, freelance work, or full-time applications.',
+    'Jubro is currently available to use without a paid subscription.',
+    'Yes. Jubro is a responsive web app designed to work across desktop, tablet, and mobile browsers.',
+  ];
+  for (let index = 0; index < questions.length; index += 1) {
+    assert.ok(section.includes(questions[index]));
+    assert.ok(section.includes(answers[index]));
+    assert.ok(section.includes(`aria-controls="faq-answer-${index + 1}"`));
+    assert.ok(section.includes(`aria-labelledby="faq-trigger-${index + 1}"`));
+  }
+  assert.equal((section.match(/aria-expanded="false"/g) || []).length, 5);
+});
+
 test('landing page How Jubro Works section implements ADD -> TRACK -> ACT flow', () => {
   const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
   const css = readFileSync(resolve(process.cwd(), 'css/global.css'), 'utf8');

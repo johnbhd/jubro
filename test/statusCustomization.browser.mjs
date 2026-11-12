@@ -1,6 +1,6 @@
 // Run with `node test/statusCustomization.browser.mjs`; requires local Firefox.
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
-// Add JUBRO_REDUCED_MOTION=1 for focused Features motion checks in Firefox.
+// Add JUBRO_REDUCED_MOTION=1 for focused Features and FAQ motion checks in Firefox.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
@@ -17,6 +17,7 @@ import http from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { verifyFaq } from './faq.browser.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const artifacts = await mkdtemp(resolve(tmpdir(), 'jubro-status-browser-'));
@@ -1332,6 +1333,7 @@ try {
     `), true, 'Features hover respects motion preference ' + theme + ' ' + width);
     await command('input.releaseActions', { context });
   }
+  const faqKeyboardResults = [];
   const landingWidths = process.env.JUBRO_REDUCED_MOTION
     ? [390, 430, 640, 768, 1024, 1440, 1920]
     : [390, 430, 768, 1024, 1440, 1920];
@@ -1352,6 +1354,7 @@ try {
           });
         `), true, 'Features fit under reduced motion ' + theme + ' ' + width);
         await verifyFeatureHover(theme, width);
+        faqKeyboardResults.push(await verifyFaq({ command, evaluate, context, theme, width }));
         continue;
       }
       assert.equal(await evaluate(`
@@ -1670,7 +1673,8 @@ try {
       await writeFile(resolve(artifacts, `${theme}-${width}-marketing.png`), Buffer.from(previewShot.data, 'base64'));
       const fullShot = await command('browsingContext.captureScreenshot', { context, origin: 'document' });
       await writeFile(resolve(artifacts, `${theme}-${width}-full.png`), Buffer.from(fullShot.data, 'base64'));
-      for (const section of ['how-it-works', 'why-jubro', 'features']) {
+      faqKeyboardResults.push(await verifyFaq({ command, evaluate, context, theme, width }));
+      for (const section of ['how-it-works', 'why-jubro', 'features', 'faq']) {
         await evaluate(`
           document.getElementById('${section}').scrollIntoView({ block: 'start', behavior: 'instant' });
           await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1826,6 +1830,8 @@ try {
   }
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: landingWidths.length,
+    faqNativeKeyboard: { verified: faqKeyboardResults.filter(Boolean).length,
+      skippedInactiveWindow: faqKeyboardResults.filter(result => !result).length },
     featureMotionOnly: Boolean(process.env.JUBRO_REDUCED_MOTION),
     entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY),
     surfacesOnly: Boolean(process.env.JUBRO_SURFACES_ONLY),
