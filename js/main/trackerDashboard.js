@@ -1,7 +1,42 @@
-import { renderDashboardCharts } from './dashboardCharts.js';
+import { getQuickOverviewMetrics, getStatusSummary } from './quickOverview.js';
+
+const METRICS = [
+  {
+    key: 'totalApplications',
+    label: 'Total Applications',
+    icon: 'fa-file-lines',
+    tone: 'blue',
+  },
+  {
+    key: 'interviews',
+    label: 'Interviews',
+    icon: 'fa-comments',
+    tone: 'green',
+  },
+  {
+    key: 'offers',
+    label: 'Offers',
+    icon: 'fa-briefcase',
+    tone: 'purple',
+  },
+  {
+    key: 'needAttention',
+    label: 'Need Attention',
+    icon: 'fa-clock',
+    tone: 'coral',
+  },
+];
+
+function appendText(parent, tag, className, text) {
+  const element = document.createElement(tag);
+  element.className = className;
+  element.textContent = text;
+  parent.appendChild(element);
+  return element;
+}
 
 export const trackerDashboardMethods = {
-getDashboardDateRange() {
+  getDashboardDateRange() {
     const range = this.dashboardRangeSelect?.value || 'this-month';
     const today = new Date();
     const year = today.getFullYear();
@@ -47,12 +82,15 @@ getDashboardDateRange() {
     };
   },
 
-getDashboardFilteredRows(tracker) {
+  getDashboardFilteredRows(tracker) {
     const rows = Array.isArray(tracker?.rows) ? tracker.rows : [];
     const dateRange = this.getDashboardDateRange();
     const dateIndex = this.getDateColumnIndex(tracker);
+    const dateColumnName = this.normalizeText(this.getColumnName(tracker?.columns?.[dateIndex]));
 
-    if (!dateRange || dateIndex === -1) return rows;
+    if (!dateRange || dateIndex === -1 || ['next action date', 'nextactiondate'].includes(dateColumnName)) {
+      return rows;
+    }
 
     const fromTime = dateRange.from.getTime();
     const toTime = dateRange.to.getTime();
@@ -66,121 +104,77 @@ getDashboardFilteredRows(tracker) {
     });
   },
 
-getDashboardFilteredTracker(tracker) {
-    if (!tracker) return tracker;
-
-    return {
-      ...tracker,
-      rows: this.getDashboardFilteredRows(tracker)
-    };
-  },
-
-countDashboardOptions(columnIndex, options, tracker = this.getDashboardFilteredTracker(this.getTracker())) {
-    const counts = new Map(options.map((option) => [option.label, 0]));
-
-    if (!tracker || !Array.isArray(tracker.rows)) return counts;
-
-    tracker.rows.forEach((row) => {
-      const cell = row?.[columnIndex];
-      const value = typeof cell === 'object' ? cell.value : cell;
-
-      if (counts.has(value)) {
-        counts.set(value, counts.get(value) + 1);
-      }
-    });
-
-    return counts;
-  },
-
-renderDashboardCards(columnIndex) {
-    const tracker = this.getTracker();
-    const filteredTracker = this.getDashboardFilteredTracker(tracker);
-    const column = tracker?.columns?.[columnIndex];
-    const options = this.getDashboardOptions(column);
-
+  renderDashboard() {
     if (!this.dashboardCards) return;
 
-    this.dashboardCards.innerHTML = '';
-
-    if (!filteredTracker?.rows?.length || !column || options.length === 0) {
-      const empty = document.createElement('p');
-      empty.className = 'rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-400 lg:col-span-3';
-      empty.setAttribute('role', 'status');
-      if (!tracker?.rows?.length) {
-        empty.textContent = "You don't have any application data yet. Add your first application to see your dashboard.";
-      } else if (!filteredTracker?.rows?.length) {
-        empty.textContent = 'No applications in this date range. Try another range.';
-      } else {
-        empty.textContent = 'No options found.';
-      }
-      this.dashboardCards.appendChild(empty);
-      renderDashboardCharts(this.dashboardCharts, [], new Map(), filteredTracker);
-      return;
-    }
-
-    const counts = this.countDashboardOptions(columnIndex, options, filteredTracker);
-
-    options.forEach((option) => {
-      const card = document.createElement('div');
-      card.className = 'rounded-xl border p-4 text-center';
-      card.style.borderColor = option.color;
-
-      const label = document.createElement('p');
-      label.className = 'truncate text-sm font-medium';
-      label.textContent = option.label;
-      label.style.color = option.color;
-
-      const count = document.createElement('p');
-      count.className = 'mt-2 text-3xl font-semibold';
-      count.textContent = counts.get(option.label) || 0;
-      count.style.color = option.color;
-
-      card.appendChild(label);
-      card.appendChild(count);
-      this.dashboardCards.appendChild(card);
-    });
-
-    renderDashboardCharts(this.dashboardCharts, options, counts, filteredTracker);
-  },
-
-renderDashboard() {
-    if (!this.dashboardSelectColumn) return;
+    const tracker = this.getTracker();
+    if (!tracker) return;
 
     this.updateDashboardRangeVisibility();
-
-    const selectColumns = this.getSelectColumns();
-    const currentValue = this.dashboardSelectColumn.value;
-
-    this.dashboardSelectColumn.innerHTML = '';
-
-    if (selectColumns.length === 0) {
-      const option = document.createElement('option');
-      option.textContent = 'No select columns';
-      option.value = '';
-      this.dashboardSelectColumn.appendChild(option);
-      this.dashboardSelectColumn.disabled = true;
-      this.renderDashboardCards(null);
-      return;
+    const indexes = {
+      ...this.getListColumnIndexes(tracker),
+      status: this.getColumnIndexByNames(tracker, ['status']),
+      nextAction: this.getColumnIndexByNames(tracker, ['next action', 'nextaction']),
+      nextActionDate: this.getColumnIndexByNames(tracker, ['next action date', 'nextactiondate']),
+    };
+    const applications = this.getDashboardFilteredRows(tracker)
+      .map(row => this.resolveApplicationRow(tracker, row, indexes));
+    const metrics = getQuickOverviewMetrics(applications);
+    const empty = applications.length === 0;
+    const noApplications = tracker.rows.length === 0;
+    this.dashboardCards.innerHTML = '';
+    for (const metric of METRICS) {
+      const card = document.createElement('div');
+      card.className = `overview-metric overview-metric-${metric.tone}${empty ? ' is-muted' : ''}`;
+      card.dataset.metric = metric.key;
+      const icon = appendText(card, 'i', `fa-solid ${metric.icon}`, '');
+      icon.setAttribute('aria-hidden', 'true');
+      appendText(card, 'p', 'overview-metric-label', metric.label);
+      appendText(card, 'p', 'overview-metric-value', String(metrics[metric.key]));
+      this.dashboardCards.appendChild(card);
     }
 
-    this.dashboardSelectColumn.disabled = false;
+    this.dashboardEmptyState.hidden = !empty;
+    this.dashboardEmptyTitle.textContent = noApplications ? 'No applications yet' : 'No applications in this period';
+    this.dashboardEmptyDescription.textContent = noApplications
+      ? 'Start adding your job applications to see your insights here.'
+      : 'Try another time period to see your applications.';
+    this.dashboardAddButton.hidden = !noApplications;
+    this.dashboardInsights.hidden = empty;
+    this.dashboardSubtitle.textContent = this.dashboardRangeSelect?.value === 'this-month'
+      ? 'A quick look at your job search this month.'
+      : 'A quick look at your job search for the selected period.';
 
-    selectColumns.forEach(({ column, index }) => {
-      const option = document.createElement('option');
-      option.value = String(index);
-      option.textContent = `${this.getColumnName(column) || `Column ${index + 1}`}`;
-      this.dashboardSelectColumn.appendChild(option);
-    });
+    this.dashboardSummary.innerHTML = '';
+    this.dashboardSummary.hidden = empty;
+    if (empty) return;
 
-    const selected = selectColumns.some(({ index }) => String(index) === currentValue)
-      ? currentValue
-      : String(selectColumns[0].index);
-
-    this.dashboardSelectColumn.value = selected;
-    this.renderDashboardCards(Number(selected));
+    const summary = getStatusSummary(applications, tracker.columns[indexes.status]);
+    appendText(this.dashboardSummary, 'h3', 'overview-summary-title', 'Status Summary');
+    appendText(this.dashboardSummary, 'p', 'overview-description', 'Where your applications are right now.');
+    const bar = document.createElement('div');
+    bar.className = 'overview-status-bar';
+    bar.setAttribute('role', 'img');
+    bar.setAttribute('aria-label', summary.map(group => `${group.label}: ${group.count}`).join(', '));
+    const legend = document.createElement('ul');
+    legend.className = 'overview-status-legend';
+    for (const group of summary) {
+      const segment = document.createElement('span');
+      segment.style.backgroundColor = group.color;
+      segment.style.flexBasis = `${group.count / applications.length * 100}%`;
+      segment.setAttribute('aria-label', `${group.label}: ${group.count}`);
+      bar.appendChild(segment);
+      const item = document.createElement('li');
+      const dot = appendText(item, 'span', 'overview-status-dot', '');
+      dot.style.backgroundColor = group.color;
+      dot.setAttribute('aria-hidden', 'true');
+      appendText(item, 'span', '', `${group.label} ${group.count}`);
+      legend.appendChild(item);
+    }
+    this.dashboardSummary.append(bar, legend);
   },
 
-openDashboard() {
+  openDashboard() {
     if (!this.dashboardModal) return;
 
     this.renderDashboard();
@@ -189,7 +183,7 @@ openDashboard() {
     document.getElementById('btnCloseDashboard')?.focus();
   },
 
-closeDashboard() {
+  closeDashboard() {
     const wasOpen = this.dashboardModal && !this.dashboardModal.classList.contains('hidden');
     this.dashboardModal?.classList.add('hidden');
     const trigger = document.getElementById('btnDashboard');
@@ -199,7 +193,7 @@ closeDashboard() {
     }
   },
 
-updateDashboardRangeVisibility() {
+  updateDashboardRangeVisibility() {
     if (!this.dashboardRangeSelect || !this.dashboardCustomRange) return;
 
     this.dashboardCustomRange.classList.toggle(

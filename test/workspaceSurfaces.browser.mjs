@@ -155,11 +155,12 @@ export async function verifyWorkspaceSurfaces({ command, evaluate, context, orig
             try {
               tracker.rows = [];
               surfaceApp.renderDashboard();
-              const message = document.querySelector('#dashboardCards [role="status"]');
+              const message = document.getElementById('dashboardEmptyState');
               const bounds = message.getBoundingClientRect();
-              return message.textContent.includes("You don't have any application data yet.")
-                && document.getElementById('dashboardCards').children.length === 1
-                && document.getElementById('dashboardCharts').children.length === 0
+              return !message.hidden && message.textContent.includes('No applications yet')
+                && document.getElementById('dashboardCards').children.length === 4
+                && [...document.querySelectorAll('.overview-metric-value')].every(node => node.textContent === '0')
+                && document.getElementById('dashboardSummary').hidden
                 && bounds.width > 0 && bounds.height > 0
                 && bounds.left >= 0 && bounds.right <= innerWidth
                 && message.scrollWidth <= message.clientWidth;

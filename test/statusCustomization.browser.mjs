@@ -7,6 +7,7 @@
 // Use JUBRO_NEXT_ACTION_ONLY=1 for compact Board-card action/date presentation checks.
 // Use JUBRO_COLOR_ONLY=1 for centered palettes and native custom-color Save/Cancel checks.
 // Use JUBRO_LIST_GUIDE_ONLY=1 for the UI-only empty List example and Add lifecycle.
+// Use JUBRO_OVERVIEW_ONLY=1 for Quick Overview metrics, empty states, and modal lifecycle.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -105,6 +106,13 @@ try {
           /https:\/\/www\.gstatic\.com\/firebasejs\/12\.12\.1\/firebase-[a-z-]+\.js/g,
           '/test/fixtures/firebase.mjs',
         ));
+        if (process.env.JUBRO_OVERVIEW_ONLY && path === resolve(root, 'js/app.js')) {
+          // Exercise the startup instance instead of binding a second set of UI listeners.
+          data = Buffer.from(data.toString().replace(
+            'const trackerApp = new TrackerApp();',
+            'const trackerApp = window.overviewApp = new TrackerApp();',
+          ));
+        }
       }
       if (extname(path) === '.html') {
         // Marketing fonts must not make fixture-only checks depend on Google responding.
@@ -129,7 +137,8 @@ try {
     || process.env.JUBRO_TOOLBAR_ONLY
     || process.env.JUBRO_NEXT_ACTION_ONLY
     || process.env.JUBRO_COLOR_ONLY
-    || process.env.JUBRO_LIST_GUIDE_ONLY;
+    || process.env.JUBRO_LIST_GUIDE_ONLY
+    || process.env.JUBRO_OVERVIEW_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
@@ -158,6 +167,10 @@ try {
   if (process.env.JUBRO_LIST_GUIDE_ONLY) {
     const { verifyListGuide } = await import('./listGuide.browser.mjs');
     await verifyListGuide({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_OVERVIEW_ONLY) {
+    const { verifyQuickOverview } = await import('./quickOverview.browser.mjs');
+    await verifyQuickOverview({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     if (!process.env.JUBRO_ENTRY_ONLY) {
@@ -1648,6 +1661,7 @@ try {
     nextActionOnly: Boolean(process.env.JUBRO_NEXT_ACTION_ONLY),
     colorOnly: Boolean(process.env.JUBRO_COLOR_ONLY),
     listGuideOnly: Boolean(process.env.JUBRO_LIST_GUIDE_ONLY),
+    overviewOnly: Boolean(process.env.JUBRO_OVERVIEW_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

@@ -76,9 +76,11 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
         for (const id of ['btnDashboard', 'btnCustomFields']) {
           const button = document.getElementById(id);
           check(Boolean(button.getAttribute('aria-label') && button.title), 'Compact controls retain accessible names');
-          const labelBreakpoint = id === 'btnDashboard' ? 768 : 1280;
-          check((getComputedStyle(button.querySelector('span')).display !== 'none') === (innerWidth >= labelBreakpoint),
-            'Dashboard keeps tablet text while Custom Fields compacts first');
+          const showLabel = id === 'btnDashboard'
+            ? innerWidth >= 768 && (innerWidth < 1024 || innerWidth >= 1280)
+            : innerWidth >= 1280;
+          check((getComputedStyle(button.querySelector('span')).display !== 'none') === showLabel,
+            'Quick Overview keeps text where it fits without squeezing inline Search');
         }
         if (innerWidth >= 1024) {
           const searchBounds = search.getBoundingClientRect();

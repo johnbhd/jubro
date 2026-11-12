@@ -123,21 +123,22 @@ initEvents() {
       this.closeMobileSearch();
     });
 
-    this.dashboardSelectColumn?.addEventListener('change', (e) => {
-      this.renderDashboardCards(Number(e.target.value));
+    this.dashboardAddButton?.addEventListener('click', () => {
+      this.closeDashboard();
+      this.openAddApplication();
     });
 
     this.dashboardRangeSelect?.addEventListener('change', () => {
       this.updateDashboardRangeVisibility();
-      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+      this.renderDashboard();
     });
 
     this.dashboardDateFrom?.addEventListener('change', () => {
-      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+      this.renderDashboard();
     });
 
     this.dashboardDateTo?.addEventListener('change', () => {
-      this.renderDashboardCards(Number(this.dashboardSelectColumn?.value));
+      this.renderDashboard();
     });
 
     btnCloseDashboard?.addEventListener('click', () => {
