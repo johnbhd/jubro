@@ -1,5 +1,6 @@
 // Run with `node test/statusCustomization.browser.mjs`; requires local Firefox.
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
+// Add JUBRO_REDUCED_MOTION=1 for focused Features motion checks in Firefox.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
@@ -20,6 +21,9 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const artifacts = await mkdtemp(resolve(tmpdir(), 'jubro-status-browser-'));
 const profile = await mkdtemp(resolve(tmpdir(), 'jubro-status-profile-'));
+if (process.env.JUBRO_REDUCED_MOTION) {
+  await writeFile(resolve(profile, 'user.js'), 'user_pref("ui.prefersReducedMotion", 1);\n');
+}
 const browser = spawn('firefox', [
   '--headless', '--no-remote', '--profile', profile, '--remote-debugging-port', '9238',
 ]);
@@ -1308,9 +1312,48 @@ try {
     return switched && document.documentElement.classList.contains('dark') === wasDark
       && JSON.stringify(Storage.load()) === before;
   `), true, 'Theme control switches immediately without changing workspace data.');
+  async function verifyFeatureHover(theme, width) {
+    const pointer = await evaluate(`
+      const card = document.querySelector('.landing-feature-card');
+      card.scrollIntoView({ block: 'center', behavior: 'instant' });
+      const bounds = card.getBoundingClientRect();
+      return { x: Math.round(bounds.left + 20), y: Math.round(bounds.top + 20) };
+    `);
+    await command('input.performActions', { context, actions: [{
+      type: 'pointer', id: 'feature-mouse', parameters: { pointerType: 'mouse' },
+      actions: [{ type: 'pointerMove', x: pointer.x, y: pointer.y, duration: 0 }],
+    }] });
+    assert.equal(await evaluate(`
+      const card = document.querySelector('.landing-feature-card');
+      await Promise.all(card.getAnimations().map(animation => animation.finished));
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (${Boolean(process.env.JUBRO_REDUCED_MOTION)} && !reduced) return false;
+      return getComputedStyle(card).transform === (reduced ? 'none' : 'matrix(1, 0, 0, 1, 0, -2)');
+    `), true, 'Features hover respects motion preference ' + theme + ' ' + width);
+    await command('input.releaseActions', { context });
+  }
+  const landingWidths = process.env.JUBRO_REDUCED_MOTION
+    ? [390, 430, 640, 768, 1024, 1440, 1920]
+    : [390, 430, 768, 1024, 1440, 1920];
   for (const theme of ['dark', 'light']) {
-    for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+    for (const width of landingWidths) {
       await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      if (process.env.JUBRO_REDUCED_MOTION) {
+        // Isolate Features from the older hero pseudo-element's reduced-motion overflow.
+        assert.equal(await evaluate(`
+          document.documentElement.classList.toggle('dark', ${theme === 'dark'});
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+          const cards = [...document.querySelectorAll('.landing-feature-card')];
+          return cards.length === 4 && cards.every(card => {
+            const preview = card.querySelector('.landing-feature-preview');
+            const bounds = card.getBoundingClientRect();
+            return bounds.left >= 0 && bounds.right <= innerWidth
+              && card.scrollWidth <= card.clientWidth && preview.scrollWidth <= preview.clientWidth;
+          });
+        `), true, 'Features fit under reduced motion ' + theme + ' ' + width);
+        await verifyFeatureHover(theme, width);
+        continue;
+      }
       assert.equal(await evaluate(`
         document.documentElement.classList.toggle('dark', ${theme === 'dark'});
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1470,6 +1513,36 @@ try {
         const aboutEl = document.getElementById('about');
         const mbEl = document.getElementById('mobile-board');
         const featuresEl = document.getElementById('features');
+        const featureCards = [...featuresEl.querySelectorAll('.landing-feature-card')];
+        check(featureCards.length === 4, 'Features has four product-preview cards');
+        if (featureCards.length === 4) {
+          const bounds = featureCards.map(card => card.getBoundingClientRect());
+          check(bounds.every(rect => Math.abs(rect.width - bounds[0].width) < 1),
+            'Feature cards share equal widths');
+          check(innerWidth >= 640
+            ? Math.abs(bounds[0].top - bounds[1].top) < 1 && bounds[2].top > bounds[0].bottom
+            : bounds.every((rect, index) => index === 0 || rect.top > bounds[index - 1].bottom),
+          'Feature cards use two desktop columns and one mobile column');
+          for (const card of featureCards) {
+            const preview = card.querySelector('.landing-feature-preview');
+            check(preview?.getAttribute('aria-hidden') === 'true'
+              && !preview.querySelector('button, a, input, select, [tabindex]'),
+            'Feature previews are decorative and non-interactive');
+            check(card.scrollWidth <= card.clientWidth && preview.scrollWidth <= preview.clientWidth,
+              'Feature content fits without horizontal overflow');
+            const surface = getComputedStyle(card);
+            for (const selector of ['h3', 'p']) {
+              check(contrast(getComputedStyle(card.querySelector(selector)).color, surface.backgroundColor) >= 4.5,
+                'Feature titles and descriptions remain readable');
+            }
+          }
+          if (innerWidth >= 640) {
+            const previews = featureCards.map(card => card.querySelector('.landing-feature-preview').getBoundingClientRect());
+            check(Math.abs(previews[0].top - previews[1].top) < 1
+              && Math.abs(previews[2].top - previews[3].top) < 1,
+            'Feature previews align within each desktop row');
+          }
+        }
         const aboutPhone = aboutEl.querySelector('img');
         const mbPhone = mbEl.querySelector('img');
         aboutPhone.loading = 'eager';
@@ -1589,7 +1662,7 @@ try {
       await writeFile(resolve(artifacts, `${theme}-${width}-marketing.png`), Buffer.from(previewShot.data, 'base64'));
       const fullShot = await command('browsingContext.captureScreenshot', { context, origin: 'document' });
       await writeFile(resolve(artifacts, `${theme}-${width}-full.png`), Buffer.from(fullShot.data, 'base64'));
-      for (const section of ['how-it-works', 'why-jubro']) {
+      for (const section of ['how-it-works', 'why-jubro', 'features']) {
         await evaluate(`
           document.getElementById('${section}').scrollIntoView({ block: 'start', behavior: 'instant' });
           await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -1597,6 +1670,7 @@ try {
         const sectionShot = await command('browsingContext.captureScreenshot', { context });
         await writeFile(resolve(artifacts, `${theme}-${width}-${section}.png`), Buffer.from(sectionShot.data, 'base64'));
       }
+      await verifyFeatureHover(theme, width);
       await evaluate('document.getElementById("about").scrollIntoView({ block: "start" });');
       const aboutShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-about.png`), Buffer.from(aboutShot.data, 'base64'));
@@ -1743,7 +1817,8 @@ try {
     `), true, 'Board Main Navbar consolidates global actions, toggles guest/signed-in state, and manages accessible menu.');
   }
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: 6,
+  console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: landingWidths.length,
+    featureMotionOnly: Boolean(process.env.JUBRO_REDUCED_MOTION),
     entryOnly: Boolean(process.env.JUBRO_ENTRY_ONLY),
     surfacesOnly: Boolean(process.env.JUBRO_SURFACES_ONLY),
     transferOnly: Boolean(process.env.JUBRO_TRANSFER_ONLY),

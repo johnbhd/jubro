@@ -424,54 +424,106 @@
           </p>
         </div>
 
-        <div class="mt-12 grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
-              <i class="fa-solid fa-table-columns"></i>
-            </div>
-            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+        <div class="landing-features-grid">
+          <article class="landing-feature-card">
+            <h3>
               Visual Job Pipeline
             </h3>
-            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+            <p>
               See every application grouped by its current stage so you can understand your job search at a glance.
             </p>
-          </div>
-
-          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
-              <i class="fa-solid fa-arrow-right"></i>
+            <div class="landing-feature-preview feature-pipeline" aria-hidden="true">
+              <div class="feature-stage feature-stage-applied">
+                <span class="feature-stage-label">Applied <span>1</span></span>
+                <div class="feature-mini-card">
+                  Google
+                  <span>Frontend Developer</span>
+                  <span class="feature-mini-line"></span>
+                </div>
+              </div>
+              <div class="feature-stage feature-stage-interview">
+                <span class="feature-stage-label">Interview <span>1</span></span>
+                <div class="feature-mini-card">
+                  Canva
+                  <span>UI Designer</span>
+                  <span class="feature-mini-line"></span>
+                </div>
+              </div>
+              <div class="feature-stage feature-stage-offer">
+                <span class="feature-stage-label">Offer <span>1</span></span>
+                <div class="feature-mini-card">
+                  Microsoft
+                  <span>Software Engineer</span>
+                  <span class="feature-mini-line"></span>
+                </div>
+              </div>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+          </article>
+
+          <article class="landing-feature-card">
+            <h3>
               Next Action
             </h3>
-            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+            <p>
               Keep the next step visible for each application, from following up to preparing for an interview.
             </p>
-          </div>
-
-          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
-              <i class="fa-solid fa-list-check"></i>
+            <div class="landing-feature-preview feature-action" aria-hidden="true">
+              <div class="feature-action-panel">
+                <span class="feature-preview-icon"><i class="fa-regular fa-calendar"></i></span>
+                <div class="feature-action-copy">
+                  <span class="feature-action-label">Next Action</span>
+                  <strong>Follow up with recruiter</strong>
+                </div>
+                <span class="feature-date"><i class="fa-regular fa-calendar"></i> Nov 12</span>
+              </div>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+          </article>
+
+          <article class="landing-feature-card">
+            <h3>
               Board &amp; List
             </h3>
-            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+            <p>
               Use Board to track progress visually and List when you need a more detailed view.
             </p>
-          </div>
-
-          <div class="rounded-2xl border border-gray-200/80 bg-white p-6 sm:p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-lg">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
+            <div class="landing-feature-preview feature-views" aria-hidden="true">
+              <div class="feature-view-tabs">
+                <span><i class="fa-solid fa-table-columns"></i> Board</span>
+                <span><i class="fa-solid fa-list"></i> List</span>
+              </div>
+              <div class="feature-view-samples">
+                <div class="feature-board-sample">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="feature-list-sample">
+                  <span><i class="fa-regular fa-building"></i> Google <small>Applied</small></span>
+                  <span><i class="fa-regular fa-building"></i> Canva <small>Interview</small></span>
+                </div>
+              </div>
             </div>
-            <h3 class="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+          </article>
+
+          <article class="landing-feature-card">
+            <h3>
               Local + Cloud
             </h3>
-            <p class="mt-2 text-sm sm:text-base leading-relaxed text-gray-600 dark:text-slate-400">
+            <p>
               Start immediately as a guest, then sign in when you want your applications synchronized through your account.
             </p>
-          </div>
+            <div class="landing-feature-preview feature-sync" aria-hidden="true">
+              <div class="feature-sync-step">
+                <span class="feature-preview-icon"><i class="fa-solid fa-laptop"></i></span>
+                <span>Start as a guest</span>
+              </div>
+              <span class="feature-sync-connection"></span>
+              <div class="feature-sync-step">
+                <span class="feature-preview-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                <span>Sign in to sync</span>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 

@@ -3,6 +3,32 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 
+test('landing Features preserves four benefits with static decorative product previews', () => {
+  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+  const section = html.match(/<section id="features"[\s\S]*?<\/section>/)?.[0];
+
+  assert.ok(section);
+  assert.equal((section.match(/class="landing-feature-card"/g) || []).length, 4);
+  assert.equal((section.match(/class="landing-feature-preview[^"]*" aria-hidden="true"/g) || []).length, 4);
+  for (const title of ['Visual Job Pipeline', 'Next Action', 'Board &amp; List', 'Local + Cloud']) {
+    assert.ok(section.includes(title));
+  }
+  for (const copy of [
+    'Everything You Need to Stay On Top of Applications',
+    'Essential tools to keep your search organized without unnecessary complexity.',
+    'See every application grouped by its current stage so you can understand your job search at a glance.',
+    'Keep the next step visible for each application, from following up to preparing for an interview.',
+    'Use Board to track progress visually and List when you need a more detailed view.',
+    'Start immediately as a guest, then sign in when you want your applications synchronized through your account.',
+  ]) {
+    assert.ok(section.includes(copy));
+  }
+  for (const caption of ['Follow up with recruiter', 'Start as a guest', 'Sign in to sync']) {
+    assert.ok(section.includes(caption));
+  }
+  assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
+});
+
 test('landing page How Jubro Works section implements ADD -> TRACK -> ACT flow', () => {
   const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
   const css = readFileSync(resolve(process.cwd(), 'css/global.css'), 'utf8');
