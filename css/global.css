@@ -1320,29 +1320,6 @@ html:not(.dark) #appBody .kanban-card-next-action.kanban-next-action-layout {
   color: #f8fafc !important;
 }
 
-.dark footer h2,
-.dark footer h3 {
-  color: #f9fafb !important;
-}
-
-.dark footer a[aria-label],
-.dark footer span[aria-label] {
-  background-color: #111827 !important;
-  border-color: #374151 !important;
-  color: #f9fafb !important;
-}
-
-.dark footer a[aria-label]:hover,
-.dark footer span[aria-label]:hover {
-  background-color: #f9fafb !important;
-  color: #111827 !important;
-}
-
-.dark footer .mt-14 a:hover,
-.dark footer .mt-12 a:hover {
-  color: #f9fafb !important;
-}
-
 .dark #about .text-gray-400,
 .dark #about .text-gray-500 {
   color: #9ca3af !important;
@@ -3136,17 +3113,171 @@ html:not(.dark) #homeBody {
   background-color: var(--landing-page);
 }
 
-html:not(.dark) #homeBody .site-navbar,
-html:not(.dark) #homeBody footer {
+html:not(.dark) #homeBody .site-navbar {
   background-color: var(--landing-nav);
   border-color: var(--landing-border);
 }
 
-#homeBody footer > div,
-footer > div {
+.site-footer {
+  --footer-surface: #fafafb;
+  --footer-border: #d9dee7;
+  --footer-text: #172033;
+  --footer-muted: #586579;
+  --footer-accent: #2563eb;
+  border-top: 1px solid var(--footer-border);
+  background: var(--footer-surface);
+  color: var(--footer-text);
+}
+
+.dark .site-footer {
+  --footer-surface: #0b1120;
+  --footer-border: #263248;
+  --footer-text: #f8fafc;
+  --footer-muted: #a8b4c6;
+  --footer-accent: #7fa8ff;
+}
+
+.site-footer .footer-inner {
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
+  padding: 40px 16px;
+}
+
+.site-footer .footer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  align-items: start;
+}
+
+.site-footer .footer-brand {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.site-footer .footer-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--footer-text);
+}
+
+.site-footer .footer-brand-link img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.site-footer .footer-brand h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.site-footer .footer-tagline {
+  margin-top: 4px;
+  color: var(--footer-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.site-footer .footer-description {
+  max-width: 360px;
+  margin-top: 16px;
+  color: var(--footer-muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.site-footer .footer-links {
+  min-width: 0;
+}
+
+.site-footer .footer-links h3 {
+  margin-bottom: 12px;
+  color: var(--footer-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.site-footer .footer-links ul {
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer .footer-links a,
+.site-footer .footer-legal a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: 8px;
+  color: var(--footer-muted);
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.site-footer .footer-links a {
+  font-size: 0.875rem;
+}
+
+.site-footer a:hover {
+  color: var(--footer-accent);
+}
+
+.site-footer a:focus-visible {
+  outline: 2px solid var(--footer-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.site-footer .footer-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--footer-border);
+  color: var(--footer-muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.site-footer .footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .site-footer .footer-inner {
+    padding: 48px 24px;
+  }
+
+  .site-footer .footer-bottom {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-footer .footer-inner {
+    padding-inline: 32px;
+  }
+
+  .site-footer .footer-grid {
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 48px;
+  }
+
+  .site-footer .footer-brand {
+    grid-column: auto;
+  }
 }
 
 html:not(.dark) #homeBody .site-navbar {

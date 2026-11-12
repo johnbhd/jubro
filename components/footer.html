@@ -1,201 +1,81 @@
-<footer class="mt-20 sm:mt-28 border-t border-gray-200 bg-white dark:border-slate-800 dark:bg-[#0B1120]">
-  <div class="mx-auto w-full max-w-[1440px] px-4 py-12 sm:px-6 lg:px-8">
+<footer class="site-footer mt-20 sm:mt-28">
+  <div class="footer-inner">
     <!-- Main Footer -->
-    <div class="flex w-full flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+    <div class="footer-grid">
       <!-- Jubro Information -->
-      <div class="lg:min-w-0 lg:flex-[1.2]">
-        <a href="/" class="flex items-center justify-center gap-3 lg:justify-start">
-          <img
-            src="/img/jubro.png"
-            alt="Jubro Logo"
-            class="h-10 w-10 rounded-xl"
-          />
-
+      <div class="footer-brand">
+        <a href="/" class="footer-brand-link">
+          <img src="/img/jubro.png" alt="" width="40" height="40" />
           <div>
-            <h2 class="text-2xl font-black text-gray-900 dark:text-white">
-              Jubro
-            </h2>
-
-            <p class="text-xs text-gray-500 dark:text-slate-400">
-              Simple job application tracking.
-            </p>
+            <h2>Jubro</h2>
+            <p class="footer-tagline">Simple job application tracking.</p>
           </div>
         </a>
-
-        <p class="mx-auto mt-4 max-w-md text-sm leading-relaxed text-gray-600 dark:text-slate-400 lg:mx-0">
+        <p class="footer-description">
           Jubro helps students, freelancers, and job seekers organize applications, interviews, and opportunities in one clean and simple workspace.
         </p>
-
-        <div class="mt-6 flex items-center justify-center gap-3 lg:justify-start">
-          <a
-            href="https://web.facebook.com/jbvillegas123"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-700 transition hover:bg-black hover:text-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-blue-600 dark:hover:text-white"
-            aria-label="Follow Jubro developer on Facebook"
-            title="Facebook"
-          >
-            <i class="fa-brands fa-facebook-f text-sm"></i>
-          </a>
-
-          <a
-            href="https://www.tiktok.com/@jbvillegas935"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-700 transition hover:bg-black hover:text-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-blue-600 dark:hover:text-white"
-            aria-label="Follow Jubro developer on TikTok"
-            title="TikTok"
-          >
-            <i class="fa-brands fa-tiktok text-sm"></i>
-          </a>
-
-          <a
-            href="https://appbuildersph.com/apps/jubro"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-50 text-gray-700 transition hover:bg-black hover:text-white dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-blue-600 dark:hover:text-white"
-            aria-label="View Jubro on App Builders PH"
-            title="App Builders PH"
-          >
-            <i class="fa-solid fa-code text-sm"></i>
-          </a>
-        </div>
       </div>
 
       <!-- Product Links -->
-      <div class="text-center lg:min-w-[120px] lg:flex-[0.6] lg:text-left">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-          Product
-        </h3>
-
-        <ul class="mt-4 space-y-3 text-sm">
+      <nav class="footer-links" aria-labelledby="footer-product-title">
+        <h3 id="footer-product-title">Product</h3>
+        <ul>
           <li>
-            <a href="/#home" class="text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white">
-              Home
+            <a href="/#home">Home</a>
+          </li>
+          <li>
+            <a href="/#features">Features</a>
+          </li>
+          <li>
+            <a href="/#how-it-works">How It Works</a>
+          </li>
+          <li>
+            <a href="/#about">About</a>
+          </li>
+          <li>
+            <a href="/board/">Open Jubro</a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Resources Links -->
+      <nav class="footer-links" aria-labelledby="footer-resources-title">
+        <h3 id="footer-resources-title">Resources</h3>
+        <ul>
+          <li>
+            <a href="https://github.com/johnbhd" target="_blank" rel="noopener noreferrer">
+              GitHub
             </a>
           </li>
-
           <li>
-            <a href="/#how-it-works" class="text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white">
-              How It Works
+            <a href="https://www.tiktok.com/@jbvillegas935" target="_blank" rel="noopener noreferrer">
+              TikTok
             </a>
           </li>
-
           <li>
-            <a href="/#about" class="text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white">
-              About
+            <a href="https://web.facebook.com/jbvillegas123" target="_blank" rel="noopener noreferrer">
+              Facebook
             </a>
           </li>
-
           <li>
-            <a href="/board/" class="text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white">
-              Open Jubro
+            <a href="https://appbuildersph.com/apps/jubro" target="_blank" rel="noopener noreferrer">
+              Support Jubro on App Builders PH
             </a>
           </li>
         </ul>
-      </div>
-
-      <!-- Jubro Dev Links -->
-      <div class="text-center lg:min-w-[180px] lg:flex-[0.8] lg:text-left">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-          Jubro Dev
-        </h3>
-
-        <ul class="mt-4 space-y-3 text-sm">
-          <li>
-            <a
-              href="https://github.com/johnbhd"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white lg:justify-start"
-            >
-              <i class="fa-solid fa-user-tie w-4 text-xs"></i>
-              <span>Developer of Jubro</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="https://appbuildersph.com/apps/jubro"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white lg:justify-start"
-            >
-              <i class="fa-solid fa-code w-4 text-xs"></i>
-              <span>App Builders PH</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="https://www.tiktok.com/@jbvillegas935"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white lg:justify-start"
-            >
-              <i class="fa-brands fa-tiktok w-4 text-xs"></i>
-              <span>TikTok</span>
-            </a>
-          </li>
-
-          <li>
-            <a
-              href="https://web.facebook.com/jbvillegas123"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center justify-center gap-2 text-gray-600 transition hover:text-black dark:text-slate-400 dark:hover:text-white lg:justify-start"
-            >
-              <i class="fa-brands fa-facebook-f w-4 text-xs"></i>
-              <span>Facebook</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-
-      <!-- App Builders PH Badge -->
-      <div class="text-center lg:min-w-0 lg:flex-[1.2] lg:text-left">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-900 dark:text-white">
-          Community
-        </h3>
-
-        <p class="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-gray-600 dark:text-slate-400 lg:mx-0">
-          Support Jubro and discover Philippine indie-built projects.
-        </p>
-
-        <div class="mt-4 flex justify-center lg:justify-start">
-          <iframe
-            src="https://appbuildersph.com/embed/apps/jubro"
-            title="Jubro votes on App Builders PH"
-            width="320"
-            height="72"
-            class="h-[72px] w-[320px] max-w-full"
-            style="border: 0;"
-            loading="lazy"
-            scrolling="no"
-          ></iframe>
-        </div>
-      </div>
+      </nav>
     </div>
 
     <!-- Footer Bottom -->
-    <div class="mt-12 flex flex-col items-center gap-4 border-t border-gray-200 dark:border-slate-800 pt-8 text-center text-xs text-gray-500 dark:text-slate-500 sm:flex-row sm:justify-between sm:text-left">
-      <p>
-        &copy; 2026 Jubro. All rights reserved.
-      </p>
-
-      <div class="flex flex-wrap items-center justify-center gap-5 sm:justify-end">
-        <a href="/pages/privacy/" class="transition hover:text-black dark:hover:text-white">
-          Privacy Policy
-        </a>
-
-        <a href="/pages/terms/" class="transition hover:text-black dark:hover:text-white">
-          Terms and Conditions
-        </a>
-
-        <a href="https://web.facebook.com/jbvillegas123" target="_blank" rel="noopener noreferrer" class="transition hover:text-black dark:hover:text-white">
+    <div class="footer-bottom">
+      <p>&copy; 2026 Jubro. All rights reserved.</p>
+      <nav class="footer-legal" aria-label="Legal and contact">
+        <a href="/pages/privacy/">Privacy Policy</a>
+        <a href="/pages/terms/">Terms and Conditions</a>
+        <a href="https://web.facebook.com/jbvillegas123" target="_blank" rel="noopener noreferrer">
           Contact
         </a>
-      </div>
+      </nav>
     </div>
   </div>
 </footer>

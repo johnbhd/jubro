@@ -33,6 +33,30 @@ test('landing Features preserves four benefits with static decorative product pr
   assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
 });
 
+test('shared footer uses Product and Resources with safe existing destinations and no voting embed', () => {
+  const html = readFileSync(resolve(process.cwd(), 'components/footer.html'), 'utf8');
+  assert.match(html, /class="site-footer\b/);
+  assert.ok(html.includes('Resources'));
+  assert.ok(html.includes('Support Jubro on App Builders PH'));
+  assert.ok(html.includes('Product'));
+  assert.doesNotMatch(html, /Jubro Dev|Developer of Jubro|<iframe\b/);
+  const links = [...html.matchAll(/<a\b([^>]+)>/g)].map(match => match[1]);
+  const hrefs = links.map(link => link.match(/href="([^"]+)"/)?.[1]);
+  for (const href of [
+    '/', '/#home', '/#features', '/#how-it-works', '/#about', '/board/',
+    '/pages/privacy/', '/pages/terms/', 'https://github.com/johnbhd',
+    'https://www.tiktok.com/@jbvillegas935', 'https://web.facebook.com/jbvillegas123',
+    'https://appbuildersph.com/apps/jubro',
+  ]) {
+    assert.ok(hrefs.includes(href), href);
+  }
+  assert.equal(hrefs.filter(href => href === 'https://appbuildersph.com/apps/jubro').length, 1);
+  for (const link of links.filter(link => /href="https:/.test(link))) {
+    assert.ok(link.includes('target="_blank"'));
+    assert.ok(link.includes('rel="noopener noreferrer"'));
+  }
+});
+
 test('final CTA keeps guest-first entry and contextual copy with decorative arrow and reassurance', () => {
   const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
   const section = html.match(/<section class="landing-final-cta[\s\S]*?<\/section>/)?.[0];
@@ -194,6 +218,6 @@ test('landing page mobile showcase sections and benefit icons share unified comp
   assert.ok(css.includes('border-radius: 7px'), 'Benefit icon uses rounded square border-radius');
 
   // Verify footer centering and max-width on large screens
-  assert.ok(css.includes('footer > div'), 'Footer container rule exists');
+  assert.ok(css.includes('.site-footer .footer-inner'), 'Scoped footer container rule exists');
   assert.ok(css.includes('max-width: 1440px') && css.includes('margin-inline: auto'), 'Footer container centered with max-width');
 });

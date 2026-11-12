@@ -19,6 +19,7 @@ import { dirname, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifyFaq } from './faq.browser.mjs';
 import { verifyFinalCta } from './finalCta.browser.mjs';
+import { verifyFooter, verifyLegalFooters } from './footer.browser.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const artifacts = await mkdtemp(resolve(tmpdir(), 'jubro-status-browser-'));
@@ -1689,7 +1690,11 @@ try {
       const aboutShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-about.png`), Buffer.from(aboutShot.data, 'base64'));
       await verifyFinalCta({ command, evaluate, context, theme, width, artifacts });
+      await verifyFooter({ command, evaluate, context, theme, width, artifacts });
     }
+  }
+  if (!process.env.JUBRO_REDUCED_MOTION) {
+    await verifyLegalFooters({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     await command('browsingContext.navigate', { context, url: origin + '/board/?tracker=other', wait: 'complete' });
