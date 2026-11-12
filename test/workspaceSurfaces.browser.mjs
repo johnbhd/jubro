@@ -148,6 +148,27 @@ export async function verifyWorkspaceSurfaces({ command, evaluate, context, orig
         modalSnapshots.push({ modal, ...modalSurface });
         const shot = await command('browsingContext.captureScreenshot', { context });
         await writeFile(resolve(artifacts, theme + '-' + width + '-surface-' + modal + '.png'), Buffer.from(shot.data, 'base64'));
+        if (modal === 'dashboard') {
+          assert.equal(await evaluate(`
+            const tracker = surfaceApp.getTracker();
+            const rows = tracker.rows;
+            try {
+              tracker.rows = [];
+              surfaceApp.renderDashboard();
+              const message = document.querySelector('#dashboardCards [role="status"]');
+              const bounds = message.getBoundingClientRect();
+              return message.textContent.includes("You don't have any application data yet.")
+                && document.getElementById('dashboardCards').children.length === 1
+                && document.getElementById('dashboardCharts').children.length === 0
+                && bounds.width > 0 && bounds.height > 0
+                && bounds.left >= 0 && bounds.right <= innerWidth
+                && message.scrollWidth <= message.clientWidth;
+            } finally {
+              tracker.rows = rows;
+              surfaceApp.renderDashboard();
+            }
+          `), true, 'Dashboard explains empty data without blank charts: ' + theme + ' ' + width);
+        }
         await evaluate(`
           if (surfacePanel.tagName === 'DIALOG') surfacePanel.close();
           surfaceApp.closeDashboard();

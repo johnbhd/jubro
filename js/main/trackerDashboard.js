@@ -102,10 +102,17 @@ renderDashboardCards(columnIndex) {
 
     this.dashboardCards.innerHTML = '';
 
-    if (!column || options.length === 0) {
+    if (!filteredTracker?.rows?.length || !column || options.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'rounded-xl border border-dashed border-gray-200 p-4 text-center text-sm text-gray-400 lg:col-span-3';
-      empty.textContent = 'No options found.';
+      empty.setAttribute('role', 'status');
+      if (!tracker?.rows?.length) {
+        empty.textContent = "You don't have any application data yet. Add your first application to see your dashboard.";
+      } else if (!filteredTracker?.rows?.length) {
+        empty.textContent = 'No applications in this date range. Try another range.';
+      } else {
+        empty.textContent = 'No options found.';
+      }
       this.dashboardCards.appendChild(empty);
       renderDashboardCharts(this.dashboardCharts, [], new Map(), filteredTracker);
       return;
