@@ -26,6 +26,10 @@ test('landing Features preserves four benefits with static decorative product pr
   for (const caption of ['Follow up with recruiter', 'Start as a guest', 'Sign in to sync']) {
     assert.ok(section.includes(caption));
   }
+  const boardSample = section.match(/class="feature-board-sample">([\s\S]*?)<\/div>/)?.[1];
+  assert.ok(boardSample);
+  assert.deepEqual([...boardSample.matchAll(/<span>([^<]+)<\/span>/g)].map(match => match[1]),
+    ['Applied', 'Interview', 'Rejected']);
   assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
 });
 

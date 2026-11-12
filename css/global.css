@@ -3692,11 +3692,17 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody .feature-board-sample > span {
   flex: 1;
+  min-width: 0;
   height: 64px;
+  padding: 6px 2px;
   border: 1px solid var(--landing-card-border);
   border-top: 2px solid var(--feature-blue);
   border-radius: 5px;
   background: var(--landing-card-highlight);
+  font-size: 0.5rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 #homeBody .feature-board-sample > span:nth-child(2) {
