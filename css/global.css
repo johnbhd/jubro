@@ -3195,6 +3195,15 @@ html:not(.dark) #homeBody .site-navbar {
   min-width: 0;
 }
 
+.site-footer .footer-community-card {
+  display: block;
+  width: 320px;
+  max-width: 100%;
+  height: 72px;
+  margin-top: 20px;
+  border: 0;
+}
+
 .site-footer .footer-links h3 {
   margin-bottom: 12px;
   color: var(--footer-text);

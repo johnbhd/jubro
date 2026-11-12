@@ -26,7 +26,18 @@ export async function verifyFooter({ command, evaluate, context, theme, width, a
     const product = groups[0].getBoundingClientRect();
     const resources = groups[1].getBoundingClientRect();
     check(groups.map(group => group.querySelector('h3').textContent).join('|') === 'Product|Resources', 'Footer headings');
-    check(!footer.textContent.includes('Jubro Dev') && !footer.querySelector('iframe'), 'No developer column or widget');
+    check(!footer.textContent.includes('Jubro Dev'), 'No developer column');
+    const card = footer.querySelector('.footer-brand iframe');
+    check(footer.querySelectorAll('iframe').length === 1 && card?.previousElementSibling.classList.contains('footer-description'),
+      'App Builders PH card sits directly below the brand description');
+    if (card) {
+      const cardBounds = card.getBoundingClientRect();
+      check(card.getAttribute('src') === 'https://appbuildersph.com/embed/apps/jubro'
+        && card.title === 'Jubro votes on App Builders PH' && card.loading === 'lazy', 'Original accessible lazy embed');
+      check(cardBounds.top >= card.previousElementSibling.getBoundingClientRect().bottom + 19
+        && cardBounds.width <= 320 && cardBounds.right <= brand.right && cardBounds.height === 72,
+      'Community card fits below description without overflow');
+    }
     check(footer.querySelector('.footer-brand-link img').getAttribute('src') === '/img/jubro.png', 'Authentic logo');
     check(bounds.width <= 1440 && Math.abs(bounds.left - (document.documentElement.clientWidth - bounds.width) / 2) < 1,
       'Footer stays capped and centered');

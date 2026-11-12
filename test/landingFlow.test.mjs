@@ -33,13 +33,17 @@ test('landing Features preserves four benefits with static decorative product pr
   assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
 });
 
-test('shared footer uses Product and Resources with safe existing destinations and no voting embed', () => {
+test('shared footer keeps safe links and the App Builders PH card below the brand description', () => {
   const html = readFileSync(resolve(process.cwd(), 'components/footer.html'), 'utf8');
   assert.match(html, /class="site-footer\b/);
   assert.ok(html.includes('Resources'));
   assert.ok(html.includes('Support Jubro on App Builders PH'));
   assert.ok(html.includes('Product'));
-  assert.doesNotMatch(html, /Jubro Dev|Developer of Jubro|<iframe\b/);
+  assert.doesNotMatch(html, /Jubro Dev|Developer of Jubro/);
+  assert.equal((html.match(/<iframe\b/g) || []).length, 1);
+  assert.match(html, /class="footer-description">[\s\S]*?<\/p>\s*<iframe/);
+  assert.ok(html.includes('src="https://appbuildersph.com/embed/apps/jubro"'));
+  assert.ok(html.includes('title="Jubro votes on App Builders PH"'));
   const links = [...html.matchAll(/<a\b([^>]+)>/g)].map(match => match[1]);
   const hrefs = links.map(link => link.match(/href="([^"]+)"/)?.[1]);
   for (const href of [
