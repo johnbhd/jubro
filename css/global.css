@@ -348,12 +348,6 @@ input:disabled {
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
-  #btnDashboard span {
-    display: none;
-  }
-}
-
 @media (max-width: 1023px) {
   #btnAddApplication span {
     display: none;

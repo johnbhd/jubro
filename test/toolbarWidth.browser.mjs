@@ -76,11 +76,16 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
         for (const id of ['btnDashboard', 'btnCustomFields']) {
           const button = document.getElementById(id);
           check(Boolean(button.getAttribute('aria-label') && button.title), 'Compact controls retain accessible names');
+          if (id === 'btnDashboard') {
+            check(button.querySelector('span').textContent === 'Dashboard'
+              && button.getAttribute('aria-label') === 'Dashboard' && button.title === 'Dashboard',
+            'Second nav retains the Dashboard name');
+          }
           const showLabel = id === 'btnDashboard'
-            ? innerWidth >= 768 && (innerWidth < 1024 || innerWidth >= 1280)
+            ? innerWidth >= 768
             : innerWidth >= 1280;
           check((getComputedStyle(button.querySelector('span')).display !== 'none') === showLabel,
-            'Quick Overview keeps text where it fits without squeezing inline Search');
+            'Dashboard text stays visible on tablet and desktop without squeezing Search');
         }
         if (innerWidth >= 1024) {
           const searchBounds = search.getBoundingClientRect();

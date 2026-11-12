@@ -62,7 +62,7 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
           return {
             counts: overviewCounts(), grid,
             naming: document.getElementById('dashboardTitle').textContent === 'Quick Overview'
-              && document.getElementById('btnDashboard').getAttribute('aria-label') === 'Quick Overview'
+              && document.getElementById('btnDashboard').getAttribute('aria-label') === 'Dashboard'
               && document.getElementById('dashboardSubtitle').textContent === 'A quick look at your job search this month.',
             simple: !document.getElementById('dashboardSelectColumn') && !panel.querySelector('svg, canvas')
               && document.getElementById('dashboardRangeSelect').getAttribute('aria-label') === 'Time period',
