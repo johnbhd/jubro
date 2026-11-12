@@ -59,8 +59,25 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
           const emptyState = document.getElementById('dashboardEmptyState');
           const summary = document.getElementById('dashboardSummary');
           const insights = document.getElementById('dashboardInsights');
+          const illustration = emptyState.querySelector('.overview-empty-icon');
+          const addButton = document.getElementById('btnOverviewAddApplication');
+          let addReachable = true;
+          if (${empty}) {
+            panel.scrollTop = panel.scrollHeight;
+            const addBounds = addButton.getBoundingClientRect();
+            addReachable = addBounds.top >= bounds.top && addBounds.bottom <= bounds.bottom
+              && addBounds.height >= 44;
+            panel.scrollTop = 0;
+          }
           return {
-            counts: overviewCounts(), grid,
+            counts: overviewCounts(), grid, addReachable,
+            emptyPolish: ${empty}
+              ? illustration.getBoundingClientRect().width >= (innerWidth < 640 ? 120 : 140)
+                && parseFloat(getComputedStyle(document.getElementById('dashboardEmptyTitle')).fontSize) >= 28
+                && cards.every(card => card.getBoundingClientRect().height >= 140)
+                && getComputedStyle(addButton).backgroundColor === 'rgb(37, 99, 235)'
+                && (innerWidth < 1024 || bounds.width >= 900)
+              : bounds.width <= 760,
             naming: document.getElementById('dashboardTitle').textContent === 'Quick Overview'
               && document.getElementById('btnDashboard').getAttribute('aria-label') === 'Dashboard'
               && document.getElementById('dashboardSubtitle').textContent === 'A quick look at your job search this month.',
