@@ -97,12 +97,24 @@ test('landing page comparison section implements Old Way vs Jubro Way structure'
   assert.ok(css.includes('.landing-comparison-logo'), 'CSS styles .landing-comparison-logo');
 });
 
-test('landing page mobile sections and footer centering on large screens', () => {
+test('landing page mobile showcase sections and benefit icons share unified component pattern', () => {
+  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
   const css = readFileSync(resolve(process.cwd(), 'css/global.css'), 'utf8');
 
-  // Verify mobile sections share equal vertical margins
-  assert.ok(css.includes(':is(#about, #mobile-board)'), 'Mobile sections rule exists');
-  assert.ok(css.includes('margin-block: 0'), 'Mobile sections margin-block set');
+  // Verify shared mobile-showcase classes in HTML
+  assert.ok(html.includes('id="about" class="mobile-showcase'), 'Section 1 uses .mobile-showcase');
+  assert.ok(html.includes('id="mobile-board" class="mobile-showcase mobile-showcase--reverse'), 'Section 2 uses .mobile-showcase--reverse');
+  assert.equal((html.match(/class="[^"]*mobile-showcase-grid[^"]*"/g) || []).length, 2, 'Both sections use .mobile-showcase-grid');
+  assert.equal((html.match(/class="[^"]*mobile-showcase-copy[^"]*"/g) || []).length, 2, 'Both sections use .mobile-showcase-copy');
+  assert.equal((html.match(/class="[^"]*mobile-showcase-media[^"]*"/g) || []).length, 2, 'Both sections use .mobile-showcase-media');
+  assert.equal((html.match(/class="landing-benefit-icon"/g) || []).length, 6, 'All 6 benefit items use .landing-benefit-icon');
+  assert.ok(!html.includes('rounded-full bg-blue-100'), 'Generic circular bg-blue-100 benefit badges removed');
+
+  // Verify mobile showcase CSS rules
+  assert.ok(css.includes('.mobile-showcase'), 'Mobile showcase container rule exists');
+  assert.ok(css.includes('margin-block: 0'), 'Mobile showcase margin-block set');
+  assert.ok(css.includes('.landing-benefit-icon'), 'Benefit icon rule exists');
+  assert.ok(css.includes('border-radius: 7px'), 'Benefit icon uses rounded square border-radius');
 
   // Verify footer centering and max-width on large screens
   assert.ok(css.includes('footer > div'), 'Footer container rule exists');

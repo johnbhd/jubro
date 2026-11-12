@@ -3073,7 +3073,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody .landing-main {
   display: grid;
-  gap: 64px;
+  gap: 48px;
 }
 
 #homeBody .landing-main > section {
@@ -3209,25 +3209,49 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   }
 }
 
+#homeBody .mobile-showcase,
 #homeBody :is(#about, #mobile-board) {
+  max-width: 1056px;
   margin-block: 0;
+  margin-inline: auto;
   padding-block: 0;
 }
 
+#homeBody .mobile-showcase-grid,
 #homeBody .landing-about-grid,
 #homeBody .landing-board-showcase-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: 40px;
+  gap: 36px;
 }
 
+#homeBody .mobile-showcase-copy,
 #homeBody .landing-showcase-copy {
   order: 1;
+  max-width: 540px;
 }
 
+#homeBody .mobile-showcase-media,
 #homeBody .landing-showcase-visual {
   order: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#homeBody .mobile-showcase-title {
+  margin: 0;
+}
+
+#homeBody .mobile-showcase-body {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+#homeBody .mobile-showcase-body p {
+  margin: 0;
 }
 
 #homeBody .faq-item + .faq-item {
@@ -3629,13 +3653,44 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 }
 
 #homeBody .landing-phone-visual {
-  width: 208px;
+  width: 204px;
   max-width: 100%;
 }
 
 #homeBody .landing-benefits {
   display: grid;
-  gap: 14px;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 0;
+  list-style: none;
+}
+
+#homeBody .landing-benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+#homeBody .landing-benefit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #2563eb;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.dark #homeBody .landing-benefit-icon {
+  background-color: rgb(30 58 138 / 0.35);
+  border-color: rgb(59 130 246 / 0.35);
+  color: #60a5fa;
 }
 
 #homeBody .landing-final-cta .theme-create-button {
@@ -3676,8 +3731,12 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
     padding-inline: 24px;
   }
 
+  #homeBody .landing-main {
+    gap: 64px;
+  }
+
   #homeBody .landing-phone-visual {
-    width: 240px;
+    width: 228px;
   }
 }
 
@@ -3687,28 +3746,32 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   }
 
   #homeBody .landing-main {
-    gap: 96px;
+    gap: 72px;
   }
 
+  #homeBody .mobile-showcase-grid,
   #homeBody .landing-about-grid {
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
     gap: 56px;
   }
 
+  #homeBody .mobile-showcase--reverse .mobile-showcase-grid,
   #homeBody .landing-board-showcase-grid {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1fr);
     gap: 56px;
   }
 
+  #homeBody .mobile-showcase--reverse .mobile-showcase-media,
   #homeBody .landing-showcase-visual {
     order: 1;
   }
 
+  #homeBody .mobile-showcase--reverse .mobile-showcase-copy,
   #homeBody .landing-showcase-copy {
     order: 2;
   }
 
   #homeBody .landing-phone-visual {
-    width: 280px;
+    width: 244px;
   }
 }

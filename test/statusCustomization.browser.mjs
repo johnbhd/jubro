@@ -1377,7 +1377,7 @@ try {
           && Math.abs(ctaCard.left - features.left) < 1
           && Math.abs(ctaCard.right - features.right) < 1
           && faviconColorsMatch
-          && benefitRows.slice(1).every((row, index) => Math.abs(row.top - benefitRows[index].bottom - 14) < 1)
+          && benefitRows.slice(1).every((row, index) => Math.abs(row.top - benefitRows[index].bottom - 10) < 1)
           && parseFloat(cta.paddingLeft) >= 32 && parseFloat(cta.paddingRight) >= 32
           && rect.width <= 1120 && rect.width > 0
           && document.querySelectorAll('img[src="/img/hero.png"]').length === 1
@@ -1467,9 +1467,49 @@ try {
           const titleColor = getComputedStyle(cards[1].querySelector('h3')).color.match(/[\\d.]+/g).slice(0, 3).map(Number);
           check(Math.max(...titleColor) - Math.min(...titleColor) < 50, 'Jubro title uses neutral text, not saturated blue');
         }
-        const aboutStyle = getComputedStyle(document.getElementById('about'));
-        const mbStyle = getComputedStyle(document.getElementById('mobile-board'));
+        const aboutEl = document.getElementById('about');
+        const mbEl = document.getElementById('mobile-board');
+        const featuresEl = document.getElementById('features');
+        const aboutPhone = aboutEl.querySelector('img');
+        const mbPhone = mbEl.querySelector('img');
+        aboutPhone.loading = 'eager';
+        mbPhone.loading = 'eager';
+        await Promise.all([aboutPhone.decode(), mbPhone.decode()]);
+        const aboutStyle = getComputedStyle(aboutEl);
+        const mbStyle = getComputedStyle(mbEl);
         check(aboutStyle.marginTop === mbStyle.marginTop && aboutStyle.marginBottom === mbStyle.marginBottom, 'Mobile sections share equal vertical margins');
+        const whyRect = section.getBoundingClientRect();
+        const aboutRect = aboutEl.getBoundingClientRect();
+        const mbRect = mbEl.getBoundingClientRect();
+        const featuresRect = featuresEl.getBoundingClientRect();
+        check(aboutRect.width <= 1056.5 && mbRect.width <= 1056.5, 'Mobile showcase sections capped at 1056px');
+        check(Math.abs(aboutRect.left - whyRect.left) < 1 && Math.abs(mbRect.left - whyRect.left) < 1, 'Mobile showcase sections align horizontally with why-jubro');
+        const gapAboveAbout = aboutRect.top - whyRect.bottom;
+        const gapBetweenShowcases = mbRect.top - aboutRect.bottom;
+        const gapBelowShowcases = featuresRect.top - mbRect.bottom;
+        check(Math.abs(gapAboveAbout - gapBetweenShowcases) < 2 && Math.abs(gapBetweenShowcases - gapBelowShowcases) < 2, 'Mobile showcase vertical spacing matches surrounding sections');
+        const aboutPhoneRect = aboutPhone.getBoundingClientRect();
+        const mbPhoneRect = mbPhone.getBoundingClientRect();
+        check(Math.abs(aboutPhoneRect.width - mbPhoneRect.width) < 1 && Math.abs(aboutPhoneRect.height - mbPhoneRect.height) < 1, 'Both mobile showcase phones share identical dimensions');
+        for (const showcase of [aboutEl, mbEl]) {
+          const copyRect = showcase.querySelector('.mobile-showcase-copy').getBoundingClientRect();
+          const mediaRect = showcase.querySelector('.mobile-showcase-media').getBoundingClientRect();
+          if (innerWidth >= 1024) {
+            const copyCenterY = (copyRect.top + copyRect.bottom) / 2;
+            const mediaCenterY = (mediaRect.top + mediaRect.bottom) / 2;
+            check(Math.abs(copyCenterY - mediaCenterY) < 2, 'Showcase text and phone vertically centered on desktop');
+          } else {
+            check(copyRect.bottom <= mediaRect.top + 1, 'Showcase text precedes phone on mobile/tablet');
+          }
+        }
+        const benefitIcons = [...document.querySelectorAll('.landing-benefit-icon')];
+        check(benefitIcons.length === 6, 'Six benefit icons rendered');
+        for (const icon of benefitIcons) {
+          const iconRect = icon.getBoundingClientRect();
+          const iconStyle = getComputedStyle(icon);
+          check(Math.abs(iconRect.width - 24) < 1 && Math.abs(iconRect.height - 24) < 1, 'Benefit icons are 24x24px');
+          check(iconStyle.borderRadius === '7px', 'Benefit icons use 7px rounded square radius');
+        }
         if (innerWidth >= 1440) {
           const footerDiv = document.querySelector('footer > div')?.getBoundingClientRect();
           if (footerDiv) {
