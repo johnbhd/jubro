@@ -61,6 +61,8 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
           const insights = document.getElementById('dashboardInsights');
           const illustration = emptyState.querySelector('.overview-empty-icon');
           const addButton = document.getElementById('btnOverviewAddApplication');
+          const closeButton = document.getElementById('btnCloseDashboard');
+          const closeBounds = closeButton.getBoundingClientRect();
           let addReachable = true;
           if (${empty}) {
             panel.scrollTop = panel.scrollHeight;
@@ -71,6 +73,8 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
           }
           return {
             counts: overviewCounts(), grid, addReachable,
+            closeSize: closeBounds.width >= 44 && closeBounds.height >= 44
+              && parseFloat(getComputedStyle(closeButton).fontSize) >= 30,
             emptyPolish: ${empty}
               ? illustration.getBoundingClientRect().width >= (innerWidth < 640 ? 120 : 140)
                 && parseFloat(getComputedStyle(document.getElementById('dashboardEmptyTitle')).fontSize) >= 28
