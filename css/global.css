@@ -3392,6 +3392,13 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   flex-shrink: 0;
   align-self: center;
   padding: 4px;
+  color: #3b82f6;
+  opacity: 0.65;
+}
+
+.dark #homeBody .landing-flow-arrow {
+  color: #60a5fa;
+  opacity: 0.65;
 }
 
 #homeBody .landing-flow-arrow .fa-arrow-down {
@@ -3478,6 +3485,38 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody #why-jubro {
   max-width: 1056px;
+  position: relative;
+}
+
+#homeBody .landing-comparison-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#homeBody .landing-comparison-separator-line {
+  display: block;
+  width: 96px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(59 130 246 / 0.35), transparent);
+  border-radius: 9999px;
+}
+
+.dark #homeBody .landing-comparison-separator-line {
+  background: linear-gradient(90deg, transparent, rgb(96 165 250 / 0.4), transparent);
+}
+
+#homeBody .landing-spreadsheet-accent {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-color: rgb(37 99 235 / 0.35);
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2px;
+}
+
+.dark #homeBody .landing-spreadsheet-accent {
+  color: #60a5fa;
+  text-decoration-color: rgb(96 165 250 / 0.45);
 }
 
 #homeBody .landing-comparison-intro {
@@ -3487,7 +3526,6 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 #homeBody .landing-comparison {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: 1fr;
   gap: 20px;
 }
 
@@ -3502,7 +3540,13 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 }
 
 #homeBody .landing-comparison-jubro {
-  background-color: var(--landing-card-highlight);
+  background-color: #f8faff;
+  border-color: #bfdbfe;
+}
+
+.dark #homeBody .landing-comparison-jubro {
+  background-color: #132238;
+  border-color: rgb(96 165 250 / 0.4);
 }
 
 #homeBody .landing-comparison-label {
@@ -3517,6 +3561,25 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   color: var(--landing-accent);
 }
 
+#homeBody .landing-comparison-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#homeBody .landing-comparison-title-row h3 {
+  margin-top: 0 !important;
+}
+
+#homeBody .landing-comparison-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 #homeBody .landing-comparison-card h3 {
   margin-top: 10px;
   color: var(--landing-title);
@@ -3527,7 +3590,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 
 #homeBody .landing-comparison-card ul {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin-top: 24px;
   padding: 0;
   list-style: none;
@@ -3550,6 +3613,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
 @media (min-width: 768px) {
   #homeBody .landing-comparison {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     gap: 24px;
   }
 

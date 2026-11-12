@@ -1440,7 +1440,11 @@ try {
           const labels = cards.map(card => card.querySelector('p').textContent.trim());
           check(labels[0] === 'THE OLD WAY' && labels[1] === 'THE JUBRO WAY', 'Narrative card order remains clear');
           check(Math.abs(bounds[0].width - bounds[1].width) < 1, 'Cards share equal widths');
-          check(Math.abs(bounds[0].height - bounds[1].height) < 1, 'Cards share equal heights');
+          if (innerWidth >= 768) {
+            check(Math.abs(bounds[0].height - bounds[1].height) < 1, 'Cards share equal heights');
+          } else {
+            check(Math.abs(bounds[0].height - bounds[1].height) < 120, 'Cards stay balanced in height on mobile');
+          }
           check(innerWidth < 768
             ? bounds[1].top >= bounds[0].bottom + 19.5
             : Math.abs(bounds[0].top - bounds[1].top) < 1 && bounds[1].left >= bounds[0].right + 23.5,

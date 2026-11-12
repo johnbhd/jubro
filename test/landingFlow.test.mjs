@@ -51,3 +51,48 @@ test('landing page How Jubro Works section implements ADD -> TRACK -> ACT flow',
   assert.ok(css.includes('.landing-flow-card-act'), 'CSS styles .landing-flow-card-act');
   assert.ok(css.includes('.landing-flow-arrow'), 'CSS styles .landing-flow-arrow');
 });
+
+test('landing page comparison section implements Old Way vs Jubro Way structure', () => {
+  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+  const css = readFileSync(resolve(process.cwd(), 'css/global.css'), 'utf8');
+
+  // Verify section ID
+  assert.ok(html.includes('id="why-jubro"'), 'Section #why-jubro exists');
+
+  // Verify transition separator and heading
+  assert.ok(html.includes('landing-comparison-separator'), 'Separator exists');
+  assert.ok(html.includes('Your Job Search Shouldn\'t'), 'Heading exists');
+  assert.ok(html.includes('landing-spreadsheet-accent'), 'Spreadsheet accent class exists');
+  assert.ok(html.includes('>Spreadsheet</span>'), 'Spreadsheet accent word exists');
+
+  // Verify supporting copy
+  assert.ok(html.includes('Spreadsheets can store applications, but they don\'t give you a clear view of your progress or what to do next.'), 'First intro sentence exists');
+  assert.ok(html.includes('Jubro turns it into a visual, easy-to-manage pipeline.'), 'Second intro sentence exists');
+
+  // Verify Old Way card and points
+  assert.ok(html.includes('THE OLD WAY'), 'Old way label exists');
+  assert.ok(html.includes('Spreadsheets &amp; Notes'), 'Old way title exists');
+  assert.ok(html.includes('Manual lists and updates'), 'Old point 1 exists');
+  assert.ok(html.includes('Scattered job links'), 'Old point 2 exists');
+  assert.ok(html.includes('Hard to see overall progress'), 'Old point 3 exists');
+  assert.ok(html.includes('Easy to forget next steps'), 'Old point 4 exists');
+  assert.ok(html.includes('Requires setup and maintenance'), 'Old point 5 exists');
+
+  // Verify Jubro Way card and points
+  assert.ok(html.includes('THE JUBRO WAY'), 'Jubro way label exists');
+  assert.ok(html.includes('landing-comparison-logo'), 'Jubro logo class exists');
+  assert.ok(html.includes('src="/img/jubro.png"'), 'Jubro logo source exists');
+  assert.ok(html.includes('Visual job-search pipeline'), 'Jubro point 1 exists');
+  assert.ok(html.includes('Clear application stages'), 'Jubro point 2 exists');
+  assert.ok(html.includes('(Applied, Interview, Offer, etc.)'), 'Jubro point 2 subtext exists');
+  assert.ok(html.includes('Next Action'), 'Jubro point 3 exists');
+  assert.ok(html.includes('Save job links and key details'), 'Jubro point 4 exists');
+  assert.ok(html.includes('Start tracking immediately'), 'Jubro point 5 exists');
+  assert.ok(html.includes('(no account required)'), 'Jubro point 5 subtext exists');
+
+  // Verify CSS styles
+  assert.ok(css.includes('.landing-comparison-separator'), 'CSS styles .landing-comparison-separator');
+  assert.ok(css.includes('.landing-spreadsheet-accent'), 'CSS styles .landing-spreadsheet-accent');
+  assert.ok(css.includes('.landing-comparison-jubro'), 'CSS styles .landing-comparison-jubro');
+  assert.ok(css.includes('.landing-comparison-logo'), 'CSS styles .landing-comparison-logo');
+});

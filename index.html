@@ -190,7 +190,7 @@
           </article>
 
           <!-- ARROW 1 -->
-          <div class="landing-flow-arrow flex items-center justify-center shrink-0 text-gray-300 dark:text-slate-600 py-1 lg:py-0 lg:px-1" aria-hidden="true">
+          <div class="landing-flow-arrow flex items-center justify-center shrink-0 py-1 lg:py-0 lg:px-1" aria-hidden="true">
             <i class="fa-solid fa-arrow-down lg:hidden text-sm"></i>
             <i class="fa-solid fa-arrow-right hidden lg:inline-block text-sm"></i>
           </div>
@@ -214,7 +214,7 @@
           </article>
 
           <!-- ARROW 2 -->
-          <div class="landing-flow-arrow flex items-center justify-center shrink-0 text-gray-300 dark:text-slate-600 py-1 lg:py-0 lg:px-1" aria-hidden="true">
+          <div class="landing-flow-arrow flex items-center justify-center shrink-0 py-1 lg:py-0 lg:px-1" aria-hidden="true">
             <i class="fa-solid fa-arrow-down lg:hidden text-sm"></i>
             <i class="fa-solid fa-arrow-right hidden lg:inline-block text-sm"></i>
           </div>
@@ -241,13 +241,22 @@
 
       <!-- 3. WHY JUBRO INSTEAD OF SPREADSHEETS -->
       <section id="why-jubro" class="mx-auto scroll-mt-28">
+        <div class="landing-comparison-separator flex justify-center mb-8 sm:mb-10" aria-hidden="true">
+          <div class="landing-comparison-separator-line"></div>
+        </div>
+
         <div class="landing-comparison-intro text-center mx-auto">
           <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
-            Your Job Search Shouldn't<br class="hidden sm:inline" /> Feel Like a Spreadsheet
+            Your Job Search Shouldn't<br class="hidden sm:inline" /> Feel Like a <span class="landing-spreadsheet-accent">Spreadsheet</span>
           </h2>
-          <p class="mt-4 text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
-            Spreadsheets can store applications, but they don't make your job search easy to understand. Jubro gives every application a clear place in your pipeline.
-          </p>
+          <div class="mt-4 space-y-2 text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
+            <p>
+              Spreadsheets can store applications, but they don't give you a clear view of your progress or what to do next.
+            </p>
+            <p>
+              Jubro turns it into a visual, easy-to-manage pipeline.
+            </p>
+          </div>
         </div>
 
         <div class="landing-comparison mt-10">
@@ -255,23 +264,41 @@
             <p class="landing-comparison-label">THE OLD WAY</p>
             <h3 id="old-way-title">Spreadsheets &amp; Notes</h3>
             <ul>
-              <li>Manual lists</li>
+              <li>Manual lists and updates</li>
               <li>Scattered job links</li>
-              <li>Hard to see progress</li>
+              <li>Hard to see overall progress</li>
               <li>Easy to forget next steps</li>
-              <li>Setup required</li>
+              <li>Requires setup and maintenance</li>
             </ul>
           </article>
 
           <article class="landing-comparison-card landing-comparison-jubro" aria-labelledby="jubro-way-title">
             <p class="landing-comparison-label">THE JUBRO WAY</p>
-            <h3 id="jubro-way-title">Jubro</h3>
+            <div class="landing-comparison-title-row">
+              <img src="/img/jubro.png" alt="Jubro logo" class="landing-comparison-logo" />
+              <h3 id="jubro-way-title">Jubro</h3>
+            </div>
             <ul>
-              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Visual job pipeline</li>
-              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Everything in one place</li>
-              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Clear application stages</li>
-              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Next Action</li>
-              <li><i class="fa-solid fa-check" aria-hidden="true"></i>Start immediately</li>
+              <li>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span><span class="font-medium text-gray-900 dark:text-white">Visual job-search pipeline</span> (Board)</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span><span class="font-medium text-gray-900 dark:text-white">Clear application stages</span> (Applied, Interview, Offer, etc.)</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span><span class="font-medium text-gray-900 dark:text-white">Next Action</span> to know what to do next</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span><span class="font-medium text-gray-900 dark:text-white">Save job links and key details</span> in one place</span>
+              </li>
+              <li>
+                <i class="fa-solid fa-check" aria-hidden="true"></i>
+                <span><span class="font-medium text-gray-900 dark:text-white">Start tracking immediately</span> (no account required)</span>
+              </li>
             </ul>
           </article>
         </div>
