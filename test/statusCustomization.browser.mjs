@@ -6,6 +6,7 @@
 // Use JUBRO_TOOLBAR_ONLY=1 for protected Job Search widths and responsive toolbar checks.
 // Use JUBRO_NEXT_ACTION_ONLY=1 for compact Board-card action/date presentation checks.
 // Use JUBRO_COLOR_ONLY=1 for centered palettes and native custom-color Save/Cancel checks.
+// Use JUBRO_LIST_GUIDE_ONLY=1 for the UI-only empty List example and Add lifecycle.
 // Firebase imports use the repository fixture. No live account or service is used.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -127,7 +128,8 @@ try {
     || process.env.JUBRO_AUTH_ONLY
     || process.env.JUBRO_TOOLBAR_ONLY
     || process.env.JUBRO_NEXT_ACTION_ONLY
-    || process.env.JUBRO_COLOR_ONLY;
+    || process.env.JUBRO_COLOR_ONLY
+    || process.env.JUBRO_LIST_GUIDE_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
@@ -152,6 +154,10 @@ try {
   if (process.env.JUBRO_COLOR_ONLY) {
     const { verifyColorDialog } = await import('./colorDialog.browser.mjs');
     await verifyColorDialog({ command, evaluate, context, origin, artifacts });
+  }
+  if (process.env.JUBRO_LIST_GUIDE_ONLY) {
+    const { verifyListGuide } = await import('./listGuide.browser.mjs');
+    await verifyListGuide({ command, evaluate, context, origin, artifacts });
   }
   if (!focusedOnly) {
     if (!process.env.JUBRO_ENTRY_ONLY) {
@@ -1641,6 +1647,7 @@ try {
     toolbarWidths: process.env.JUBRO_TOOLBAR_ONLY ? 7 : undefined,
     nextActionOnly: Boolean(process.env.JUBRO_NEXT_ACTION_ONLY),
     colorOnly: Boolean(process.env.JUBRO_COLOR_ONLY),
+    listGuideOnly: Boolean(process.env.JUBRO_LIST_GUIDE_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
 } finally {
   socket?.close();

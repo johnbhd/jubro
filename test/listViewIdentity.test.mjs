@@ -328,6 +328,75 @@ function makeRow({
   ];
 }
 
+test('empty List shows an instructional example without application data or row controls', () => {
+  localStorage.clear();
+  const tracker = createDefaultTracker('empty-list', 'My Job Search');
+  const app = createAppHarness(tracker);
+  app.listTotalCount = document.createElement('span');
+  app.listThisMonthCount = document.createElement('span');
+  const before = JSON.stringify(tracker);
+  const storedBefore = [...storageData];
+
+  app.renderListView(tracker);
+
+  const guide = app.listCards.querySelector('.list-guide-card');
+  assert.ok(guide, 'Empty List should teach users what an application looks like.');
+  assert.equal(guide.querySelector('.kanban-guide-badge').textContent, 'EXAMPLE');
+  assert.equal(guide.querySelector('.list-card-title').textContent, 'Position Role');
+  assert.equal(guide.querySelector('.list-card-company').textContent, 'Company Name');
+  assert.equal(guide.draggable, false);
+  assert.equal(guide.dataset.rowIndex, undefined);
+  assert.equal(guide.querySelector('button'), null);
+  assert.equal(guide.querySelector('select'), null);
+  assert.equal(app.listCards.querySelector('.list-view-row'), null);
+  assert.ok(app.listCards.querySelector('.list-guide-add'));
+  assert.equal(app.listTotalCount.textContent, '0');
+  assert.equal(app.listThisMonthCount.textContent, '0');
+  assert.equal(app.listDrag, null);
+  assert.equal(JSON.stringify(tracker), before);
+  assert.deepEqual([...storageData], storedBefore);
+  assert.equal(app.getSaveCalls(), 0);
+});
+
+test('List example follows the first configured status and tolerates missing status options', () => {
+  const tracker = createDefaultTracker('custom-empty-list', 'Custom Search');
+  const app = createAppHarness(tracker);
+
+  for (const options of [
+    ['Wishlist', 'Submitted'],
+    [{ label: 'Wishlist', color: '#D946EF' }, { label: 'Submitted', color: 'blue' }],
+    [],
+  ]) {
+    tracker.columns[3].options = options;
+    app.renderListView(tracker);
+    const guide = app.listCards.querySelector('.list-guide-card');
+    assert.ok(guide);
+    assert.equal(guide.querySelector('.list-status-badge')?.textContent ?? '', options.length ? 'Wishlist' : '');
+  }
+
+  tracker.columns.splice(3, 1);
+  app.renderListView(tracker);
+  assert.ok(app.listCards.querySelector('.list-guide-card'));
+  assert.equal(app.listCards.querySelector('.list-status-badge'), null);
+});
+
+test('List example disappears for real rows and returns when the last row is removed', () => {
+  const tracker = createDefaultTracker('list-guide-lifecycle', 'My Job Search');
+  const app = createAppHarness(tracker);
+  app.renderListView(tracker);
+  assert.ok(app.listCards.querySelector('.list-guide-card'));
+
+  tracker.rows.push(makeRow({ company: 'Real Company', position: 'Actual Role' }));
+  app.renderListView(tracker);
+  assert.equal(app.listCards.querySelector('.list-guide-card'), null);
+  assert.equal(app.listCards.querySelector('.list-card-title').textContent, 'Actual Role');
+
+  tracker.rows = [];
+  app.renderListView(tracker);
+  assert.ok(app.listCards.querySelector('.list-guide-card'));
+  assert.equal(app.getSaveCalls(), 0);
+});
+
 test('Google / Web dev example: List shows Position above Company and matches Kanban canonical data', () => {
   localStorage.clear();
   const tracker = createDefaultTracker('tracker-google', 'Job Search 1');

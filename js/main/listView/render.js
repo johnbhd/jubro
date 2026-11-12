@@ -116,6 +116,58 @@ export const listRenderMethods = {
     document.getElementById('listInfoModal')?.classList.add('hidden');
   },
 
+  renderEmptyListGuide(tracker) {
+    const guide = document.createElement('article');
+    guide.className = 'kanban-guide-card list-guide-card';
+    guide.draggable = false;
+    guide.setAttribute('aria-label', 'Example application. Not saved application data.');
+
+    const badge = document.createElement('span');
+    badge.className = 'kanban-guide-badge';
+    badge.textContent = 'EXAMPLE';
+
+    const content = document.createElement('div');
+    content.className = 'list-guide-content';
+    const identity = document.createElement('div');
+    identity.className = 'min-w-0';
+    const date = document.createElement('p');
+    date.className = 'kanban-guide-details';
+    date.textContent = 'Application Date · Platform';
+    const title = document.createElement('h3');
+    title.className = 'list-card-title kanban-guide-company mt-1 text-lg font-semibold';
+    title.textContent = 'Position Role';
+    const company = document.createElement('p');
+    company.className = 'list-card-company kanban-guide-position mt-2 text-sm';
+    company.textContent = 'Company Name';
+    identity.append(date, title, company);
+
+    const details = document.createElement('div');
+    details.className = 'list-guide-details';
+    const metadata = document.createElement('span');
+    metadata.className = 'kanban-guide-details';
+    metadata.textContent = 'Full-time · Remote';
+    details.appendChild(metadata);
+    const indexes = this.getListColumnIndexes(tracker);
+    const statusColumn = tracker.columns[indexes.status];
+    const firstStatus = this.getDashboardOptions(statusColumn)[0];
+    if (firstStatus) {
+      details.appendChild(this.createListBadgeElement(statusColumn, firstStatus.label));
+      guide.style.setProperty('--card-status-accent', firstStatus.color);
+    }
+    content.append(identity, details);
+    guide.append(badge, content);
+
+    const explanation = document.createElement('p');
+    explanation.className = 'kanban-guide-explanation';
+    explanation.textContent = 'This is an example. Add your first application to start tracking your job search.';
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'primary-action-button kanban-guide-add list-guide-add';
+    add.textContent = '+ Add Application';
+    add.addEventListener('click', () => this.openAddApplication());
+    this.listCards.append(guide, explanation, add);
+  },
+
   renderListView(tracker) {
     if (!this.listCards) return;
 
@@ -128,7 +180,12 @@ export const listRenderMethods = {
     this.updateListStats(tracker);
     this.renderListFilterSections(tracker);
 
-    if (!tracker || !Array.isArray(tracker.rows) || tracker.rows.length === 0) {
+    if (tracker && Array.isArray(tracker.rows) && tracker.rows.length === 0) {
+      this.renderEmptyListGuide(tracker);
+      return;
+    }
+
+    if (!tracker || !Array.isArray(tracker.rows)) {
       const empty = document.createElement('p');
       empty.className = 'rounded-md border border-dashed border-gray-200 bg-white p-6 text-center text-sm text-gray-400';
       empty.textContent = 'No rows yet.';
