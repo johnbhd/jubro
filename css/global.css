@@ -3354,6 +3354,20 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   margin-inline: auto;
 }
 
+/* Progressive enhancement: only initialized offscreen content can be hidden. */
+@media (prefers-reduced-motion: no-preference) {
+  body#homeBody[data-page="homepage"] .landing-reveal-pending {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (max-width: 639px) {
+  body#homeBody[data-page="homepage"] .landing-reveal-pending {
+    translate: 0 12px;
+  }
+}
+
 /* Landing hero intro entrance animations */
 @keyframes landingIntroFadeUp {
   from {
@@ -3473,6 +3487,10 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
     transition: none !important;
     transform: none !important;
     opacity: 1 !important;
+  }
+
+  #homeBody .landing-hero-visual::before {
+    transform: translateX(-50%) !important;
   }
 }
 

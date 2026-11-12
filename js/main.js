@@ -1,5 +1,6 @@
 import { setupStorageNotice } from './storage/storageNotice.js';
 import { showFlashToast } from './toast.js';
+import { setupLandingReveals } from './homepage/landingReveals.js';
 
 const THEME_KEY = 'jubro_theme';
 
@@ -220,6 +221,7 @@ async function initHomepage() {
   setupScrollAwareNavbar();
   setupActiveNavigation();
   setupFaqAccordion();
+  setupLandingReveals();
   syncGuestThemeButton(localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark');
   setupStorageNotice();
   await setupAuth();

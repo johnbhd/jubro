@@ -1,6 +1,6 @@
 // Run with `node test/statusCustomization.browser.mjs`; requires local Firefox.
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
-// Add JUBRO_REDUCED_MOTION=1 for focused Features, FAQ, and final CTA motion checks in Firefox.
+// Add JUBRO_REDUCED_MOTION=1 for scroll-reveal, Hero overflow, Features, FAQ, and CTA motion checks.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { verifyFaq } from './faq.browser.mjs';
 import { verifyFinalCta } from './finalCta.browser.mjs';
 import { verifyFooter, verifyLegalFooters } from './footer.browser.mjs';
+import { verifyLandingReveals, verifyLandingRevealAccess } from './landingReveals.browser.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const artifacts = await mkdtemp(resolve(tmpdir(), 'jubro-status-browser-'));
@@ -1336,19 +1337,21 @@ try {
     await command('input.releaseActions', { context });
   }
   const faqKeyboardResults = [];
+  const revealAccess = await verifyLandingRevealAccess({ command, evaluate, context, origin });
   const landingWidths = process.env.JUBRO_REDUCED_MOTION
     ? [390, 430, 640, 768, 1024, 1440, 1920]
     : [390, 430, 768, 1024, 1440, 1920];
   for (const theme of ['dark', 'light']) {
     for (const width of landingWidths) {
       await command('browsingContext.setViewport', { context, viewport: { width, height: 900 }, devicePixelRatio: 1 });
+      await verifyLandingReveals({ command, evaluate, context, origin, theme, width });
       if (process.env.JUBRO_REDUCED_MOTION) {
-        // Isolate Features from the older hero pseudo-element's reduced-motion overflow.
+        // The whole page must fit, including the reduced-motion Hero backdrop.
         assert.equal(await evaluate(`
           document.documentElement.classList.toggle('dark', ${theme === 'dark'});
           await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
           const cards = [...document.querySelectorAll('.landing-feature-card')];
-          return cards.length === 4 && cards.every(card => {
+          return document.documentElement.scrollWidth <= innerWidth && cards.length === 4 && cards.every(card => {
             const preview = card.querySelector('.landing-feature-preview');
             const bounds = card.getBoundingClientRect();
             return bounds.left >= 0 && bounds.right <= innerWidth
@@ -1436,7 +1439,9 @@ try {
           && Math.abs(rect.width / rect.height - 1672 / 941) < 0.01
           && columns === (innerWidth < 1024 ? 1 : 2)
           && document.documentElement.scrollWidth <= innerWidth
-          && JSON.stringify(marketingPreview()) === staticMarketingSnapshot;
+          && heroImg.getAttribute('src') === '/img/hero.png'
+          && heroImg.getAttribute('alt') === 'Jubro job application Kanban board showing applications across job-search stages'
+          && getComputedStyle(heroImg).display !== 'none';
       `), true, 'Static landing preview fits ' + theme + ' ' + width);
       const storytelling = await evaluate(`
         const failures = [];
@@ -1813,6 +1818,7 @@ try {
   }
   assert.deepEqual(errors, []);
   console.log(JSON.stringify({ passed: true, artifacts, themes: 2, widths: landingWidths.length,
+    landingScrollReveals: true, revealAccess,
     faqNativeKeyboard: { verified: faqKeyboardResults.filter(Boolean).length,
       skippedInactiveWindow: faqKeyboardResults.filter(result => !result).length },
     featureMotionOnly: Boolean(process.env.JUBRO_REDUCED_MOTION),
