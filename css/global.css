@@ -3507,7 +3507,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   border-color: #374151 !important;
 }
 
-#homeBody :is(#how-it-works, #why-jubro, #features, #faq) {
+#homeBody :is(#how-it-works, #why-jubro, #features, #faq, .landing-final-cta) {
   --landing-accent: #476eb3;
   --landing-copy: #4b5563;
   --landing-title: #172033;
@@ -3516,7 +3516,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   --landing-card-border: #d9dee7;
 }
 
-.dark #homeBody :is(#how-it-works, #why-jubro, #features, #faq) {
+.dark #homeBody :is(#how-it-works, #why-jubro, #features, #faq, .landing-final-cta) {
   --landing-accent: #7fa8ff;
   --landing-copy: #a8b4c6;
   --landing-title: #f8fafc;
@@ -4188,8 +4188,98 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   color: #60a5fa;
 }
 
+#homeBody .landing-final-cta {
+  --cta-surface: #f8faff;
+  --cta-highlight: rgb(91 141 239 / 0.07);
+  padding: 32px;
+  border: 1px solid color-mix(in srgb, var(--landing-accent) 20%, var(--landing-card-border));
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 20%, var(--cta-highlight), transparent 65%), var(--cta-surface);
+  color: var(--landing-title);
+  text-align: center;
+  box-shadow: 0 4px 16px rgb(15 23 42 / 0.04);
+}
+
+.dark #homeBody .landing-final-cta {
+  --cta-surface: #111c2f;
+  --cta-highlight: rgb(91 141 239 / 0.12);
+}
+
+#homeBody .landing-final-cta h2 {
+  max-width: 680px;
+  margin-inline: auto;
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+#homeBody .landing-cta-copy {
+  max-width: 600px;
+  margin: 16px auto 0;
+  color: var(--landing-copy);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+#homeBody .landing-cta-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
 #homeBody .landing-final-cta .theme-create-button {
-  padding-inline: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 48px;
+  padding: 12px 32px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgb(37 99 235 / 0.12);
+}
+
+#homeBody .landing-final-cta .theme-create-button:hover {
+  background-color: #1d4ed8 !important;
+}
+
+#homeBody .landing-final-cta .theme-create-button:focus-visible {
+  outline: 2px solid #5b8def;
+  outline-offset: 4px;
+}
+
+#homeBody .landing-cta-reassurance {
+  margin-top: 14px;
+  color: var(--landing-copy);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  #homeBody .landing-final-cta {
+    padding: 56px;
+  }
+
+  #homeBody .landing-final-cta h2 {
+    font-size: 2.5rem;
+  }
+
+  #homeBody .landing-cta-copy {
+    font-size: 1.125rem;
+  }
+
+  #homeBody .landing-final-cta .theme-create-button {
+    width: auto;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -4200,7 +4290,7 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   #homeBody .landing-final-cta:hover,
   #homeBody .landing-final-cta:focus-within {
     transform: translateY(-3px);
-    box-shadow: 0 16px 36px #0f172a26;
+    box-shadow: 0 12px 28px rgb(15 23 42 / 0.08);
   }
 
   #homeBody .landing-final-cta .theme-create-button {

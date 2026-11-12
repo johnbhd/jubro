@@ -33,6 +33,24 @@ test('landing Features preserves four benefits with static decorative product pr
   assert.doesNotMatch(section, /<(button|input|select|canvas|script)\b|\bonclick=/);
 });
 
+test('final CTA keeps guest-first entry and contextual copy with decorative arrow and reassurance', () => {
+  const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
+  const section = html.match(/<section class="landing-final-cta[\s\S]*?<\/section>/)?.[0];
+  assert.ok(section);
+  for (const copy of [
+    'Ready to organize your job search?',
+    'Keep your applications, interviews, offers, and next steps in one place.',
+    'Create My Job Search',
+    'No account required. Sign in anytime to sync.',
+  ]) {
+    assert.ok(section.includes(copy));
+  }
+  assert.equal((section.match(/<a\s/g) || []).length, 1);
+  assert.ok(section.includes('href="/board/"'));
+  assert.match(section, /fa-arrow-right[^>]*aria-hidden="true"/);
+  assert.doesNotMatch(section, /<script\b|\bonclick=/);
+});
+
 test('FAQ retains its five accessible questions and answers with scoped card styling', () => {
   const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
   const section = html.match(/<section id="faq"[\s\S]*?<\/section>/)?.[0];

@@ -1,6 +1,6 @@
 // Run with `node test/statusCustomization.browser.mjs`; requires local Firefox.
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
-// Add JUBRO_REDUCED_MOTION=1 for focused Features and FAQ motion checks in Firefox.
+// Add JUBRO_REDUCED_MOTION=1 for focused Features, FAQ, and final CTA motion checks in Firefox.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
 // Use JUBRO_AUTH_ONLY=1 for auth navigation, flash toasts, and navbar spacing checks.
@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os';
 import { dirname, extname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { verifyFaq } from './faq.browser.mjs';
+import { verifyFinalCta } from './finalCta.browser.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const artifacts = await mkdtemp(resolve(tmpdir(), 'jubro-status-browser-'));
@@ -1355,6 +1356,7 @@ try {
         `), true, 'Features fit under reduced motion ' + theme + ' ' + width);
         await verifyFeatureHover(theme, width);
         faqKeyboardResults.push(await verifyFaq({ command, evaluate, context, theme, width }));
+        await verifyFinalCta({ command, evaluate, context, theme, width, artifacts });
         continue;
       }
       assert.equal(await evaluate(`
@@ -1686,31 +1688,7 @@ try {
       await evaluate('document.getElementById("about").scrollIntoView({ block: "start" });');
       const aboutShot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `${theme}-${width}-about.png`), Buffer.from(aboutShot.data, 'base64'));
-      const ctaPointer = await evaluate(`
-        const card = document.querySelector('.landing-final-cta');
-        card.scrollIntoView({ block: 'center' });
-        const bounds = card.getBoundingClientRect();
-        return { x: Math.round(bounds.left + bounds.width / 2), y: Math.round(bounds.top + bounds.height / 2) };
-      `);
-      await command('input.performActions', { context, actions: [{
-        type: 'pointer', id: 'cta-mouse', parameters: { pointerType: 'mouse' },
-        actions: [{ type: 'pointerMove', ...ctaPointer, duration: 0 }],
-      }] });
-      const ctaMotion = await evaluate(`
-        const card = document.querySelector('.landing-final-cta');
-        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await Promise.all(card.getAnimations().map(animation => animation.finished));
-        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const transform = getComputedStyle(card).transform;
-        const result = reducedMotion ? transform === 'none' : transform === 'matrix(1, 0, 0, 1, 0, -3)';
-        return { result, transform, reducedMotion };
-      `);
-      assert.equal(ctaMotion.result, true, 'CTA hover animation respects motion preference '
-        + theme + ' ' + width + ': ' + JSON.stringify(ctaMotion));
-      await command('input.performActions', { context, actions: [{
-        type: 'pointer', id: 'cta-mouse', parameters: { pointerType: 'mouse' },
-        actions: [{ type: 'pointerMove', x: 0, y: 0, duration: 0 }],
-      }] });
+      await verifyFinalCta({ command, evaluate, context, theme, width, artifacts });
     }
   }
   if (!focusedOnly) {
