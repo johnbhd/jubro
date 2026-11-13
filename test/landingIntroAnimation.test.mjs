@@ -17,15 +17,15 @@ test('landing page markup and styles include hero intro animation and motion acc
 
   // Verify animations are applied to hero elements with staggered timing
   assert.ok(css.includes('#homeBody .landing-hero-copy h1'), 'styles hero headline');
-  assert.ok(css.includes('animation: landingIntroFadeUp 650ms cubic-bezier(0.16, 1, 0.3, 1) both;'), 'h1 has entrance animation');
+  assert.ok(css.includes('animation: landingIntroFadeUp 900ms cubic-bezier(0.16, 1, 0.3, 1) both;'), 'h1 has slower entrance animation');
   assert.ok(css.includes('#homeBody .landing-hero-copy > p'), 'styles hero paragraph');
-  assert.ok(css.includes('animation: landingIntroFadeUp 650ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;'), 'p has staggered delay');
+  assert.ok(css.includes('animation: landingIntroFadeUp 900ms cubic-bezier(0.16, 1, 0.3, 1) 120ms both;'), 'p has staggered delay');
   assert.ok(css.includes('#homeBody .landing-hero-actions'), 'styles hero actions');
-  assert.ok(css.includes('animation: landingIntroFadeUp 650ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;'), 'actions has staggered delay');
+  assert.ok(css.includes('animation: landingIntroFadeUp 900ms cubic-bezier(0.16, 1, 0.3, 1) 240ms both;'), 'actions has staggered delay');
 
   // Verify hero visual animation and ambient glow
   assert.ok(css.includes('#homeBody .landing-hero-visual'), 'styles hero visual');
-  assert.ok(css.includes('animation: landingIntroVisualIn 850ms cubic-bezier(0.16, 1, 0.3, 1) 360ms both;'), 'hero visual has scale/glide animation');
+  assert.ok(css.includes('animation: landingIntroVisualIn 1100ms cubic-bezier(0.16, 1, 0.3, 1) 360ms both;'), 'hero visual has slower scale/glide animation');
   assert.ok(css.includes('#homeBody .landing-hero-visual::before'), 'hero visual has ambient glow pseudo-element');
   assert.ok(css.includes('animation: landingIntroGlowIn 1000ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;'), 'ambient glow has smooth fade-in');
 

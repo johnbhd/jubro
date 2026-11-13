@@ -23,7 +23,7 @@ export function setupLandingReveals() {
     }
 
     const { index, columns, breakpoint } = pending.get(element);
-    const delay = window.innerWidth >= breakpoint ? (index % columns) * 80 : 0;
+    const delay = window.innerWidth >= breakpoint ? (index % columns) * 120 : 0;
     pending.delete(element);
     observer.unobserve(element);
     element.classList.remove('landing-reveal-pending');
@@ -36,7 +36,7 @@ export function setupLandingReveals() {
       { opacity: 0, translate: `0 ${window.innerWidth < 640 ? 12 : 16}px` },
       { opacity: window.getComputedStyle(element).opacity, translate: '0 0' },
     ], {
-      duration: 600,
+      duration: 900,
       delay,
       easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
       fill: 'backwards',
@@ -123,8 +123,8 @@ export function setupLandingReveals() {
       document.querySelectorAll(selector).forEach((element, index) => {
         const bounds = element.getBoundingClientRect();
 
-        // Do not hide content already visible, or above a restored scroll position.
-        if (bounds.top < window.innerHeight) {
+        // Preserve content above restored scroll positions; reveal the visible section again.
+        if (bounds.bottom <= 0) {
           return;
         }
 

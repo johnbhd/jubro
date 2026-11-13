@@ -96,19 +96,33 @@ function fixture({ reduced = false, page = 'homepage', unsupported = false, brok
   };
 }
 
-test('offscreen cards reveal once, stagger, and leave initially visible content unchanged', () => {
+test('visible and offscreen sections reveal once with slower timing and stagger', () => {
   const state = fixture();
   setupLandingReveals();
-  assert.equal(state.pending().length, 3);
+  assert.equal(state.pending().length, 4);
   assert.equal(state.visible.animations.length, 0);
+  state.enter(state.visible);
+  assert.equal(state.visible.animations[0].options.duration, 900);
   state.cards.forEach(state.enter);
-  assert.deepEqual(state.cards.map(card => card.animations[0].options.delay), [0, 80, 160]);
+  assert.deepEqual(state.cards.map(card => card.animations[0].options.delay), [0, 120, 240]);
   assert.equal(state.pending().length, 0);
   assert.equal(state.observer.targets.size, 0);
   state.enter(state.cards[0]);
   assert.equal(state.cards[0].animations.length, 1);
   state.cards[0].animations[0].onfinish();
   assert.equal(state.cards[0].animations[0].canceled, true);
+});
+
+test('refresh at a restored scroll position animates intersecting content but skips content above it', () => {
+  const state = fixture();
+  state.visible.getBoundingClientRect = () => ({ top: -100, bottom: 0 });
+  state.cards[0].getBoundingClientRect = () => ({ top: -40, bottom: 60 });
+  setupLandingReveals();
+  assert.equal(state.observer.targets.has(state.visible), false);
+  assert.equal(state.observer.targets.has(state.cards[0]), true);
+  state.enter(state.cards[0]);
+  assert.equal(state.cards[0].animations.length, 1);
+  assert.equal(state.visible.animations.length, 0);
 });
 
 test('stacked mobile cards use shorter movement without stagger', () => {
@@ -159,7 +173,7 @@ test('focus reveals its target immediately without animation', () => {
   const event = new Event('focusin');
   Object.defineProperty(event, 'target', { value: state.cards[1] });
   state.document.dispatchEvent(event);
-  assert.equal(state.pending().length, 2);
+  assert.equal(state.pending().length, 3);
   assert.equal(state.cards[1].animations.length, 0);
 });
 

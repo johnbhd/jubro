@@ -68,6 +68,46 @@ export async function verifyLandingReveals({ command, evaluate, context, origin,
 }
 
 export async function verifyLandingRevealAccess({ command, evaluate, context, origin }) {
+  const refreshPreload = await command('script.addPreloadScript', {
+    functionDeclaration: `() => {
+      window.refreshEntrances = [];
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (frames, options) {
+        const bounds = this.getBoundingClientRect();
+        window.refreshEntrances.push({
+          duration: options.duration,
+          visible: bounds.bottom > 0 && bounds.top < innerHeight,
+        });
+        return animate.call(this, frames, options);
+      };
+    }`,
+    contexts: [context],
+  });
+  try {
+    await command('browsingContext.navigate', { context, url: origin + '/', wait: 'complete' });
+    const restoredScroll = await evaluate(`
+      await window.jubroComponentsReady;
+      document.querySelector('#faq').scrollIntoView({ block: 'center', behavior: 'instant' });
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return scrollY;
+    `);
+    await command('browsingContext.reload', { context, wait: 'complete' });
+    const refreshed = await evaluate(`
+      await window.jubroComponentsReady;
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const deadline = performance.now() + 2500;
+      while (!reduced && !window.refreshEntrances.some(entry => entry.visible)
+        && performance.now() < deadline) {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+      return { reduced, scroll: scrollY, entrances: window.refreshEntrances };
+    `);
+    assert.ok(Math.abs(refreshed.scroll - restoredScroll) < 64, 'Refresh preserves native scroll position');
+    assert.equal(refreshed.entrances.some(entry => entry.visible && entry.duration === 900),
+      !refreshed.reduced, 'Refreshed visible section enters slowly unless motion is reduced');
+  } finally {
+    await command('script.removePreloadScript', { script: refreshPreload.script });
+  }
   await command('browsingContext.navigate', { context, url: origin + '/', wait: 'complete' });
   const focus = await evaluate(`
     await window.jubroComponentsReady;
