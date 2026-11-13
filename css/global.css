@@ -2969,6 +2969,242 @@ section > .list-panel {
   display: none !important;
 }
 
+/* Loading placeholders remain separate from canonical Board/List containers. */
+#appBody[data-workspace-loading] :is(#appNavbar, #boardWorkspace, #workspaceRetry) {
+  display: none !important;
+}
+
+#workspaceLoading[hidden] {
+  display: none;
+}
+
+.workspace-skeleton {
+  --skeleton-surface: var(--bg-surface, #f8f9fb);
+  --skeleton-card: var(--bg-card, #ffffff);
+  --skeleton-border: var(--border-default, #d9dee7);
+  --skeleton-fill: #e2e7ee;
+  --skeleton-highlight: rgb(255 255 255 / 0.5);
+  min-width: 0;
+}
+
+.dark .workspace-skeleton {
+  --skeleton-surface: #182233;
+  --skeleton-card: #111827;
+  --skeleton-border: #2f3b4d;
+  --skeleton-fill: #273447;
+  --skeleton-highlight: rgb(148 163 184 / 0.12);
+}
+
+.skeleton-bar {
+  position: relative;
+  display: block;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: var(--skeleton-fill);
+}
+
+.skeleton-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--skeleton-highlight), transparent);
+  animation: workspaceSkeletonShimmer 1.8s ease-in-out infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes workspaceSkeletonShimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 6px;
+  background: var(--skeleton-surface);
+}
+
+.skeleton-name {
+  width: 200px;
+  height: 24px;
+}
+
+.skeleton-search {
+  width: min(28%, 300px);
+  height: 32px;
+  margin-left: auto;
+}
+
+.skeleton-controls {
+  width: 200px;
+  height: 32px;
+}
+
+.skeleton-board {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 20px 4px 16px;
+  scrollbar-width: thin;
+}
+
+.skeleton-column {
+  flex: 1 0 17.5rem;
+  min-width: 17.5rem;
+  min-height: 24rem;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 16px;
+  background: var(--skeleton-surface);
+}
+
+.skeleton-column-header {
+  padding: 24px 16px;
+  border-bottom: 1px solid var(--skeleton-border);
+}
+
+.skeleton-column-header .skeleton-bar {
+  width: 48%;
+  height: 18px;
+}
+
+.skeleton-application {
+  display: grid;
+  gap: 16px;
+  margin: 12px;
+  padding: 20px 16px;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 12px;
+  background: var(--skeleton-card);
+}
+
+.skeleton-application .skeleton-bar:first-child {
+  width: 68%;
+  height: 18px;
+}
+
+.skeleton-application .skeleton-bar:last-child {
+  width: 45%;
+}
+
+.skeleton-list {
+  display: none;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding-block: 16px;
+}
+
+html[data-loading-view="list"] .skeleton-list {
+  display: grid;
+}
+
+html[data-loading-view="list"] .skeleton-board {
+  display: none;
+}
+
+.skeleton-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 6px;
+  background: var(--skeleton-surface);
+}
+
+.skeleton-sidebar .skeleton-bar:nth-child(even) {
+  width: 70%;
+}
+
+.skeleton-rows {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.skeleton-list-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 12px;
+  background: var(--skeleton-card);
+}
+
+.skeleton-avatar {
+  flex: 0 0 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.skeleton-copy {
+  display: grid;
+  flex: 1;
+  gap: 12px;
+  min-width: 0;
+}
+
+.skeleton-copy .skeleton-bar:first-child {
+  width: 65%;
+  height: 18px;
+}
+
+.skeleton-copy .skeleton-bar:last-child {
+  width: 85%;
+}
+
+.skeleton-pill {
+  width: 64px;
+  height: 24px;
+  border-radius: 20px;
+}
+
+@media (min-width: 1024px) {
+  .skeleton-list {
+    grid-template-columns: 18rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .skeleton-toolbar {
+    gap: 16px;
+    padding: 12px;
+  }
+
+  .skeleton-name {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .skeleton-search {
+    display: none;
+  }
+
+  .skeleton-controls {
+    width: 144px;
+    flex-shrink: 0;
+  }
+
+  .skeleton-list-row {
+    gap: 12px;
+    padding: 20px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar::after {
+    animation: none;
+    display: none;
+  }
+}
+
 /* Light workspace hierarchy; dark mode keeps its existing overrides. */
 html:not(.dark) #appBody {
   --bg-app: #eef1f5;

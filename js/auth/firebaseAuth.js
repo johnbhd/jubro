@@ -231,15 +231,15 @@ class FirebaseAuthService {
     }
   }
 
-  onAuthChange(callback) {
+  onAuthChange(callback, { onPending } = {}) {
     return onAuthStateChanged(this.auth, async (user) => {
+      const context = onPending?.(user);
       try {
         await this.prepareWorkspace(user);
-        callback(user);
       } catch (error) {
         this.reportSyncError(error);
-        callback(user);
       }
+      callback(user, context);
     });
   }
 

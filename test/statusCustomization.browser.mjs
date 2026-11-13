@@ -1,5 +1,6 @@
 // Run with `node test/statusCustomization.browser.mjs`; requires local Firefox.
 // Use JUBRO_LANDING_ONLY=1 to verify marketing independently of Board workflows.
+// Use JUBRO_LOADING_ONLY=1 for delayed Board/List startup, themes, Retry, and account-transition loading.
 // Add JUBRO_REDUCED_MOTION=1 for scroll-reveal, Hero overflow, Features, FAQ, and CTA motion checks.
 // Use JUBRO_SURFACES_ONLY=1 for workspace theme surfaces plus landing regressions.
 // Use JUBRO_TRANSFER_ONLY=1 for transfer policy and shared-modal checks plus landing regressions.
@@ -117,10 +118,17 @@ try {
         if (process.env.JUBRO_OVERVIEW_ONLY && path === resolve(root, 'js/app.js')) {
           // Exercise the startup instance instead of binding a second set of UI listeners.
           data = Buffer.from(data.toString().replace(
-            'const trackerApp = new TrackerApp();',
-            'const trackerApp = window.overviewApp = new TrackerApp();',
+            'trackerApp = new TrackerApp();',
+            'trackerApp = window.overviewApp = new TrackerApp();',
           ));
         }
+      }
+      if (process.env.JUBRO_LOADING_ONLY && path === resolve(root, 'test/fixtures/firebase.mjs')) {
+        // Hold real startup callbacks until the loading UI has been inspected.
+        data = Buffer.from(data.toString().replace(
+          'queueMicrotask(() => callback(auth.currentUser));',
+          'queueMicrotask(async () => { await window.workspaceAuthGate; callback(auth.currentUser); });',
+        ));
       }
       if (extname(path) === '.html') {
         // Marketing fonts must not make fixture-only checks depend on Google responding.
@@ -146,8 +154,13 @@ try {
     || process.env.JUBRO_NEXT_ACTION_ONLY
     || process.env.JUBRO_COLOR_ONLY
     || process.env.JUBRO_LIST_GUIDE_ONLY
-    || process.env.JUBRO_OVERVIEW_ONLY;
+    || process.env.JUBRO_OVERVIEW_ONLY
+    || process.env.JUBRO_LOADING_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
+  if (process.env.JUBRO_LOADING_ONLY) {
+    const { verifyWorkspaceLoading } = await import('./workspaceLoading.browser.mjs');
+    await verifyWorkspaceLoading({ command, evaluate, context, origin, artifacts });
+  }
   if (process.env.JUBRO_TRANSFER_ONLY) {
     const { verifyGuestTransfer } = await import('./guestTransfer.browser.mjs');
     await verifyGuestTransfer({ command, evaluate, context, origin, artifacts });
@@ -1831,7 +1844,8 @@ try {
     colorOnly: Boolean(process.env.JUBRO_COLOR_ONLY),
     listGuideOnly: Boolean(process.env.JUBRO_LIST_GUIDE_ONLY),
     overviewOnly: Boolean(process.env.JUBRO_OVERVIEW_ONLY),
-    landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY), errors }));
+    landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY),
+    loadingOnly: Boolean(process.env.JUBRO_LOADING_ONLY), errors }));
 } finally {
   socket?.close();
   server?.close();

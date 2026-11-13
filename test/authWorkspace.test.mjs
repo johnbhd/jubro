@@ -99,3 +99,35 @@ test('uses shared Jubro modal resolvers without the navbar Auth UI', async () =>
   assert.equal(options.resolveConflict, confirmTrackerOverwrite);
   assert.equal(options.resolveGuestTransfer, confirmGuestTransfer);
 });
+
+test('optional pending hook runs before resolution and its context reaches the settled callback', async () => {
+  const originalPrepare = authService.prepareWorkspace;
+  let release;
+  const calls = [];
+  const context = { token: 1 };
+  authService.prepareWorkspace = async () => {
+    calls.push('prepare');
+    await new Promise((resolve) => {
+      release = resolve;
+    });
+  };
+  const unsubscribe = authService.onAuthChange((_user, received) => {
+    calls.push('settled');
+    assert.equal(received, context);
+  }, {
+    onPending() {
+      calls.push('pending');
+      return context;
+    },
+  });
+  try {
+    await new Promise((resolve) => queueMicrotask(resolve));
+    assert.deepEqual(calls, ['pending', 'prepare']);
+    release();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.deepEqual(calls, ['pending', 'prepare', 'settled']);
+  } finally {
+    unsubscribe();
+    authService.prepareWorkspace = originalPrepare;
+  }
+});

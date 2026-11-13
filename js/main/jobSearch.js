@@ -68,12 +68,16 @@ export const jobSearchMethods = {
       retry.className = 'primary-action-button';
       retry.addEventListener('click', async () => {
         retry.disabled = true;
+        const loadingToken = this.workspaceLoading?.begin();
         try {
           await authService.prepareWorkspace(authService.getCurrentUser());
-          this.reloadStateFromStorage({ ignoreURL: true });
+          if (!this.workspaceLoading || this.workspaceLoading.isCurrent(loadingToken)) {
+            this.reloadStateFromStorage({ ignoreURL: true });
+          }
         } catch {
           this.showToast('Could not load your Job Searches. Try again.');
         } finally {
+          this.workspaceLoading?.finish(loadingToken);
           retry.disabled = false;
         }
       });

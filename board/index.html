@@ -14,6 +14,9 @@
         if (!savedTheme) {
           localStorage.setItem(themeKey, theme);
         }
+        document.documentElement.dataset.loadingView = localStorage.getItem('jubro_board_view') === 'list'
+          ? 'list'
+          : 'kanban';
       } catch (error) {
         theme = 'dark';
       }
@@ -34,7 +37,7 @@
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="icon" type="image/png" href="/img/jubro.png" />
 </head>
-<body id="appBody" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
+<body id="appBody" data-workspace-loading class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
   <h1 class="sr-only">Jubro Job Application Board</h1>
   <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
     <header id="boardTopNavbar" class="board-top-navbar flex items-center justify-between p-3 sm:px-4 sm:py-3 mt-3 sm:mt-4 mb-3 bg-white shadow-sm rounded-md transition-colors">
@@ -189,7 +192,122 @@
         </div>
       </div>
     </header>
-    <header id="appNavbar" class="bg-white shadow-sm rounded-md">
+    <section id="workspaceLoading" role="status" aria-live="polite" aria-label="Loading Job Search">
+      <p class="sr-only">Loading your Job Search…</p>
+      <div class="workspace-skeleton" aria-hidden="true">
+        <div class="skeleton-toolbar">
+          <span class="skeleton-bar skeleton-name"></span>
+          <span class="skeleton-bar skeleton-search"></span>
+          <span class="skeleton-bar skeleton-controls"></span>
+        </div>
+        <div class="skeleton-board">
+          <div class="skeleton-column">
+            <div class="skeleton-column-header">
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+          <div class="skeleton-column">
+            <div class="skeleton-column-header">
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+          <div class="skeleton-column">
+            <div class="skeleton-column-header">
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+          <div class="skeleton-column">
+            <div class="skeleton-column-header">
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-application">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+        </div>
+        <div class="skeleton-list">
+          <div class="skeleton-sidebar">
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-rows">
+            <div class="skeleton-list-row">
+              <span class="skeleton-bar skeleton-avatar"></span>
+              <div class="skeleton-copy">
+                <span class="skeleton-bar"></span>
+                <span class="skeleton-bar"></span>
+              </div>
+              <span class="skeleton-bar skeleton-pill"></span>
+            </div>
+            <div class="skeleton-list-row">
+              <span class="skeleton-bar skeleton-avatar"></span>
+              <div class="skeleton-copy">
+                <span class="skeleton-bar"></span>
+                <span class="skeleton-bar"></span>
+              </div>
+              <span class="skeleton-bar skeleton-pill"></span>
+            </div>
+            <div class="skeleton-list-row">
+              <span class="skeleton-bar skeleton-avatar"></span>
+              <div class="skeleton-copy">
+                <span class="skeleton-bar"></span>
+                <span class="skeleton-bar"></span>
+              </div>
+              <span class="skeleton-bar skeleton-pill"></span>
+            </div>
+            <div class="skeleton-list-row">
+              <span class="skeleton-bar skeleton-avatar"></span>
+              <div class="skeleton-copy">
+                <span class="skeleton-bar"></span>
+                <span class="skeleton-bar"></span>
+              </div>
+              <span class="skeleton-bar skeleton-pill"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <header id="appNavbar" inert class="bg-white shadow-sm rounded-md">
       <div class="job-search-navigation">
         <button id="jobSearchSelector" type="button" popovertarget="jobSearchDropdown" class="job-search-selector" aria-label="Choose Job Search" aria-expanded="false">Job Search ▾</button>
         <div id="jobSearchDropdown" popover="auto" aria-label="Job Searches" class="job-search-dropdown"></div>
@@ -306,7 +424,7 @@
       </div>
     </header>
     
-    <main class="board-workspace min-w-0 py-3 sm:py-4" id="boardWorkspace">
+    <main class="board-workspace min-w-0 py-3 sm:py-4" id="boardWorkspace" aria-busy="true" inert>
       <div id="kanbanView" class="kanban-view min-w-0">
         <div id="kanbanColumns" class="kanban-scroll-area flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
       </div>
