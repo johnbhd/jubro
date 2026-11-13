@@ -137,3 +137,61 @@ test('overview resolves reordered fields and updates from canonical status/actio
   assert.deepEqual(counts(app), [1, 0, 0, 0]);
   assert.equal(app.dashboardSummary.children[2].children[0].attributes['aria-label'], 'Other: 1');
 });
+
+test('overview restores the actual summary opener rather than an unrelated menu item', () => {
+  let focused = null;
+  const opener = { focus() { focused = this; } };
+  const menuItem = { setAttribute() {}, focus() { focused = this; } };
+  const app = {
+    ...trackerDashboardMethods,
+    renderDashboard() {},
+    dashboardModal: { classList: { contains: () => false, add() {}, remove() {} } },
+  };
+  const originalGet = document.getElementById;
+  document.getElementById = id => id === 'btnDashboard' ? menuItem : null;
+  try {
+    app.openDashboard(opener);
+    app.closeDashboard();
+    assert.equal(focused, opener);
+  } finally {
+    document.getElementById = originalGet;
+  }
+});
+
+test('overview attention includes older applications outside the selected application-date period', () => {
+  const app = createApp();
+  app.dashboardRangeSelect.value = 'custom';
+  app.dashboardDateFrom = { value: '2026-11-01' };
+  app.dashboardDateTo = { value: '2026-11-30' };
+  app.tracker.rows = [['Google', 'Engineer', 'LinkedIn', 'Applied', '2000-01-01', '', '', '', 'Follow up', '2000-01-02']];
+  app.renderDashboard();
+  assert.deepEqual(counts(app), [0, 0, 0, 1]);
+});
+
+test('Quick Overview cannot expose a previous account while loading or while workspace is unavailable', () => {
+  let renders = 0;
+  const app = {
+    ...trackerDashboardMethods,
+    workspaceLoading: { isLoading: true },
+    canOpenWorkspace: () => true,
+    boardWorkspace: { hidden: false },
+    renderDashboard() { renders += 1; },
+    dashboardModal: { classList: { remove() {} } },
+  };
+  const originalGet = document.getElementById;
+  document.getElementById = () => null;
+  try {
+    app.openDashboard();
+    assert.equal(renders, 0);
+    app.workspaceLoading.isLoading = false;
+    app.canOpenWorkspace = () => false;
+    app.openDashboard();
+    assert.equal(renders, 0);
+    app.canOpenWorkspace = () => true;
+    app.boardWorkspace.hidden = true;
+    app.openDashboard();
+    assert.equal(renders, 0);
+  } finally {
+    document.getElementById = originalGet;
+  }
+});

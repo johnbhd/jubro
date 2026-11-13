@@ -88,6 +88,7 @@ export const jobSearchMethods = {
   },
 
   closeSearchSpecificUI() {
+    this.insightsExpanded = false;
     this.kanbanDrag?.destroy();
     this.listDrag?.destroy();
     this.closeListEditModal?.();

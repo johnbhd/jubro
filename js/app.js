@@ -15,7 +15,7 @@ function applySavedTheme() {
   document.documentElement.classList.toggle('dark', theme === 'dark');
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initializeWorkspacePage() {
   console.log("APP LOADED");
 
   if (document.getElementById('appBody')) {
@@ -83,4 +83,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     applySavedTheme();
     setupStorageNotice();
   }
-});
+}
+
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+  initializeWorkspacePage();
+} else {
+  document.addEventListener('DOMContentLoaded', initializeWorkspacePage);
+}

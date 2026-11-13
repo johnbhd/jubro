@@ -95,7 +95,7 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
                 && cards.every(card => card.classList.contains('is-muted'))
                 && overviewApp.getTracker().rows.length === 0
               : emptyState.hidden && !summary.hidden && !insights.hidden
-                && insights.querySelector('button').disabled,
+                && insights.querySelector('a').href.includes('/dashboard/?tracker='),
             legend: ${empty} || [...document.querySelectorAll('.overview-status-legend li')]
               .map(item => item.textContent).join('|') === 'Applied 5|Interview 3|Offer 1|Rejected 2|Other 1',
             segments: ${empty} || [...document.querySelectorAll('.overview-status-bar > span')]

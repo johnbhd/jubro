@@ -22,6 +22,10 @@
       }
 
       document.documentElement.classList.toggle('dark', theme === 'dark');
+      if (/^\/dashboard\/?$/.test(window.location.pathname)) {
+        document.documentElement.dataset.loadingView = 'insights';
+        document.documentElement.dataset.workspacePage = 'insights';
+      }
     })();
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -50,6 +54,10 @@
         </div>
       </a>
       <div id="boardTopNavActions" class="relative flex items-center gap-2">
+        <button id="btnDashboard" type="button" class="overview-summary-action toolbar-icon-button" aria-label="Dashboard" title="Dashboard" aria-haspopup="dialog" aria-expanded="false" aria-controls="dashboardModal">
+          <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </button>
         <button
           id="btnGuestSettings"
           type="button"
@@ -155,7 +163,6 @@
           </div>
 
           <div class="my-2 border-t border-gray-100"></div>
-
           <div class="px-3 pt-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400" id="backupMenuHeading">Backup</div>
           <div class="space-y-1" role="group" aria-labelledby="backupMenuHeading">
             <button
@@ -260,6 +267,36 @@
               <span class="skeleton-bar"></span>
               <span class="skeleton-bar"></span>
             </div>
+          </div>
+        </div>
+        <div class="skeleton-insights" aria-hidden="true">
+          <span class="skeleton-bar skeleton-name"></span>
+          <div class="skeleton-insights-metrics">
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-insights-panel">
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-card skeleton-insights-panel">
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
           </div>
         </div>
         <div class="skeleton-list">
@@ -408,10 +445,6 @@
               <span>List</span>
             </button>
           </div>
-          <button id="btnDashboard" type="button" class="toolbar-icon-button" aria-label="Dashboard" title="Dashboard" aria-haspopup="dialog" aria-expanded="false" aria-controls="dashboardModal">
-            <i class="fa-solid fa-chart-simple"></i>
-            <span>Dashboard</span>
-          </button>
           <button id="btnCustomFields" type="button" class="toolbar-icon-button" aria-label="Customize Fields" title="Customize Fields" aria-haspopup="dialog" aria-expanded="false" aria-controls="listSettingsPopup">
             <i class="fa-solid fa-sliders text-xs"></i>
             <span>Custom Fields</span>
@@ -425,6 +458,7 @@
     </header>
     
     <main class="board-workspace min-w-0 py-3 sm:py-4" id="boardWorkspace" aria-busy="true" inert>
+      <section id="insightsView" class="insights-view" hidden aria-label="Job Search Insights"></section>
       <div id="kanbanView" class="kanban-view min-w-0">
         <div id="kanbanColumns" class="kanban-scroll-area flex min-w-0 gap-4 overflow-x-auto pb-3"></div>
       </div>
@@ -596,10 +630,9 @@
           Add Application
         </button>
         <div id="dashboardInsights" class="overview-insights" hidden>
-          <span id="overviewInsightsNote" class="overview-description">Job Search Insights is coming soon.</span>
-          <button type="button" class="overview-insights-button" aria-describedby="overviewInsightsNote" disabled>
+          <a id="overviewInsightsLink" href="/dashboard/" class="overview-insights-button">
             View Insights <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
-          </button>
+          </a>
         </div>
       </div>
     </div>

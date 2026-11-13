@@ -132,13 +132,20 @@ refresh({ persist = true } = {}) {
     this.renderSelectTextSortOptions();
     this.renderSelectValueFilterOptions();
     this.updateSelectTextSortVisibility();
-    this.renderKanban(tracker);
-    this.renderListView(tracker);
-    this.updateListFilterChipStyles();
+    if (!this.isInsightsPage) {
+      this.renderKanban(tracker);
+      this.renderListView(tracker);
+      this.updateListFilterChipStyles();
+    }
     this.updateBoardView();
     if (this.titleInput) this.titleInput.value = tracker.title;
     this.renderJobSearchSelector?.();
-    this.applySearchFilter();
+    this.updateInsightsLinks?.();
+    if (this.isInsightsPage) {
+      this.renderInsights();
+    } else {
+      this.applySearchFilter();
+    }
     if (this.dashboardModal && !this.dashboardModal.classList.contains('hidden')) {
       this.renderDashboard();
     }

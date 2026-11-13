@@ -13,10 +13,24 @@ import { trackerEventMethods } from './trackerEvents.js';
 import { jobSearchMethods } from './jobSearch.js';
 import { jobSearchManagementMethods } from './jobSearchManagement.js';
 import { applicationFormMethods } from './applicationForm.js';
+import { insightsMethods } from './insights/render.js';
+import { isInsightsPage } from './insights/navigation.js';
 
 export class TrackerApp {
   constructor() {
     this.appBody = document.getElementById('appBody');
+    this.isInsightsPage = isInsightsPage(window.location.pathname);
+    this.appBody.dataset.workspacePage = this.isInsightsPage ? 'insights' : 'board';
+    if (this.isInsightsPage) {
+      document.documentElement.dataset.workspacePage = 'insights';
+      document.title = 'Job Search Insights — Jubro';
+      document.getElementById('boardTopNavbar')?.setAttribute('hidden', '');
+      document.getElementById('appNavbar')?.setAttribute('hidden', '');
+    } else {
+      delete document.documentElement.dataset.workspacePage;
+      document.getElementById('boardTopNavbar')?.removeAttribute('hidden');
+      document.getElementById('appNavbar')?.removeAttribute('hidden');
+    }
     this.boardWorkspace = document.getElementById('boardWorkspace');
     this.listView = document.getElementById('listView');
     this.kanbanView = document.getElementById('kanbanView');
@@ -90,5 +104,6 @@ Object.assign(
   trackerEventMethods,
   jobSearchMethods,
   jobSearchManagementMethods,
-  applicationFormMethods
+  applicationFormMethods,
+  insightsMethods
 );

@@ -1,6 +1,6 @@
 import { getQuickOverviewMetrics, getStatusSummary } from './quickOverview.js';
 
-const METRICS = [
+export const OVERVIEW_METRICS = [
   {
     key: 'totalApplications',
     label: 'Total Applications',
@@ -120,10 +120,14 @@ export const trackerDashboardMethods = {
     const applications = this.getDashboardFilteredRows(tracker)
       .map(row => this.resolveApplicationRow(tracker, row, indexes));
     const metrics = getQuickOverviewMetrics(applications);
+    const allApplications = this.getAnalyticsApplications
+      ? this.getAnalyticsApplications(tracker)
+      : tracker.rows.map(row => this.resolveApplicationRow(tracker, row, indexes));
+    metrics.needAttention = getQuickOverviewMetrics(allApplications).needAttention;
     const empty = applications.length === 0;
     const noApplications = tracker.rows.length === 0;
     this.dashboardCards.innerHTML = '';
-    for (const metric of METRICS) {
+    for (const metric of OVERVIEW_METRICS) {
       const card = document.createElement('div');
       card.className = `overview-metric overview-metric-${metric.tone}${empty ? ' is-muted' : ''}`;
       card.dataset.metric = metric.key;
@@ -174,9 +178,15 @@ export const trackerDashboardMethods = {
     this.dashboardSummary.append(bar, legend);
   },
 
-  openDashboard() {
+  openDashboard(opener) {
     if (!this.dashboardModal) return;
+    if (this.workspaceLoading?.isLoading
+      || this.boardWorkspace?.hidden
+      || (this.canOpenWorkspace && !this.canOpenWorkspace())) {
+      return;
+    }
 
+    this.overviewReturnFocus = opener || document.getElementById('btnDashboard');
     this.renderDashboard();
     this.dashboardModal.classList.remove('hidden');
     document.getElementById('btnDashboard')?.setAttribute('aria-expanded', 'true');
@@ -189,7 +199,7 @@ export const trackerDashboardMethods = {
     const trigger = document.getElementById('btnDashboard');
     trigger?.setAttribute('aria-expanded', 'false');
     if (wasOpen) {
-      trigger?.focus();
+      (this.overviewReturnFocus || trigger)?.focus();
     }
   },
 

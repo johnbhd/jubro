@@ -1,4 +1,5 @@
 import { BOARD_VIEW_KEY } from './constants.js';
+import { isInsightsPage } from './insights/navigation.js';
 
 export class WorkspaceLoading {
   constructor() {
@@ -14,12 +15,16 @@ export class WorkspaceLoading {
   }
 
   begin() {
-    try {
-      document.documentElement.dataset.loadingView = localStorage.getItem(BOARD_VIEW_KEY) === 'list'
-        ? 'list'
-        : 'kanban';
-    } catch {
-      // Keep the initial safe layout if browser preferences are unavailable.
+    if (isInsightsPage(globalThis.window?.location?.pathname || '')) {
+      document.documentElement.dataset.loadingView = 'insights';
+    } else {
+      try {
+        document.documentElement.dataset.loadingView = localStorage.getItem(BOARD_VIEW_KEY) === 'list'
+          ? 'list'
+          : 'kanban';
+      } catch {
+        // Keep the initial safe layout if browser preferences are unavailable.
+      }
     }
 
     this.generation += 1;

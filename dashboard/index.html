@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, follow" />
+  <title>Job Search Insights — Jubro</title>
+  <link rel="stylesheet" href="/css/tailwind.css" />
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="icon" type="image/png" href="/img/jubro.png" />
+  <script>
+    document.documentElement.dataset.loadingView = 'insights';
+    document.documentElement.dataset.workspacePage = 'insights';
+  </script>
+</head>
+<body id="appBody" data-workspace-loading data-workspace-page="insights" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
+  <section class="workspace-retry" role="status">
+    <p id="dashboardEntryMessage">Opening Job Search Insights…</p>
+    <button id="dashboardEntryRetry" type="button" class="primary-action-button" hidden>Retry</button>
+  </section>
+  <script type="module" src="/js/dashboardEntry.js"></script>
+</body>
+</html>

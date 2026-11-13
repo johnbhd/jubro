@@ -8,17 +8,26 @@ function normalizedStatus(value) {
   return String(value ?? '').trim().toLowerCase();
 }
 
-export function isApplicationNeedingAttention(application, now = new Date()) {
+export function getPendingActionDate(application) {
   if (!String(application.nextAction ?? '').trim()
     || !application.nextActionDate
     || TERMINAL_STATUSES.has(normalizedStatus(application.status))) {
-    return false;
+    return null;
   }
 
   let dueDate;
   try {
     dueDate = normalizeCellValue('date', application.nextActionDate, { strict: true });
   } catch {
+    return null;
+  }
+
+  return dueDate || null;
+}
+
+export function isApplicationNeedingAttention(application, now = new Date()) {
+  const dueDate = getPendingActionDate(application);
+  if (!dueDate) {
     return false;
   }
 

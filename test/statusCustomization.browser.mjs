@@ -64,7 +64,7 @@ try {
         pending.delete(id);
         reject(new Error(`Timeout: ${method}`));
       }, 15000);
-      pending.set(id, { accept, reject, timer });
+      pending.set(id, { accept, reject, timer, method, url: params.url });
       socket.send(JSON.stringify({ id, method, params }));
     });
   }
@@ -76,8 +76,12 @@ try {
       if (!request) return;
       clearTimeout(request.timer);
       pending.delete(result.id);
-      if (result.type === 'error') request.reject(new Error(result.message));
-      else request.accept(result.result);
+      if (result.type === 'error') {
+        const target = request.url ? `, ${request.url}` : '';
+        request.reject(new Error(`${result.message} (${request.method}, command ${result.id}${target})`));
+      } else {
+        request.accept(result.result);
+      }
     } else if (result.method === 'log.entryAdded'
       && result.params.type === 'javascript' && result.params.level === 'error') {
       errors.push(result.params.text);
@@ -115,7 +119,7 @@ try {
           /https:\/\/www\.gstatic\.com\/firebasejs\/12\.12\.1\/firebase-[a-z-]+\.js/g,
           '/test/fixtures/firebase.mjs',
         ));
-        if (process.env.JUBRO_OVERVIEW_ONLY && path === resolve(root, 'js/app.js')) {
+        if ((process.env.JUBRO_OVERVIEW_ONLY || process.env.JUBRO_INSIGHTS_ONLY) && path === resolve(root, 'js/app.js')) {
           // Exercise the startup instance instead of binding a second set of UI listeners.
           data = Buffer.from(data.toString().replace(
             'trackerApp = new TrackerApp();',
@@ -155,8 +159,13 @@ try {
     || process.env.JUBRO_COLOR_ONLY
     || process.env.JUBRO_LIST_GUIDE_ONLY
     || process.env.JUBRO_OVERVIEW_ONLY
+    || process.env.JUBRO_INSIGHTS_ONLY
     || process.env.JUBRO_LOADING_ONLY;
   await command('browsingContext.navigate', { context, url: `${origin}/blank`, wait: 'complete' });
+  if (process.env.JUBRO_INSIGHTS_ONLY) {
+    const { verifyInsights } = await import('./insights.browser.mjs');
+    await verifyInsights({ command, evaluate, context, origin, artifacts });
+  }
   if (process.env.JUBRO_LOADING_ONLY) {
     const { verifyWorkspaceLoading } = await import('./workspaceLoading.browser.mjs');
     await verifyWorkspaceLoading({ command, evaluate, context, origin, artifacts });
@@ -945,14 +954,14 @@ try {
       const more = document.getElementById('boardTopNavDropdown');
       const dashboard = document.getElementById('btnDashboard');
       const before = savedRevision();
-      if ((more && more.contains(dashboard)) || (more && more.contains(boardFirstApp.sortSelect))
+      if (!document.getElementById('overviewInsightsLink').href.includes('/dashboard/') || (more && more.contains(boardFirstApp.sortSelect))
         || !document.getElementById('searchWrapper').contains(boardFirstApp.sortSelect)) return false;
       dashboard.focus();
       dashboard.click();
       const opened = !boardFirstApp.dashboardModal.classList.contains('hidden');
       document.getElementById('btnCloseDashboard').click();
       return opened && document.activeElement === dashboard && savedRevision() === before;
-    `), true, 'Dashboard is direct navigation; Search owns Sort; modal restores focus without writes.');
+    `), true, 'Dashboard opens Quick Overview; View Insights retains its route; Search owns Sort.');
     assert.equal(await evaluate(`
       const before = savedRevision();
       boardFirstApp.sortSelect.value = 'select-text';
@@ -977,7 +986,6 @@ try {
           const controls = [selector,
             ...(innerWidth < 1024 ? [document.getElementById('btnOpenSearch')] : []),
             ...document.querySelectorAll('[data-board-view-button]'),
-            document.getElementById('btnDashboard'),
             document.getElementById('btnCustomFields'),
             document.getElementById('btnAddApplication')];
           const rects = controls.map(control => control.getBoundingClientRect());
@@ -1844,6 +1852,7 @@ try {
     colorOnly: Boolean(process.env.JUBRO_COLOR_ONLY),
     listGuideOnly: Boolean(process.env.JUBRO_LIST_GUIDE_ONLY),
     overviewOnly: Boolean(process.env.JUBRO_OVERVIEW_ONLY),
+    insightsOnly: Boolean(process.env.JUBRO_INSIGHTS_ONLY),
     landingOnly: Boolean(process.env.JUBRO_LANDING_ONLY),
     loadingOnly: Boolean(process.env.JUBRO_LOADING_ONLY), errors }));
 } finally {

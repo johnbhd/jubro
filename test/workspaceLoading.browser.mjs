@@ -13,6 +13,20 @@ export async function verifyWorkspaceLoading({ command, evaluate, context, origi
   });
 
   try {
+    await command('browsingContext.navigate', { context, url: origin + '/dashboard/', wait: 'complete' });
+    assert.equal(await evaluate(`
+      return document.documentElement.dataset.loadingView === 'insights'
+        && getComputedStyle(document.querySelector('.skeleton-insights')).display !== 'none'
+        && getComputedStyle(document.getElementById('btnDashboard')).visibility === 'hidden'
+        && document.getElementById('boardWorkspace').inert;
+    `), true, 'Dedicated Insights startup uses analytics skeletons and hides summary actions');
+    await evaluate(`
+      window.releaseWorkspaceAuth();
+      const deadline = performance.now() + 5000;
+      while (document.body.hasAttribute('data-workspace-loading') && performance.now() < deadline) {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+      }
+    `);
     for (const theme of ['dark', 'light']) {
       for (const view of ['kanban', 'list']) {
         await command('browsingContext.navigate', { context, url: origin + '/blank', wait: 'complete' });
@@ -157,6 +171,7 @@ export async function verifyWorkspaceLoading({ command, evaluate, context, origi
   assert.equal(await evaluate(`
     return document.body.hasAttribute('data-workspace-loading')
       && getComputedStyle(document.getElementById('boardWorkspace')).display === 'none'
+      && getComputedStyle(document.getElementById('btnDashboard')).visibility === 'hidden'
       && document.documentElement.dataset.loadingView === 'list';
   `), true, 'Account changes hide previous data and use the saved List skeleton');
   await evaluate(`
@@ -167,6 +182,7 @@ export async function verifyWorkspaceLoading({ command, evaluate, context, origi
   `);
   assert.equal(await evaluate(`
     return !document.body.hasAttribute('data-workspace-loading')
+      && getComputedStyle(document.getElementById('btnDashboard')).visibility === 'hidden'
       && !document.getElementById('workspaceRetry').hidden;
   `), true, 'An unresolved account owner displays safe Retry, not old guest data');
 

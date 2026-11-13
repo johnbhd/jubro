@@ -104,6 +104,10 @@ initEvents() {
       this.openDashboard();
     });
 
+    document.getElementById('overviewInsightsLink')?.addEventListener('click', () => {
+      this.closeDashboard();
+    });
+
     btnCustomFields?.addEventListener('click', () => {
       this.toggleCustomizeFields();
     });

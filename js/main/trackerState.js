@@ -196,7 +196,9 @@ reloadStateFromStorage({ ignoreURL = false } = {}) {
       }
       document.getElementById('workspaceRetry')?.setAttribute('hidden', '');
       this.boardWorkspace?.removeAttribute('hidden');
-      document.getElementById('appNavbar')?.removeAttribute('hidden');
+      if (!this.isInsightsPage) {
+        document.getElementById('appNavbar')?.removeAttribute('hidden');
+      }
       if (!this.eventsInitialized) {
         this.initEvents();
         this.eventsInitialized = true;

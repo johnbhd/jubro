@@ -61,7 +61,7 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
           && document.documentElement.scrollWidth <= innerWidth, 'Long titles never push actions off-screen');
         label.textContent = 'Internship Search';
         const controls = [selector, ...document.querySelectorAll('[data-board-view-button]'),
-          document.getElementById('btnDashboard'), document.getElementById('btnCustomFields'),
+          document.getElementById('btnCustomFields'),
           document.getElementById('btnAddApplication')];
         if (innerWidth < 1024) {
           controls.splice(1, 0, document.getElementById('btnOpenSearch'));
@@ -79,7 +79,7 @@ export async function verifyToolbarWidth({ command, evaluate, context, origin, a
           if (id === 'btnDashboard') {
             check(button.querySelector('span').textContent === 'Dashboard'
               && button.getAttribute('aria-label') === 'Dashboard' && button.title === 'Dashboard',
-            'Second nav retains the Dashboard name');
+            'First nav Dashboard opens the summary modal');
           }
           const showLabel = id === 'btnDashboard'
             ? innerWidth >= 768
