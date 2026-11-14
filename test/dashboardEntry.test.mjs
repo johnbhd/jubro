@@ -1,6 +1,43 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { runInNewContext } from 'node:vm';
+
+test('Dashboard applies its saved theme before rendering the initial loader without storage writes', async () => {
+  const entry = await readFile(new URL('../dashboard/index.html', import.meta.url), 'utf8');
+  const script = entry.match(/<script>([\s\S]*?)<\/script>/)[1];
+  for (const preference of ['light', 'dark', null, 'unavailable']) {
+    let dark;
+    const document = {
+      documentElement: {
+        dataset: {},
+        classList: {
+          toggle(name, enabled) {
+            assert.equal(name, 'dark');
+            dark = enabled;
+          },
+        },
+      },
+    };
+    runInNewContext(script, {
+      document,
+      localStorage: {
+        getItem(key) {
+          assert.equal(key, 'jubro_theme');
+          if (preference === 'unavailable') {
+            throw new Error('Storage unavailable');
+          }
+          return preference;
+        },
+        setItem() {
+          assert.fail('Loading must not write browser data.');
+        },
+      },
+    });
+    assert.equal(dark, preference !== 'light');
+    assert.equal(document.documentElement.dataset.loadingView, 'insights');
+  }
+});
 
 test('Insights has a real static entry without requiring a hosting rewrite', async () => {
   const entry = await readFile(new URL('../dashboard/index.html', import.meta.url), 'utf8');

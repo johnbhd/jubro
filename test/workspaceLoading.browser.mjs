@@ -8,18 +8,74 @@ export async function verifyWorkspaceLoading({ command, evaluate, context, origi
       window.workspaceAuthGate = new Promise(resolve => {
         window.releaseWorkspaceAuth = resolve;
       });
+      if (location.pathname.startsWith('/dashboard')) {
+        const fetch = window.fetch.bind(window);
+        const shellGate = new Promise(resolve => {
+          window.releaseDashboardShell = resolve;
+        });
+        window.fetch = async (...args) => {
+          if (args[0] === '/board/index.html') {
+            await shellGate;
+          }
+          return fetch(...args);
+        };
+      }
     }`,
     contexts: [context],
   });
 
   try {
-    await command('browsingContext.navigate', { context, url: origin + '/dashboard/', wait: 'complete' });
+    await command('browsingContext.navigate', { context, url: origin + '/dashboard/', wait: 'interactive' });
+    assert.equal(await evaluate(`
+      const loading = document.getElementById('dashboardEntryLoading');
+      return !!loading && !loading.hidden
+        && loading.querySelectorAll('.skeleton-insights-metrics .skeleton-card').length === 4
+        && document.getElementById('dashboardEntryError').hidden;
+    `), true, 'Static entry shows Insights skeleton before the shared shell arrives');
+    await evaluate(`
+      window.releaseDashboardShell();
+      const deadline = performance.now() + 10000;
+      while (!document.getElementById('workspaceLoading') && performance.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+    `);
     assert.equal(await evaluate(`
       return document.documentElement.dataset.loadingView === 'insights'
         && getComputedStyle(document.querySelector('.skeleton-insights')).display !== 'none'
         && getComputedStyle(document.getElementById('btnDashboard')).visibility === 'hidden'
         && document.getElementById('boardWorkspace').inert;
     `), true, 'Dedicated Insights startup uses analytics skeletons and hides summary actions');
+    for (const theme of ['dark', 'light']) {
+      await evaluate(`document.documentElement.classList.toggle('dark', ${JSON.stringify(theme)} === 'dark');`);
+      for (const width of [390, 430, 768, 1024, 1440, 1920]) {
+        await command('browsingContext.setViewport', {
+          context, viewport: { width, height: 900 }, devicePixelRatio: 1,
+        });
+        const skeleton = await evaluate(`
+          const view = document.querySelector('.skeleton-insights');
+          const metric = view.querySelector('.skeleton-card');
+          const style = getComputedStyle(metric);
+          return {
+            height: metric.getBoundingClientRect().height,
+            background: style.backgroundColor,
+            border: style.borderTopWidth,
+            width: view.getBoundingClientRect().width,
+            top: view.firstElementChild.getBoundingClientRect().top,
+            columns: getComputedStyle(view.querySelector('.skeleton-insights-metrics')).gridTemplateColumns.split(' ').length,
+            fits: document.documentElement.scrollWidth <= innerWidth,
+          };
+        `);
+        assert.ok(skeleton.height >= 120, 'Insights loading metrics have card-sized surfaces');
+        assert.notEqual(skeleton.background, 'rgba(0, 0, 0, 0)', 'Loading cards have theme-aware surfaces');
+        assert.equal(skeleton.border, '1px');
+        assert.ok(skeleton.width <= 1200, 'Loader matches Insights content width');
+        assert.ok(skeleton.top >= 24, 'Loader retains space above the page heading');
+        assert.equal(skeleton.columns, width < 768 ? 2 : 4);
+        assert.equal(skeleton.fits, true);
+        const screenshot = await command('browsingContext.captureScreenshot', { context });
+        await writeFile(resolve(artifacts, `insights-loading-${theme}-${width}.png`), Buffer.from(screenshot.data, 'base64'));
+      }
+    }
     await evaluate(`
       window.releaseWorkspaceAuth();
       const deadline = performance.now() + 5000;

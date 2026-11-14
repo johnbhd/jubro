@@ -1435,6 +1435,7 @@ try {
         const benefits = document.querySelector('.landing-benefits');
         const benefitRows = [...benefits.children].map(item => item.getBoundingClientRect());
         const cta = getComputedStyle(document.querySelector('.landing-final-cta .theme-create-button'));
+        const heroContent = getComputedStyle(heroImg).content;
         const ctaCard = document.querySelector('.landing-final-cta').getBoundingClientRect();
         const features = document.getElementById('features').getBoundingClientRect();
         const onlineJobs = document.createElement('span');
@@ -1461,6 +1462,7 @@ try {
           && columns === (innerWidth < 1024 ? 1 : 2)
           && document.documentElement.scrollWidth <= innerWidth
           && heroImg.getAttribute('src') === '/img/hero.png'
+          && (document.documentElement.classList.contains('dark') || heroContent.includes('hero-light.png'))
           && heroImg.getAttribute('alt') === 'Jubro job application Kanban board showing applications across job-search stages'
           && getComputedStyle(heroImg).display !== 'none';
       `), true, 'Static landing preview fits ' + theme + ' ' + width);

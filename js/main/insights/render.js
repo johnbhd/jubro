@@ -2,6 +2,13 @@ import { getInsights, getDueLabel, INSIGHTS_PERIODS } from './calculations.js';
 import { getWorkspaceLink } from './navigation.js';
 import { OVERVIEW_METRICS } from '../trackerDashboard.js';
 
+const INSIGHTS_METRIC_ICONS = {
+  totalApplications: 'fa-file-lines',
+  interviews: 'fa-comments',
+  offers: 'fa-trophy',
+  needAttention: 'fa-bell',
+};
+
 function text(parent, tag, className, value) {
   const node = document.createElement(tag);
   node.className = className;
@@ -129,7 +136,7 @@ export const insightsMethods = {
     for (const metric of OVERVIEW_METRICS) {
       const card = text(metrics, 'div', `overview-metric overview-metric-${metric.tone}`, '');
       card.dataset.metric = metric.key;
-      text(card, 'i', `fa-solid ${metric.icon}`, '').setAttribute('aria-hidden', 'true');
+      text(card, 'i', `fa-solid ${INSIGHTS_METRIC_ICONS[metric.key]}`, '').setAttribute('aria-hidden', 'true');
       text(card, 'p', 'overview-metric-label', metric.label);
       text(card, 'p', 'overview-metric-value', String(result.metrics[metric.key]));
     }

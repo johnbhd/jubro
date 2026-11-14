@@ -76,9 +76,13 @@
       <a
         id="btnOpenModal"
         href="/board/"
-        class="theme-create-button flex items-center justify-center gap-3 cursor-pointer px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+        class="theme-create-button auth-state-pending flex items-center justify-center gap-3 cursor-pointer px-5 py-3 bg-black text-white rounded-2xl hover:bg-gray-800 transition font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+        aria-label="Loading account"
+        aria-disabled="true"
+        tabindex="-1"
       >
-        <span>Start for Free</span>
+        <span class="auth-cta-label" aria-hidden="true">Start for Free</span>
+        <span class="auth-cta-loader h-5 w-24 animate-pulse rounded-full bg-gray-300" aria-hidden="true"></span>
       </a>
 
       <div id="navbarAuthLoading" class="pointer-events-none inline-flex min-w-[110px] select-none items-center justify-center rounded-2xl border border-gray-200 bg-gray-100 px-5 py-3" role="status" aria-label="Loading account" aria-busy="true" aria-hidden="false">

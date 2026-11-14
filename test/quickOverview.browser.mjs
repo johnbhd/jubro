@@ -59,6 +59,8 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
           const emptyState = document.getElementById('dashboardEmptyState');
           const summary = document.getElementById('dashboardSummary');
           const insights = document.getElementById('dashboardInsights');
+          const insightsLink = document.getElementById('overviewInsightsLink');
+          const insightsStyle = getComputedStyle(insightsLink);
           const illustration = emptyState.querySelector('.overview-empty-icon');
           const addButton = document.getElementById('btnOverviewAddApplication');
           const closeButton = document.getElementById('btnCloseDashboard');
@@ -95,7 +97,9 @@ export async function verifyQuickOverview({ command, evaluate, context, origin, 
                 && cards.every(card => card.classList.contains('is-muted'))
                 && overviewApp.getTracker().rows.length === 0
               : emptyState.hidden && !summary.hidden && !insights.hidden
-                && insights.querySelector('a').href.includes('/dashboard/?tracker='),
+                && insightsLink.href.includes('/dashboard/?tracker=')
+                && insightsStyle.cursor === 'pointer'
+                && insightsStyle.pointerEvents !== 'none',
             legend: ${empty} || [...document.querySelectorAll('.overview-status-legend li')]
               .map(item => item.textContent).join('|') === 'Applied 5|Interview 3|Offer 1|Rejected 2|Other 1',
             segments: ${empty} || [...document.querySelectorAll('.overview-status-bar > span')]

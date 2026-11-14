@@ -31,6 +31,8 @@ async function openInsights() {
     const message = document.getElementById('dashboardEntryMessage');
     const retry = document.getElementById('dashboardEntryRetry');
     if (message && retry) {
+      document.getElementById('dashboardEntryLoading').hidden = true;
+      document.getElementById('dashboardEntryError').hidden = false;
       message.textContent = 'Could not open Job Search Insights. Please retry.';
       retry.hidden = false;
       retry.addEventListener('click', () => window.location.reload(), { once: true });

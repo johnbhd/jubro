@@ -2586,6 +2586,50 @@ section > .list-panel {
   color: var(--overview-muted);
 }
 
+.insights-metrics .overview-metric {
+  min-height: 180px;
+  padding: 20px;
+  border-color: var(--overview-border);
+  border-radius: 16px;
+  background: var(--overview-card);
+}
+
+.insights-metrics .overview-metric > i {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--overview-accent) 22%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--overview-accent) 10%, var(--overview-card));
+  font-size: 18px;
+}
+
+.insights-metrics .overview-metric-label {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.insights-metrics .overview-metric-value {
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+  font-size: 36px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.025em;
+}
+
+@media (max-width: 639px) {
+  .insights-metrics .overview-metric {
+    min-height: 168px;
+    padding: 16px;
+  }
+
+  .insights-metrics .overview-metric-value {
+    font-size: 32px;
+  }
+}
+
 .overview-summary {
   margin-top: 24px;
 }
@@ -2748,9 +2792,26 @@ section > .list-panel {
 .overview-insights-button {
   border: 1px solid var(--overview-border);
   background: var(--overview-card);
-  color: var(--overview-muted);
-  cursor: not-allowed;
+  color: #2563eb;
+  cursor: pointer;
   font-size: 0.8125rem;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.overview-insights-button:hover {
+  border-color: #5b8def;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.dark .overview-insights-button {
+  color: #93c5fd;
+}
+
+.dark .overview-insights-button:hover {
+  border-color: #5b8def;
+  background: #243b63;
+  color: #dbeafe;
 }
 
 .quick-overview-dialog :is(button, select, input):focus-visible {
@@ -3441,6 +3502,30 @@ section > .list-panel {
 
 .skeleton-insights {
   display: none;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-block: 24px 16px;
+}
+
+.skeleton-insights .skeleton-card {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-width: 0;
+  min-height: 140px;
+  padding: 24px;
+  border: 1px solid var(--skeleton-border);
+  border-radius: 14px;
+  background: var(--skeleton-card);
+}
+
+.skeleton-insights .skeleton-card .skeleton-bar:first-child {
+  width: 65%;
+}
+
+.skeleton-insights-metrics .skeleton-bar:last-child {
+  width: 36px;
+  height: 32px;
 }
 
 html[data-loading-view="insights"] .skeleton-insights {
@@ -3866,6 +3951,32 @@ html:not(.dark) #homeBody .site-navbar {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+}
+
+#btnOpenModal.auth-state-pending {
+  visibility: visible;
+  pointer-events: none;
+  cursor: wait;
+  border: 1px solid #d1d5db;
+  background: #f3f4f6;
+  color: transparent;
+}
+
+#btnOpenModal.auth-state-pending .auth-cta-label {
+  visibility: hidden;
+}
+
+#btnOpenModal:not(.auth-state-pending) .auth-cta-loader {
+  display: none;
+}
+
+.dark #btnOpenModal.auth-state-pending {
+  border-color: #374151;
+  background-color: #1f2937 !important;
+}
+
+.dark #btnOpenModal.auth-state-pending .auth-cta-loader {
+  background: #4b5563;
 }
 
 @media (min-width: 640px) {
@@ -5074,6 +5185,11 @@ html:not(.dark) #homeBody #heroSection a[href="#how-it-works"] {
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+/* Use the supplied light product preview whenever the landing page is in light mode. */
+html:not(.dark) #homeBody #heroProductImage {
+  content: url('/img/hero-light.png');
 }
 
 @media (min-width: 640px) {

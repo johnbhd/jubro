@@ -10,6 +10,8 @@ test('static Insights entry failures show Retry without initializing or changing
       let reloads = 0;
       let retryAction;
       const message = { textContent: '' };
+      const loading = { hidden: false };
+      const errorPanel = { hidden: true };
       const retry = {
         hidden: true,
         addEventListener(name, callback) {
@@ -19,7 +21,12 @@ test('static Insights entry failures show Retry without initializing or changing
       };
       globalThis.document = {
         documentElement: { classList: { toggle() {} }, dataset: {} },
-        getElementById: id => id === 'dashboardEntryMessage' ? message : retry,
+        getElementById: id => ({
+          dashboardEntryMessage: message,
+          dashboardEntryRetry: retry,
+          dashboardEntryLoading: loading,
+          dashboardEntryError: errorPanel,
+        })[id],
       };
       globalThis.window = { location: { reload() { reloads += 1; } } };
       globalThis.localStorage = {
@@ -41,6 +48,8 @@ test('static Insights entry failures show Retry without initializing or changing
       await import(`../js/dashboardEntry.js?entry-failure=${failure}`);
       assert.match(message.textContent, /Could not open Job Search Insights/);
       assert.equal(retry.hidden, false);
+      assert.equal(loading.hidden, true);
+      assert.equal(errorPanel.hidden, false);
       assert.equal(document.documentElement.dataset.loadingView, 'insights');
       retryAction();
       assert.equal(reloads, 1);

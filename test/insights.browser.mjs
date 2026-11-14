@@ -100,6 +100,22 @@ export async function verifyInsights({ command, evaluate, context, origin, artif
       assert.equal(state.accent, true);
       assert.equal(state.firstNavHidden, true, `${theme} ${width}: 1st navbar must be erased on dashboard page`);
       assert.equal(state.secondNavHidden, true, `${theme} ${width}: 2nd navbar must be erased on dashboard page`);
+      assert.equal(await evaluate(`
+        const values = [...document.querySelectorAll('.insights-metrics .overview-metric-value')];
+        const originals = values.map(node => node.textContent);
+        try {
+          values.forEach((node, index) => {
+            node.textContent = index % 2 === 0 ? '0' : '123456789012';
+          });
+          return [...document.querySelectorAll('.insights-metrics .overview-metric')]
+            .every(card => card.scrollWidth <= card.clientWidth)
+            && document.documentElement.scrollWidth <= innerWidth;
+        } finally {
+          values.forEach((node, index) => {
+            node.textContent = originals[index];
+          });
+        }
+      `), true, `${theme} ${width}: zero and large metric values fit their cards`);
       const shot = await command('browsingContext.captureScreenshot', { context });
       await writeFile(resolve(artifacts, `insights-${theme}-${width}.png`), Buffer.from(shot.data, 'base64'));
     }

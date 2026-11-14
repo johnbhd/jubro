@@ -207,6 +207,19 @@ async function setupAuth() {
     await authService.waitForWorkspace();
   } catch (error) {
     console.error(error);
+    const loadingState = document.getElementById('navbarAuthLoading');
+    const landingCta = document.getElementById('btnOpenModal');
+    const landingCtaLabel = landingCta?.querySelector('span');
+
+    loadingState?.classList.add('hidden');
+    loadingState?.classList.remove('inline-flex');
+    landingCta?.classList.remove('auth-state-pending');
+    landingCta?.setAttribute('aria-disabled', 'false');
+    landingCta?.removeAttribute('aria-label');
+    landingCta?.removeAttribute('tabindex');
+    if (landingCtaLabel) {
+      landingCtaLabel.textContent = 'Start for Free';
+    }
     setupFallbackThemeToggle();
   }
 }

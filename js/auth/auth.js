@@ -210,6 +210,8 @@ export class Auth {
     const guestState = document.getElementById('navbarGuest');
     const authenticatedState = document.getElementById('navbarAuthenticated');
     const guestTheme = document.getElementById('btnGuestTheme');
+    const landingCta = document.getElementById('btnOpenModal');
+    const landingCtaLabel = document.querySelector('#btnOpenModal span');
     const states = {
       loading: loadingState,
       guest: guestState,
@@ -228,6 +230,25 @@ export class Auth {
     });
 
     const isGuest = state === 'guest';
+    if (landingCtaLabel) {
+      landingCtaLabel.textContent = state === 'authenticated'
+        ? 'Open Jubro'
+        : 'Start for Free';
+    }
+    if (landingCta) {
+      const isLoading = state === 'loading';
+
+      landingCta.classList.toggle('auth-state-pending', isLoading);
+      landingCta.setAttribute('aria-disabled', String(isLoading));
+
+      if (isLoading) {
+        landingCta.setAttribute('aria-label', 'Loading account');
+        landingCta.setAttribute('tabindex', '-1');
+      } else {
+        landingCta.removeAttribute('aria-label');
+        landingCta.removeAttribute('tabindex');
+      }
+    }
     guestTheme?.classList.toggle('hidden', !isGuest);
     guestTheme?.classList.toggle('inline-flex', isGuest);
     loadingState?.setAttribute('aria-busy', String(state === 'loading'));

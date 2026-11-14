@@ -5,20 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, follow" />
   <title>Job Search Insights — Jubro</title>
+  <script>
+    let theme = 'dark';
+    try {
+      theme = localStorage.getItem('jubro_theme') === 'light' ? 'light' : 'dark';
+    } catch {
+      // Keep the safe default when browser preferences are unavailable.
+    }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.dataset.loadingView = 'insights';
+    document.documentElement.dataset.workspacePage = 'insights';
+  </script>
   <link rel="stylesheet" href="/css/tailwind.css" />
   <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="/css/global.css" />
   <link rel="icon" type="image/png" href="/img/jubro.png" />
-  <script>
-    document.documentElement.dataset.loadingView = 'insights';
-    document.documentElement.dataset.workspacePage = 'insights';
-  </script>
 </head>
 <body id="appBody" data-workspace-loading data-workspace-page="insights" class="bg-gray-100 text-gray-800 flex min-h-screen justify-center overflow-x-hidden">
-  <section class="workspace-retry" role="status">
-    <p id="dashboardEntryMessage">Opening Job Search Insights…</p>
-    <button id="dashboardEntryRetry" type="button" class="primary-action-button" hidden>Retry</button>
-  </section>
+  <div class="w-full min-w-0 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-10">
+    <section id="dashboardEntryLoading" role="status" aria-live="polite" aria-label="Loading Job Search Insights">
+      <p class="sr-only">Loading Job Search Insights…</p>
+      <div class="workspace-skeleton" aria-hidden="true">
+        <div class="skeleton-insights">
+          <span class="skeleton-bar skeleton-name"></span>
+          <div class="skeleton-insights-metrics">
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+            <div class="skeleton-card">
+              <span class="skeleton-bar"></span>
+              <span class="skeleton-bar"></span>
+            </div>
+          </div>
+          <div class="skeleton-card skeleton-insights-panel">
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+          <div class="skeleton-card skeleton-insights-panel">
+            <span class="skeleton-bar"></span>
+            <span class="skeleton-bar"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="dashboardEntryError" class="workspace-retry" role="alert" hidden>
+      <p id="dashboardEntryMessage">Could not open Job Search Insights. Please retry.</p>
+      <button id="dashboardEntryRetry" type="button" class="primary-action-button" hidden>Retry</button>
+    </section>
+  </div>
   <script type="module" src="/js/dashboardEntry.js"></script>
 </body>
 </html>

@@ -23,6 +23,35 @@ export async function verifyAuthNavigation({ command, evaluate, context, origin,
   await evaluate('localStorage.clear(); sessionStorage.clear();');
   await navigate('/');
   await evaluate('await window.jubroComponentsReady;');
+  assert.equal(await evaluate(`
+    const { Auth } = await import('/js/auth/auth.js');
+    Auth.prototype.setNavbarAuthState.call({}, 'loading');
+    const cta = document.getElementById('btnOpenModal');
+    const loading = document.getElementById('navbarAuthLoading');
+    return cta.classList.contains('auth-state-pending')
+      && cta.getAttribute('aria-label') === 'Loading account'
+      && cta.getAttribute('aria-disabled') === 'true'
+      && getComputedStyle(cta).visibility === 'visible'
+      && !cta.querySelector('.auth-cta-loader').classList.contains('hidden')
+      && !loading.classList.contains('hidden');
+  `), true, 'Landing CTA shows its loader while auth state resolves');
+  for (const theme of ['dark', 'light']) {
+    const background = await evaluate(`
+      document.documentElement.classList.toggle('dark', ${JSON.stringify(theme)} === 'dark');
+      const cta = document.getElementById('btnOpenModal');
+      await Promise.all(cta.getAnimations().map(animation => animation.finished));
+      return getComputedStyle(cta).backgroundColor;
+    `);
+    assert.equal(
+      background,
+      theme === 'dark' ? 'rgb(31, 41, 55)' : 'rgb(243, 244, 246)',
+      `Pending CTA uses the ${theme} loader surface`,
+    );
+  }
+  await evaluate(`
+    const { Auth } = await import('/js/auth/auth.js');
+    Auth.prototype.setNavbarAuthState.call({}, 'guest');
+  `);
   for (const theme of ['dark', 'light']) {
     for (const width of [390, 430, 768, 1024, 1440, 1920]) {
       await command('browsingContext.setViewport', {
@@ -121,7 +150,8 @@ export async function verifyAuthNavigation({ command, evaluate, context, origin,
     await firebase.__emitAuth({ uid: 'auth-browser', email: 'auth@example.test' });
     return location.pathname === '/' && !document.querySelector('.jubro-toast-success:not(.hidden)')
       && document.getElementById('navbarGuest').getAttribute('aria-hidden') === 'true'
-      && document.getElementById('btnOpenModal').getAttribute('href') === '/board/';
+      && document.getElementById('btnOpenModal').getAttribute('href') === '/board/'
+      && document.getElementById('btnOpenModal').textContent.trim() === 'Open Jubro';
   `), true, 'Authenticated Home remains accessible without a login toast; guest-first CTA route is unchanged');
 
   await evaluate(`
